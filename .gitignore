@@ -1,0 +1,7 @@
+*.iml
+.idea
+target
+.project
+*.setting
+*.log
+.flattened-pom.xml
