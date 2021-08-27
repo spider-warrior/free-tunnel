@@ -157,6 +157,7 @@ public class Socks5ServerMessageHandler extends ChannelInboundHandlerAdapter {
                             outputBuf.writeBytes(Socks5ServerDaemonConfig.SERVER_HOST_BYTES);
                             outputBuf.writeShort(Socks5ServerDaemonConfig.SERVER_PORT);
                             ctx.writeAndFlush(outputBuf);
+                            ctx.close();
                         }
                     };
                     NetProxyUtil.startHttpFetchMessageClient(ctx, proxyConnectionBuildResultListener, clientName, targetHost, targetPort);
