@@ -25,8 +25,8 @@ public class ForwardingMessageHandler extends ChannelDuplexHandler {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
         if(msg instanceof ByteBuf) {
-            remoteChannelHandlerContext.channel().writeAndFlush(msg);
             log.info("[{}] -> [{}] -> [{}] -> [{}]: 转发消息: {} B", ctx.channel().remoteAddress(), ctx.channel().localAddress(), remoteChannelHandlerContext.channel().localAddress(), remoteChannelHandlerContext.channel().remoteAddress(), ((ByteBuf)msg).readableBytes());
+            remoteChannelHandlerContext.channel().writeAndFlush(msg);
         } else  if (msg instanceof FullHttpRequest) {
             FullHttpRequest request = (FullHttpRequest)msg;
             ByteBuf buf = NetProxyUtil.httpRequestToByteBuf(request);

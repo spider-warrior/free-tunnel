@@ -11,7 +11,6 @@ import cn.t.tool.netproxytool.socks5.constants.Socks5CmdExecutionStatus;
 import cn.t.tool.netproxytool.socks5.constants.Socks5Method;
 import cn.t.tool.netproxytool.socks5.constants.Socks5ProtocolConstants;
 import cn.t.tool.netproxytool.socks5.constants.Socks5ServerState;
-import cn.t.tool.netproxytool.socks5.server.handler.Socks5ServerMessageHandler;
 import cn.t.tool.netproxytool.socks5.util.Socks5MessageUtil;
 import cn.t.tool.nettytool.util.NettyComponentUtil;
 import io.netty.buffer.ByteBuf;
@@ -32,7 +31,7 @@ import java.util.Arrays;
  **/
 public class Socks5ClientMessageHandler extends ChannelInboundHandlerAdapter {
 
-    private static final Logger logger = LoggerFactory.getLogger(Socks5ServerMessageHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(Socks5ClientMessageHandler.class);
 
     private final String targetHost;
     private final short targetPort;
