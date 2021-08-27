@@ -22,6 +22,8 @@ import io.netty.channel.ChannelPipeline;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
+
 /**
  * Socks5ClientMessageHandler
  * @author <a href="mailto:yangjian@ifenxi.com">研发部-杨建</a>
@@ -95,10 +97,18 @@ public class Socks5ClientMessageHandler extends ChannelInboundHandlerAdapter {
             byte[] address = new byte[4];
             byteBuf.readBytes(address);
             //bind port
-            short targetPort = byteBuf.readShort();
+            short port = byteBuf.readShort();
+            logger.info("[{} -> {}- > {} -> {}]: cmd响应, version: {}, status: {}, addressType: {}, address: {}, port: {}", remoteChannelHandlerContext.channel().remoteAddress(),
+                remoteChannelHandlerContext.channel().localAddress(),
+                ctx.channel().localAddress(),
+                ctx.channel().remoteAddress(),
+                version,
+                status,
+                addressType,
+                Arrays.toString(address),
+                port);
             //处理命令响应
             if(Socks5CmdExecutionStatus.SUCCEEDED.value == status) {
-                logger.info("[{} -> {}- > {} -> {}]: 连接成功, 回调监听器", remoteChannelHandlerContext.channel().remoteAddress(), remoteChannelHandlerContext.channel().localAddress(), ctx.channel().localAddress(), ctx.channel().remoteAddress());
                 ChannelPipeline channelPipeline = ctx.channel().pipeline();
                 //remove socks5 inbound handlers
                 NettyComponentUtil.removeAllHandler(channelPipeline, Socks5ClientMessageHandler.class);

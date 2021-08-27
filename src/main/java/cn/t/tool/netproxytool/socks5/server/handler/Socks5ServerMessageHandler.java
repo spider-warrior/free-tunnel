@@ -124,14 +124,14 @@ public class Socks5ServerMessageHandler extends ChannelInboundHandlerAdapter {
                 }
                 //target address
                 byte[] targetAddressBytes = getAddressBytes(byteBuf, socks5AddressType);
+                String targetHost = new String(targetAddressBytes);
                 //target port
                 short targetPort = byteBuf.readShort();
 
+                InetSocketAddress clientAddress = (InetSocketAddress)ctx.channel().remoteAddress();
+                logger.info("[{}]: [{}], 命令类型: {}, 地址: {}:{}", clientAddress, cmdByte, addressTypeByte, targetHost, targetPort);
                 //2.处理CMD消息
                 if(Socks5Cmd.CONNECT == socks5Cmd) {
-                    InetSocketAddress clientAddress = (InetSocketAddress)ctx.channel().remoteAddress();
-                    String targetHost = new String(targetAddressBytes);
-                    logger.info("[{}]: [{}], 地址类型: {}, 地址: {}:{}", clientAddress, Socks5Cmd.CONNECT, addressTypeByte, targetHost, targetPort);
                     String clientName = NetProxyUtil.buildProxyConnectionName(clientAddress.getHostString(), clientAddress.getPort(), targetHost, targetPort);
                     ProxyConnectionBuildResultListener proxyConnectionBuildResultListener = (status, remoteChannelHandlerContext) -> {
                         if(ProxyBuildExecutionStatus.SUCCEEDED.value == status) {
