@@ -29,7 +29,7 @@ public class AuthenticationResponseHandler extends AbstractSocks5InboundHandler<
             String targetHost = ctx.channel().attr(Socks5ClientConstants.TARGET_HOST_KEY).get();
             Short targetPort = ctx.channel().attr(Socks5ClientConstants.TARGET_PORT_KEY).get();
             ctx.channel().attr(Socks5ClientConstants.USE_SAFE_ENCRYPT).set(Boolean.TRUE);
-            CmdRequest cmdRequest = Socks5MessageUtil.buildCmdRequest(targetHost.getBytes(), targetPort);
+            CmdRequest cmdRequest = Socks5MessageUtil.buildConnectRequest(targetHost.getBytes(), targetPort);
             nettyB2mDecoder.setByteBufAnalyser(new CmdResponseAnalyse());
             ctx.writeAndFlush(cmdRequest);
         }

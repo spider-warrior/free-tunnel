@@ -46,7 +46,7 @@ public class MethodResponseHandler extends AbstractSocks5InboundHandler<MethodRe
         } else {
             //不需要认证, 直接构建cmd请求
             if(Socks5Method.NO_AUTHENTICATION_REQUIRED == socks5Method) {
-                CmdRequest cmdRequest = Socks5MessageUtil.buildCmdRequest(targetHost.getBytes(), targetPort);
+                CmdRequest cmdRequest = Socks5MessageUtil.buildConnectRequest(targetHost.getBytes(), targetPort);
                 nettyB2mDecoder.setByteBufAnalyser(new CmdResponseAnalyse());
                 ctx.writeAndFlush(cmdRequest);
                 //用户名密码认证
@@ -71,7 +71,7 @@ public class MethodResponseHandler extends AbstractSocks5InboundHandler<MethodRe
         //send negotiate msg
         MethodRequest methodRequest = new MethodRequest();
         methodRequest.setVersion(Socks5ProtocolConstants.VERSION);
-        methodRequest.setMethods(Socks5ClientConstants.SUPPORT_METHODS);
+        methodRequest.setMethods(new byte[]{Socks5Method.USERNAME_PASSWORD.rangeStart});
         ctx.writeAndFlush(methodRequest);
     }
 

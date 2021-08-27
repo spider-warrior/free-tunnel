@@ -164,6 +164,8 @@ public class Socks5ServerMessageHandler extends ChannelInboundHandlerAdapter {
                     throw new ProxyException("未实现的命令处理: " + socks5Cmd);
                 }
             }
+        } else {
+            throw new ProxyException("未实现的状态处理: " + state);
         }
     }
 
@@ -185,9 +187,4 @@ public class Socks5ServerMessageHandler extends ChannelInboundHandlerAdapter {
         }
     }
 
-    private enum Socks5ServerState {
-        NEGOTIATE,
-        AUTHENTICATE,
-        CMD
-    }
 }
