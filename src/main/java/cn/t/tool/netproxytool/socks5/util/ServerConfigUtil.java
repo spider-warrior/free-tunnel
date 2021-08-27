@@ -25,21 +25,19 @@ public class ServerConfigUtil {
 
     private static final Logger logger = LoggerFactory.getLogger(ServerConfigUtil.class);
 
-    public static ServerConfig loadServerConfig() {
-        ServerConfig serverConfig = new ServerConfig();
+    public static void loadServerConfig() {
         String socks5Home = getSocks5Home();
         if(!StringUtil.isEmpty(socks5Home)) {
             File home = new File(socks5Home);
             if(home.exists()) {
                 Map<String, UserConfig> userConfigMap = loadUserConfig(FileUtil.appendFilePath(socks5Home, Socks5ServerDaemonConfig.SOCKS5_SERVER_USERS_CONFIG_FILE));
-                serverConfig.setUserConfigMap(userConfigMap);
+                ServerConfig.USER_CONFIG_MAP.putAll(userConfigMap);
             } else {
                 logger.warn("{}未设置", Socks5ServerDaemonConfig.SOCKS5_SERVER_HOME_KEY);
             }
         } else {
             logger.warn("{}未设置", Socks5ServerDaemonConfig.SOCKS5_SERVER_HOME_KEY);
         }
-        return serverConfig;
     }
 
     private static String getSocks5Home() {

@@ -12,13 +12,5 @@ public class ServerConfig {
     /**
      * 用户配置
      */
-    private Map<String, UserConfig> userConfigMap = new HashMap<>();
-
-    public Map<String, UserConfig> getUserConfigMap() {
-        return userConfigMap;
-    }
-
-    public void setUserConfigMap(Map<String, UserConfig> userConfigMap) {
-        this.userConfigMap = userConfigMap;
-    }
+    public static Map<String, UserConfig> USER_CONFIG_MAP = new HashMap<>();
 }

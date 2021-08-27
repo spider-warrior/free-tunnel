@@ -3,9 +3,7 @@ package cn.t.tool.netproxytool.socks5.server.listener;
 import cn.t.tool.netproxytool.handler.ForwardingMessageHandler;
 import cn.t.tool.netproxytool.handler.LengthBasedEncryptedMessageDecoder;
 import cn.t.tool.netproxytool.handler.LengthBasedPlainMessageEncoder;
-import cn.t.tool.netproxytool.socks5.common.AbstractSocks5InboundHandler;
-import cn.t.tool.nettytool.decoder.NettyB2mDecoder;
-import cn.t.tool.nettytool.encoer.NettyM2bEncoder;
+import cn.t.tool.netproxytool.socks5.server.handler.Socks5ServerMessageHandler;
 import cn.t.tool.nettytool.util.NettyComponentUtil;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
@@ -37,12 +35,8 @@ public class Socks5ProxyServerConnectionReadyListener implements ChannelFutureLi
     public void operationComplete(ChannelFuture future) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException {
         if(future.isSuccess()) {
             ChannelPipeline channelPipeline = localChannelHandlerContext.pipeline();
-            //remove decoders
-            NettyComponentUtil.removeAllHandler(channelPipeline, NettyB2mDecoder.class);
-            //remove encoders
-            NettyComponentUtil.removeAllHandler(channelPipeline, NettyM2bEncoder.class);
-            //remove socks5 inbound handlers
-            NettyComponentUtil.removeAllHandler(channelPipeline, AbstractSocks5InboundHandler.class);
+            //remove socks5 server message handlers
+            NettyComponentUtil.removeAllHandler(channelPipeline, Socks5ServerMessageHandler.class);
             if(security != null) {
                 //默认使用基于length-body结构解密数据
                 NettyComponentUtil.addLastHandler(channelPipeline, "length-based-encrypted-message-decoder", new LengthBasedEncryptedMessageDecoder(security));

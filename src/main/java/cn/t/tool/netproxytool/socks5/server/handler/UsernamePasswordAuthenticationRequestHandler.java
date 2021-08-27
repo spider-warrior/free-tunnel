@@ -30,13 +30,10 @@ public class UsernamePasswordAuthenticationRequestHandler extends AbstractSocks5
         String password = new String(usernamePasswordAuthenticationRequest.getPassword());
         AuthenticationResponse authenticationResponse = new AuthenticationResponse();
         authenticationResponse.setVersion(Socks5ProtocolConstants.VERSION);
-        ServerConfig serverConfig = ctx.channel().attr(Socks5ServerDaemonConfig.SERVER_CONFIG_KEY).get();
         boolean authenticationSuccess = false;
-        if(serverConfig != null) {
-            UserConfig userConfig = serverConfig.getUserConfigMap().get(username);
-            if(userConfig != null && userConfig.getPassword() != null && userConfig.getPassword().equals(password)) {
-                authenticationSuccess = true;
-            }
+        UserConfig userConfig = ServerConfig.USER_CONFIG_MAP.get(username);
+        if(userConfig != null && userConfig.getPassword() != null && userConfig.getPassword().equals(password)) {
+            authenticationSuccess = true;
         }
         if(authenticationSuccess) {
             logger.info("用户名密码验证通过, username: {}", username);

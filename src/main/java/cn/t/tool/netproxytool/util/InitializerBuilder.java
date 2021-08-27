@@ -15,11 +15,8 @@ import cn.t.tool.netproxytool.socks5.client.handler.AuthenticationResponseHandle
 import cn.t.tool.netproxytool.socks5.client.handler.CmdResponseHandler;
 import cn.t.tool.netproxytool.socks5.client.handler.MethodResponseHandler;
 import cn.t.tool.netproxytool.socks5.constants.Socks5ClientDaemonConfig;
-import cn.t.tool.netproxytool.socks5.constants.Socks5ServerComponentConstants;
 import cn.t.tool.netproxytool.socks5.constants.Socks5ServerDaemonConfig;
-import cn.t.tool.netproxytool.socks5.server.handler.CmdRequestHandler;
-import cn.t.tool.netproxytool.socks5.server.handler.MethodRequestHandler;
-import cn.t.tool.netproxytool.socks5.server.handler.UsernamePasswordAuthenticationRequestHandler;
+import cn.t.tool.netproxytool.socks5.server.handler.Socks5ServerMessageHandler;
 import cn.t.tool.nettytool.daemon.DaemonConfig;
 import cn.t.tool.nettytool.initializer.DaemonConfigBuilder;
 import cn.t.tool.nettytool.initializer.NettyChannelInitializer;
@@ -121,24 +118,7 @@ public class InitializerBuilder {
         daemonConfigBuilder.configLogLevel(Socks5ServerDaemonConfig.LOGGING_HANDLER_LOGGER_LEVEL);
         //idle
         daemonConfigBuilder.configIdleHandler(Socks5ServerDaemonConfig.SOCKS5_PROXY_READ_TIME_OUT_IN_SECONDS, Socks5ServerDaemonConfig.SOCKS5_PROXY_WRITE_TIME_OUT_IN_SECONDS, Socks5ServerDaemonConfig.SOCKS5_PROXY_ALL_IDLE_TIME_OUT_IN_SECONDS);
-        //协商消息解析
-        daemonConfigBuilder.configByteBufAnalyser(Socks5ServerComponentConstants.METHOD_REQUEST_ANALYSE_SUPPLIER);
-        List<Supplier<? extends MessageToByteEncoder<?>>> m2bEncoderSupplierList = new ArrayList<>();
-        //协商响应消息编码
-        m2bEncoderSupplierList.add(Socks5ServerComponentConstants.METHOD_RESPONSE_ENCODER_SUPPLIER);
-        //用户名密码鉴权响应编码
-        m2bEncoderSupplierList.add(Socks5ServerComponentConstants.USERNAME_PASSWORD_AUTHENTICATION_RESPONSE_ENCODER_SUPPLIER);
-        //CMD编码响应
-        m2bEncoderSupplierList.add(Socks5ServerComponentConstants.CMD_RESPONSE_ENCODER_SUPPLIER);
-        daemonConfigBuilder.configM2bEncoder(m2bEncoderSupplierList);
-        List<Supplier<? extends ChannelHandler>> handlerSupplierList = new ArrayList<>();
-        //协商消息处理器
-        handlerSupplierList.add(MethodRequestHandler::new);
-        //用户名密码鉴权处理器
-        handlerSupplierList.add(UsernamePasswordAuthenticationRequestHandler::new);
-        //CMD处理器
-        handlerSupplierList.add(CmdRequestHandler::new);
-        daemonConfigBuilder.configHandler(handlerSupplierList);
+        daemonConfigBuilder.configHandler(Collections.singletonList(Socks5ServerMessageHandler::new));
         DaemonConfig daemonConfig = daemonConfigBuilder.build();
         return new NettyChannelInitializer(daemonConfig);
     }

@@ -38,12 +38,9 @@ public class CmdRequestHandler extends AbstractSocks5InboundHandler<CmdRequest> 
         String username = ctx.channel().attr(Socks5ServerDaemonConfig.CHANNEL_USERNAME).get();
         byte[] security = null;
         if(!StringUtil.isEmpty(username)) {
-            ServerConfig serverConfig = ctx.channel().attr(Socks5ServerDaemonConfig.SERVER_CONFIG_KEY).get();
-            if(serverConfig != null) {
-                UserConfig userConfig = serverConfig.getUserConfigMap().get(username);
-                if(userConfig != null) {
-                    security = userConfig.getSecurity();
-                }
+            UserConfig userConfig = ServerConfig.USER_CONFIG_MAP.get(username);
+            if(userConfig != null) {
+                security = userConfig.getSecurity();
             }
         }
         byte[] securityBytes = ArrayUtil.isEmpty(security) ? null : security;
