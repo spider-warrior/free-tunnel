@@ -27,7 +27,7 @@ public class ForwardingMessageHandler extends ChannelDuplexHandler {
         if(msg instanceof ByteBuf) {
             log.info("[{}] -> [{}] -> [{}] -> [{}]: 转发消息: {} B", ctx.channel().remoteAddress(), ctx.channel().localAddress(), remoteChannelHandlerContext.channel().localAddress(), remoteChannelHandlerContext.channel().remoteAddress(), ((ByteBuf)msg).readableBytes());
             remoteChannelHandlerContext.channel().writeAndFlush(msg);
-        } else  if (msg instanceof FullHttpRequest) {
+        } else if(msg instanceof FullHttpRequest) {
             FullHttpRequest request = (FullHttpRequest)msg;
             ByteBuf buf = NetProxyUtil.httpRequestToByteBuf(request);
             remoteChannelHandlerContext.channel().writeAndFlush(buf);
@@ -49,7 +49,7 @@ public class ForwardingMessageHandler extends ChannelDuplexHandler {
             }
         } else {
             if(remoteOpen) {
-                log.info("[{} -> {}]: 断开连接, 关闭客户端", ctx.channel().localAddress(), ctx.channel().remoteAddress());
+                log.info("[{} -> {}]: 断开连接, 关闭客户端连接", ctx.channel().localAddress(), ctx.channel().remoteAddress());
                 remoteChannelHandlerContext.close();
             } else {
                 log.info("[{} -> {}]: 断开连接", ctx.channel().localAddress(), ctx.channel().remoteAddress());

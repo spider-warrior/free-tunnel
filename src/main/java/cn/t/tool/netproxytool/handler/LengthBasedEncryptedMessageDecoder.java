@@ -12,7 +12,6 @@ import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
-import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
@@ -26,14 +25,14 @@ public class LengthBasedEncryptedMessageDecoder extends ByteToMessageDecoder {
     @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws IllegalBlockSizeException, BadPaddingException {
         if(in.readableBytes() < 4) {
-            logger.info("readable bytes length less than 2, return immediately");
+            logger.info("return immediately, readable bytes length less than 4");
             return;
         }
         in.markReaderIndex();
         int size = in.readInt();
         if(in.readableBytes() < size) {
             in.resetReaderIndex();
-            logger.info("readable bytes length less than required: {}, actually: {} return immediately", size, in.readableBytes());
+            logger.info("return immediately, readable bytes length less than required: {}, actually: {}", size, in.readableBytes());
             return;
         }
         byte[] bytes = new byte[size];
