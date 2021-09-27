@@ -121,6 +121,7 @@ public class Socks5ClientMessageHandler extends ChannelInboundHandlerAdapter {
                 proxyConnectionBuildResultListener.handle(ProxyBuildExecutionStatus.SUCCEEDED.value, ctx);
             } else {
                 logger.warn("连接代理服务器失败, status: {}", status);
+                proxyConnectionBuildResultListener.handle(ProxyBuildExecutionStatus.FAILED.value, ctx);
             }
         } else {
             throw new ProxyException("未实现的状态处理: " + state);

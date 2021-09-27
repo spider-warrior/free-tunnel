@@ -59,6 +59,17 @@ public class InitializerBuilder {
         return new NettyChannelInitializer(daemonConfig);
     }
 
+    public static NettyChannelInitializer buildHttpProxyServerViaSocks5ClientChannelInitializer(ChannelHandlerContext remoteChannelHandlerContext, ProxyConnectionBuildResultListener proxyConnectionBuildResultListener, String targetHost, short targetPort, Socks5ClientConfig socks5ClientConfig) {
+        DaemonConfigBuilder daemonConfigBuilder = DaemonConfigBuilder.newInstance();
+        //logging
+        daemonConfigBuilder.configLogLevel(Socks5ClientDaemonConfig.LOGGING_HANDLER_LOGGER_LEVEL);
+        //idle
+        daemonConfigBuilder.configIdleHandler(Socks5ClientDaemonConfig.SOCKS5_PROXY_READ_TIME_OUT_IN_SECONDS, Socks5ClientDaemonConfig.SOCKS5_PROXY_WRITE_TIME_OUT_IN_SECONDS, Socks5ClientDaemonConfig.SOCKS5_PROXY_ALL_IDLE_TIME_OUT_IN_SECONDS);
+        daemonConfigBuilder.configHandler(Collections.singletonList(() -> new Socks5ClientMessageHandler(targetHost, targetPort, socks5ClientConfig, proxyConnectionBuildResultListener, remoteChannelHandlerContext)));
+        DaemonConfig daemonConfig = daemonConfigBuilder.build();
+        return new NettyChannelInitializer(daemonConfig);
+    }
+
     public static NettyChannelInitializer buildHttpProxyServerViaSocks5ChannelInitializer(Socks5ClientConfig socks5ClientConfig) {
         DaemonConfigBuilder daemonConfigBuilder = DaemonConfigBuilder.newInstance();
         //logging
@@ -73,17 +84,6 @@ public class InitializerBuilder {
         supplierList.add(() -> new HttpObjectAggregator(1024 * 1024));
         supplierList.add(() -> new HttpProxyServerViaSocks5Handler(socks5ClientConfig));
         daemonConfigBuilder.configHandler(supplierList);
-        DaemonConfig daemonConfig = daemonConfigBuilder.build();
-        return new NettyChannelInitializer(daemonConfig);
-    }
-
-    public static NettyChannelInitializer buildHttpProxyServerViaSocks5ClientChannelInitializer(ChannelHandlerContext remoteChannelHandlerContext, ProxyConnectionBuildResultListener proxyConnectionBuildResultListener, String targetHost, short targetPort, Socks5ClientConfig socks5ClientConfig) {
-        DaemonConfigBuilder daemonConfigBuilder = DaemonConfigBuilder.newInstance();
-        //logging
-        daemonConfigBuilder.configLogLevel(Socks5ClientDaemonConfig.LOGGING_HANDLER_LOGGER_LEVEL);
-        //idle
-        daemonConfigBuilder.configIdleHandler(Socks5ClientDaemonConfig.SOCKS5_PROXY_READ_TIME_OUT_IN_SECONDS, Socks5ClientDaemonConfig.SOCKS5_PROXY_WRITE_TIME_OUT_IN_SECONDS, Socks5ClientDaemonConfig.SOCKS5_PROXY_ALL_IDLE_TIME_OUT_IN_SECONDS);
-        daemonConfigBuilder.configHandler(Collections.singletonList(() -> new Socks5ClientMessageHandler(targetHost, targetPort, socks5ClientConfig, proxyConnectionBuildResultListener, remoteChannelHandlerContext)));
         DaemonConfig daemonConfig = daemonConfigBuilder.build();
         return new NettyChannelInitializer(daemonConfig);
     }
