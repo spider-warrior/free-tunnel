@@ -6,6 +6,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.FullHttpResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,13 +26,18 @@ public class ForwardingMessageHandler extends ChannelDuplexHandler {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
         if(msg instanceof ByteBuf) {
-            log.info("[{}] -> [{}] -> [{}] -> [{}]: 转发消息: {} B", ctx.channel().remoteAddress(), ctx.channel().localAddress(), remoteChannelHandlerContext.channel().localAddress(), remoteChannelHandlerContext.channel().remoteAddress(), ((ByteBuf)msg).readableBytes());
+            log.info("[{}] -> [{}] -> [{}] -> [{}]: 转发byteBuf消息: {} B", ctx.channel().remoteAddress(), ctx.channel().localAddress(), remoteChannelHandlerContext.channel().localAddress(), remoteChannelHandlerContext.channel().remoteAddress(), ((ByteBuf)msg).readableBytes());
             remoteChannelHandlerContext.channel().writeAndFlush(msg);
         } else if(msg instanceof FullHttpRequest) {
             FullHttpRequest request = (FullHttpRequest)msg;
             ByteBuf buf = NetProxyUtil.httpRequestToByteBuf(request);
             remoteChannelHandlerContext.channel().writeAndFlush(buf);
-            log.info("[{}] -> [{}] -> [{}] -> [{}]: 转发消息:\r\n{}", ctx.channel().remoteAddress(), ctx.channel().localAddress(), remoteChannelHandlerContext.channel().localAddress(), remoteChannelHandlerContext.channel().remoteAddress(), msg);
+            log.info("[{}] -> [{}] -> [{}] -> [{}]: 转发request消息:\r\n{}", ctx.channel().remoteAddress(), ctx.channel().localAddress(), remoteChannelHandlerContext.channel().localAddress(), remoteChannelHandlerContext.channel().remoteAddress(), msg);
+        } else if(msg instanceof FullHttpResponse) {
+            FullHttpResponse response = (FullHttpResponse)msg;
+            ByteBuf buf = NetProxyUtil.httpResponseToByteBuf(response);
+            remoteChannelHandlerContext.channel().writeAndFlush(buf);
+            log.info("[{}] -> [{}] -> [{}] -> [{}]: 转发response消息:\r\n{}", ctx.channel().remoteAddress(), ctx.channel().localAddress(), remoteChannelHandlerContext.channel().localAddress(), remoteChannelHandlerContext.channel().remoteAddress(), msg);
         } else {
             throw new ProxyException("不支持的转发消息: " + msg);
         }

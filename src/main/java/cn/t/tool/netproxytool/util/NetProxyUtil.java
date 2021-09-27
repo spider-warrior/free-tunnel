@@ -8,9 +8,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.embedded.EmbeddedChannel;
-import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.HttpHeaders;
-import io.netty.handler.codec.http.HttpRequestEncoder;
+import io.netty.handler.codec.http.*;
 
 /**
  * @author <a href="mailto:yangjian@ifenxi.com">研发部-杨建</a>
@@ -65,6 +63,22 @@ public class NetProxyUtil {
         NetProxyUtil.prepareProxiedRequest(request);
         EmbeddedChannel embeddedChannel = new EmbeddedChannel(new HttpRequestEncoder());
         embeddedChannel.writeOutbound(request);
+        ByteBuf output = ByteBufAllocator.DEFAULT.buffer();
+        while (true) {
+            ByteBuf buf = embeddedChannel.readOutbound();
+            if(buf == null) {
+                break;
+            } else {
+                output.writeBytes(buf);
+            }
+        }
+        embeddedChannel.close();
+        return output;
+    }
+
+    public static ByteBuf httpResponseToByteBuf(FullHttpResponse response) {
+        EmbeddedChannel embeddedChannel = new EmbeddedChannel(new HttpResponseEncoder());
+        embeddedChannel.writeOutbound(response);
         ByteBuf output = ByteBufAllocator.DEFAULT.buffer();
         while (true) {
             ByteBuf buf = embeddedChannel.readOutbound();
