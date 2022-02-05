@@ -1,5 +1,6 @@
 package cn.t.tool.netproxytool.handler;
 
+import cn.t.tool.netproxytool.socks5.util.Socks5TraceUtil;
 import cn.t.tool.nettytool.util.ByteBufUtil;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -35,6 +36,9 @@ public class LengthBasedEncryptedMessageDecoder extends ByteToMessageDecoder {
             logger.info("return immediately, readable bytes length less than required: {}, actually: {}", size, in.readableBytes());
             return;
         }
+        long timestamp = in.readLong();
+        size-=8;
+        Socks5TraceUtil.decodeLog(timestamp, System.currentTimeMillis(), size);
         byte[] bytes = new byte[size];
         in.readBytes(bytes);
         bytes = cipher.doFinal(bytes);

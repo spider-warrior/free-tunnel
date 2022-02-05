@@ -73,8 +73,24 @@
             <charset>UTF-8</charset>
         </encoder>
     </appender>
+    <appender name="MessageCodecAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <File>${logHome}/message-codec.log</File>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <FileNamePattern>${logHome}/message-codec.%d{yyyy-MM-dd}.%i.log</FileNamePattern>
+            <!-- keep 10 days worth of history -->
+            <maxFileSize>10MB</maxFileSize>
+            <maxHistory>10</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${pattern}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
     <logger name="Socks5TraceLogger" level="INFO" additivity="false">
         <appender-ref ref="Socks5TraceAppender"/>
+    </logger>
+    <logger name="MessageCodecLogger" level="INFO" additivity="false">
+        <appender-ref ref="MessageCodecAppender"/>
     </logger>
     <logger name="EventLogger" level="INFO" additivity="false">
         <appender-ref ref="EventLoggingAppender"/>

@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
  **/
 public class Socks5TraceUtil {
     private static final Logger socks5TraceLogger = LoggerFactory.getLogger(Socks5TraceConstants.SOCKS5_TRACE_LOG_NAME);
+    private static final Logger socks5MessageCodecLogger = LoggerFactory.getLogger(Socks5TraceConstants.SOCKS5_MESSAGE_CODEC_LOG_NAME);
 
     public static void recordNegotiateSendTime(Channel channel) {
         channel.attr(Socks5TraceConstants.NEGOTIATE_SEND_TIME_KEY).set(System.currentTimeMillis());
@@ -57,5 +58,9 @@ public class Socks5TraceUtil {
             commandSendTime + "(" + (commandSendTime - authenticationReceiveTime) + ")",
             commandReceiveTime + "(" + (commandReceiveTime - commandSendTime) + ")"
         );
+    }
+
+    public static void decodeLog(long remoteTimestamp, long now, int size) {
+        socks5MessageCodecLogger.info("收到消息, 延时: {}, 消息size: {}", now - remoteTimestamp, size);
     }
 }

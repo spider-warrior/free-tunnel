@@ -11,6 +11,7 @@ import io.netty.util.AttributeKey;
  **/
 public class Socks5TraceConstants {
     public static final String SOCKS5_TRACE_LOG_NAME = "Socks5TraceLogger";
+    public static final String SOCKS5_MESSAGE_CODEC_LOG_NAME = "MessageCodecLogger";
 
     //negotiate
     public static final AttributeKey<Long> NEGOTIATE_SEND_TIME_KEY = AttributeKey.newInstance("negotiateSendTime");
