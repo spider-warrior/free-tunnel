@@ -12,6 +12,7 @@ import cn.t.tool.netproxytool.socks5.constants.Socks5Method;
 import cn.t.tool.netproxytool.socks5.constants.Socks5ProtocolConstants;
 import cn.t.tool.netproxytool.socks5.constants.Socks5ServerState;
 import cn.t.tool.netproxytool.socks5.util.Socks5MessageUtil;
+import cn.t.tool.netproxytool.socks5.util.Socks5TraceUtil;
 import cn.t.tool.nettytool.util.NettyComponentUtil;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
@@ -45,6 +46,7 @@ public class Socks5ClientMessageHandler extends ChannelInboundHandlerAdapter {
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         ByteBuf byteBuf = (ByteBuf)msg;
         if(Socks5ServerState.NEGOTIATE == state) {
+            Socks5TraceUtil.recordNegotiateReceiveTime(ctx.channel());
             //解析协商响应要素
             byte version = byteBuf.readByte();
             byte methodByte = byteBuf.readByte();
@@ -58,6 +60,7 @@ public class Socks5ClientMessageHandler extends ChannelInboundHandlerAdapter {
                 ByteBuf outputBuf = Socks5MessageUtil.buildConnectBuf(targetHost.getBytes(), targetPort);
                 ctx.writeAndFlush(outputBuf);
                 state = Socks5ServerState.CMD;
+                Socks5TraceUtil.recordCommandSendTime(ctx.channel());
                 //用户名密码认证
             } else if(Socks5Method.USERNAME_PASSWORD == socks5Method) {
                 if(socks5ClientConfig == null) {
@@ -66,10 +69,12 @@ public class Socks5ClientMessageHandler extends ChannelInboundHandlerAdapter {
                 ByteBuf outputBuf = Socks5MessageUtil.buildUsernamePasswordAuthenticationBuf(socks5ClientConfig.getUsername().getBytes(), socks5ClientConfig.getPassword().getBytes());
                 ctx.writeAndFlush(outputBuf);
                 state = Socks5ServerState.AUTHENTICATE;
+                Socks5TraceUtil.recordAuthenticationSendTime(ctx.channel());
             } else {
                 throw new ProxyException("客户端未实现的方法处理: " + socks5Method);
             }
         } else if(Socks5ServerState.AUTHENTICATE == state) {
+            Socks5TraceUtil.recordAuthenticationReceiveTime(ctx.channel());
             //解析鉴权响应要素
             byte version = byteBuf.readByte();
             byte status = byteBuf.readByte();
@@ -79,10 +84,13 @@ public class Socks5ClientMessageHandler extends ChannelInboundHandlerAdapter {
                 ByteBuf outputBuf = Socks5MessageUtil.buildConnectBuf(targetHost.getBytes(), targetPort);
                 ctx.writeAndFlush(outputBuf);
                 state = Socks5ServerState.CMD;
+                Socks5TraceUtil.recordCommandSendTime(ctx.channel());
             } else {
                 ctx.close();
+                throw new ProxyException("鉴权失败");
             }
         } else if(Socks5ServerState.CMD == state) {
+            Socks5TraceUtil.recordCommandReceiveTime(ctx.channel());
             //解析命令响应要素
             //version
             byte version = byteBuf.readByte();
@@ -108,6 +116,7 @@ public class Socks5ClientMessageHandler extends ChannelInboundHandlerAdapter {
                 port);
             //处理命令响应
             if(Socks5CmdExecutionStatus.SUCCEEDED.value == status) {
+                Socks5TraceUtil.connectionComplete(remoteChannelHandlerContext.channel(), ctx.channel(), true);
                 ChannelPipeline channelPipeline = ctx.channel().pipeline();
                 //remove socks5 inbound handlers
                 NettyComponentUtil.removeAllHandler(channelPipeline, Socks5ClientMessageHandler.class);
@@ -120,6 +129,7 @@ public class Socks5ClientMessageHandler extends ChannelInboundHandlerAdapter {
                 NettyComponentUtil.addLastHandler(channelPipeline, "http-via-socks5-proxy-forwarding-handler", new ForwardingMessageHandler(remoteChannelHandlerContext));
                 proxyConnectionBuildResultListener.handle(ProxyBuildExecutionStatus.SUCCEEDED.value, ctx);
             } else {
+                Socks5TraceUtil.connectionComplete(remoteChannelHandlerContext.channel(), ctx.channel(), false);
                 logger.warn("连接代理服务器失败, status: {}", status);
                 proxyConnectionBuildResultListener.handle(ProxyBuildExecutionStatus.FAILED.value, ctx);
             }
@@ -140,6 +150,7 @@ public class Socks5ClientMessageHandler extends ChannelInboundHandlerAdapter {
             outputBuf.writeByte(Socks5Method.USERNAME_PASSWORD.rangeStart);
         }
         ctx.writeAndFlush(outputBuf);
+        Socks5TraceUtil.recordNegotiateSendTime(ctx.channel());
     }
 
     public Socks5ClientMessageHandler(String targetHost, short targetPort, Socks5ClientConfig socks5ClientConfig, ProxyConnectionBuildResultListener proxyConnectionBuildResultListener, ChannelHandlerContext remoteChannelHandlerContext) {

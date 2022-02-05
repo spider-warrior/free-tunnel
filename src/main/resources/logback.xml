@@ -21,7 +21,7 @@
             <charset>UTF-8</charset>
         </encoder>
     </appender>
-    <appender name="EventLoggingHandler" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <appender name="EventLoggingAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <File>${logHome}/event-logging-handler.log</File>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
             <FileNamePattern>${logHome}/event-logging-handler.%d{yyyy-MM-dd}.%i.log</FileNamePattern>
@@ -34,7 +34,7 @@
             <charset>UTF-8</charset>
         </encoder>
     </appender>
-    <appender name="ThreadMonitor" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <appender name="ThreadMonitorAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <File>${logHome}/thread-monitor.log</File>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
             <FileNamePattern>${logHome}/thread-monitor.%d{yyyy-MM-dd}.%i.log</FileNamePattern>
@@ -47,7 +47,7 @@
             <charset>UTF-8</charset>
         </encoder>
     </appender>
-    <appender name="ThreadPoolMonitor" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <appender name="ThreadPoolMonitorAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <File>${logHome}/thread-pool-monitor.log</File>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
             <FileNamePattern>${logHome}/thread-pool-monitor.%d{yyyy-MM-dd}.%i.log</FileNamePattern>
@@ -60,14 +60,30 @@
             <charset>UTF-8</charset>
         </encoder>
     </appender>
+    <appender name="Socks5TraceAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <File>${logHome}/socks5-trace.log</File>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <FileNamePattern>${logHome}/socks5-trace.%d{yyyy-MM-dd}.%i.log</FileNamePattern>
+            <!-- keep 10 days worth of history -->
+            <maxFileSize>10MB</maxFileSize>
+            <maxHistory>10</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${pattern}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+    <logger name="Socks5TraceLogger" level="INFO" additivity="false">
+        <appender-ref ref="Socks5TraceAppender"/>
+    </logger>
     <logger name="EventLogger" level="INFO" additivity="false">
-        <appender-ref ref="EventLoggingHandler"/>
+        <appender-ref ref="EventLoggingAppender"/>
     </logger>
     <logger name="ThreadMonitor" level="INFO" additivity="false">
-        <appender-ref ref="ThreadMonitor"/>
+        <appender-ref ref="ThreadMonitorAppender"/>
     </logger>
     <logger name="ThreadPoolMonitor" level="INFO" additivity="false">
-        <appender-ref ref="ThreadPoolMonitor"/>
+        <appender-ref ref="ThreadPoolMonitorAppender"/>
     </logger>
     <root level="INFO">
         <appender-ref ref="STDOUT"/>
