@@ -26,7 +26,8 @@ public class LengthBasedPlainMessageEncoder extends MessageToByteEncoder<ByteBuf
         msg.readBytes(bytes);
         byte[] encryptedBytes = cipher.doFinal(bytes);;
         //length
-        out.writeInt(encryptedBytes.length);
+        out.writeInt(encryptedBytes.length + 8);
+        out.writeLong(System.currentTimeMillis());
         //body
         out.writeBytes(encryptedBytes);
         logger.info("encrypt bytes: {} B", encryptedBytes.length);
