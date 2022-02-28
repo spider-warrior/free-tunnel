@@ -105,7 +105,7 @@ public class Socks5ClientMessageHandler extends ChannelInboundHandlerAdapter {
             byteBuf.readBytes(address);
             //bind port
             short port = byteBuf.readShort();
-            logger.info("[{} -> {}- > {} -> {}]: cmd响应, version: {}, status: {}, addressType: {}, address: {}, port: {}", remoteChannelHandlerContext.channel().remoteAddress(),
+            logger.info("[{} -> {} -> {} -> {}]: cmd响应, version: {}, status: {}, addressType: {}, address: {}, port: {}", remoteChannelHandlerContext.channel().remoteAddress(),
                 remoteChannelHandlerContext.channel().localAddress(),
                 ctx.channel().localAddress(),
                 ctx.channel().remoteAddress(),
