@@ -1,6 +1,5 @@
 package cn.t.tool.netproxytool.http.server.listener;
 
-import cn.t.tool.netproxytool.handler.FetchMessageHandler;
 import cn.t.tool.netproxytool.handler.ForwardingMessageHandler;
 import cn.t.tool.netproxytool.http.server.handler.HttpProxyServerHandler;
 import io.netty.channel.ChannelFuture;

@@ -24,7 +24,7 @@ public class LengthBasedPlainMessageEncoder extends MessageToByteEncoder<ByteBuf
     protected void encode(ChannelHandlerContext ctx, ByteBuf msg, ByteBuf out) throws IllegalBlockSizeException, BadPaddingException {
         byte[] bytes = new byte[msg.readableBytes()];
         msg.readBytes(bytes);
-        byte[] encryptedBytes = cipher.doFinal(bytes);;
+        byte[] encryptedBytes = cipher.doFinal(bytes);
         //length
         out.writeInt(encryptedBytes.length + 8);
         out.writeLong(System.currentTimeMillis());
