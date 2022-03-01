@@ -10,9 +10,9 @@ import java.util.concurrent.TimeUnit;
 public class ThreadPoolConfig {
     public static final String PROXY_THREAD_POOL_NAME = "net-proxy";
     public static final int PROCESSOR_COUNT = Runtime.getRuntime().availableProcessors();
-    public static final int PROXY_CORE_THREAD_COUNT = PROCESSOR_COUNT * 5;
-    public static final int PROXY_BLOCKING_THREAD_COUNT = 3;
-    public static final int PROXY_MAX_THREAD_COUNT = (PROXY_CORE_THREAD_COUNT + PROXY_BLOCKING_THREAD_COUNT) * 2;
+    public static final int PROXY_CORE_THREAD_COUNT = PROCESSOR_COUNT * 10;
+    public static final int PROXY_BLOCKING_THREAD_COUNT = 1;
+    public static final int PROXY_MAX_THREAD_COUNT = (PROXY_CORE_THREAD_COUNT + PROXY_BLOCKING_THREAD_COUNT) * 5;
     public static final int PROXY_THREAD_TT = 30;
     public static final TimeUnit PROXY_THREAD_TT_TIME_UNIT = TimeUnit.SECONDS;
 }
