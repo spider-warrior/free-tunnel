@@ -32,12 +32,14 @@ public class ForwardingMessageHandler extends ChannelDuplexHandler {
             FullHttpRequest request = (FullHttpRequest)msg;
             ByteBuf buf = NetProxyUtil.httpRequestToByteBuf(request);
             remoteChannelHandlerContext.channel().writeAndFlush(buf);
-            log.info("[{}] -> [{}] -> [{}] -> [{}]: 转发request消息:\r\n{}", ctx.channel().remoteAddress(), ctx.channel().localAddress(), remoteChannelHandlerContext.channel().localAddress(), remoteChannelHandlerContext.channel().remoteAddress(), msg);
+//            log.info("[{}] -> [{}] -> [{}] -> [{}]: 转发request消息:\r\n{}", ctx.channel().remoteAddress(), ctx.channel().localAddress(), remoteChannelHandlerContext.channel().localAddress(), remoteChannelHandlerContext.channel().remoteAddress(), msg);
+            log.info("[{}] -> [{}] -> [{}] -> [{}]: 转发request消息: {} B", ctx.channel().remoteAddress(), ctx.channel().localAddress(), remoteChannelHandlerContext.channel().localAddress(), remoteChannelHandlerContext.channel().remoteAddress(), buf.readableBytes());
         } else if(msg instanceof FullHttpResponse) {
             FullHttpResponse response = (FullHttpResponse)msg;
             ByteBuf buf = NetProxyUtil.httpResponseToByteBuf(response);
             remoteChannelHandlerContext.channel().writeAndFlush(buf);
-            log.info("[{}] -> [{}] -> [{}] -> [{}]: 转发response消息:\r\n{}", ctx.channel().remoteAddress(), ctx.channel().localAddress(), remoteChannelHandlerContext.channel().localAddress(), remoteChannelHandlerContext.channel().remoteAddress(), msg);
+//            log.info("[{}] -> [{}] -> [{}] -> [{}]: 转发response消息:\r\n{}", ctx.channel().remoteAddress(), ctx.channel().localAddress(), remoteChannelHandlerContext.channel().localAddress(), remoteChannelHandlerContext.channel().remoteAddress(), msg);
+            log.info("[{}] -> [{}] -> [{}] -> [{}]: 转发response消息: {} B", ctx.channel().remoteAddress(), ctx.channel().localAddress(), remoteChannelHandlerContext.channel().localAddress(), remoteChannelHandlerContext.channel().remoteAddress(), buf.readableBytes());
         } else {
             throw new ProxyException("不支持的转发消息: " + msg);
         }
