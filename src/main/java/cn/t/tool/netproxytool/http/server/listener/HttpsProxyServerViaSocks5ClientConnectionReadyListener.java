@@ -18,9 +18,9 @@ import org.slf4j.LoggerFactory;
  * @version V1.0
  * @since 2020-02-27 15:42
  **/
-public class ProxyServerViaSocks5ClientConnectionReadyListener implements ChannelFutureListener {
+public class HttpsProxyServerViaSocks5ClientConnectionReadyListener implements ChannelFutureListener {
 
-    private static final Logger logger = LoggerFactory.getLogger(ProxyServerViaSocks5ClientConnectionReadyListener.class);
+    private static final Logger logger = LoggerFactory.getLogger(HttpsProxyServerViaSocks5ClientConnectionReadyListener.class);
 
     private final ChannelHandlerContext localChannelHandlerContext;
     private final ChannelHandlerContext remoteChannelHandlerContext;
@@ -47,7 +47,7 @@ public class ProxyServerViaSocks5ClientConnectionReadyListener implements Channe
         }
     }
 
-    public ProxyServerViaSocks5ClientConnectionReadyListener(ChannelHandlerContext localChannelHandlerContext, ChannelHandlerContext remoteChannelHandlerContext, String clientName) {
+    public HttpsProxyServerViaSocks5ClientConnectionReadyListener(ChannelHandlerContext localChannelHandlerContext, ChannelHandlerContext remoteChannelHandlerContext, String clientName) {
         this.localChannelHandlerContext = localChannelHandlerContext;
         this.remoteChannelHandlerContext = remoteChannelHandlerContext;
         this.clientName = clientName;

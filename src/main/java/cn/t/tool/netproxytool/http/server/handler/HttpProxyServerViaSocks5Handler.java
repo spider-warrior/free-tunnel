@@ -4,7 +4,7 @@ import cn.t.tool.netproxytool.event.ProxyConnectionBuildResultListener;
 import cn.t.tool.netproxytool.http.config.Socks5ClientConfig;
 import cn.t.tool.netproxytool.http.constants.ProxyBuildExecutionStatus;
 import cn.t.tool.netproxytool.http.server.listener.HttpProxyServerViaSocks5ClientConnectionReadyListener;
-import cn.t.tool.netproxytool.http.server.listener.ProxyServerViaSocks5ClientConnectionReadyListener;
+import cn.t.tool.netproxytool.http.server.listener.HttpsProxyServerViaSocks5ClientConnectionReadyListener;
 import cn.t.tool.netproxytool.util.NetProxyUtil;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -59,7 +59,7 @@ public class HttpProxyServerViaSocks5Handler extends SimpleChannelInboundHandler
             if(ProxyBuildExecutionStatus.SUCCEEDED.value == status) {
                 logger.info("[{}:{}]: 代理创建成功, remote: {}:{}", clientAddress.getHostString(), clientAddress.getPort(), targetHost, targetPort);
                 ChannelPromise promise = ctx.newPromise();
-                promise.addListener(new ProxyServerViaSocks5ClientConnectionReadyListener(ctx, remoteChannelHandlerContext, clientName));
+                promise.addListener(new HttpsProxyServerViaSocks5ClientConnectionReadyListener(ctx, remoteChannelHandlerContext, clientName));
                 ctx.writeAndFlush(new DefaultFullHttpResponse(httpVersion, OK), promise);
             } else {
                 logger.error("[{}]: 代理客户端失败, remote: {}:{}", clientAddress, targetHost, targetPort);
