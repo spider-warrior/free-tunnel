@@ -34,7 +34,7 @@ public class NetProxyUtil {
                                               ProxyConnectionBuildResultListener proxyConnectionBuildResultListener,
                                               String clientName,
                                               String targetHost,
-                                              short targetPort,
+                                              int targetPort,
                                               Socks5ClientConfig socks5ClientConfig
                                               ) {
         NettyChannelInitializer channelInitializer = InitializerBuilder.buildHttpProxyServerViaSocks5ClientChannelInitializer(localContext, proxyConnectionBuildResultListener, targetHost, targetPort, socks5ClientConfig);

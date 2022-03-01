@@ -18,7 +18,7 @@ public class Socks5ServerDaemonConfig {
     public static final String PUBLIC_HOSTNAME = SystemUtil.getLocalIpV4(false);
     public static final String SERVER_HOST = StringUtil.isEmpty(PUBLIC_HOSTNAME) ? SystemUtil.getLocalIpV4(true) : PUBLIC_HOSTNAME;
     public static final byte[] SERVER_HOST_BYTES = ByteUtil.stringsToBytes(SERVER_HOST, "\\.");
-    public static final short SERVER_PORT = 10086;
+    public static final int SERVER_PORT = 10086;
 
     public static final LogLevel LOGGING_HANDLER_LOGGER_LEVEL = LogLevel.DEBUG;
 

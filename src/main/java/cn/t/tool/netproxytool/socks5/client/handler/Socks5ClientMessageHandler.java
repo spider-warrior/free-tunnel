@@ -35,7 +35,7 @@ public class Socks5ClientMessageHandler extends ChannelInboundHandlerAdapter {
     private static final Logger logger = LoggerFactory.getLogger(Socks5ClientMessageHandler.class);
 
     private final String targetHost;
-    private final short targetPort;
+    private final int targetPort;
     private final Socks5ClientConfig socks5ClientConfig;
     private final ProxyConnectionBuildResultListener proxyConnectionBuildResultListener;
     private final ChannelHandlerContext remoteChannelHandlerContext;
@@ -104,7 +104,7 @@ public class Socks5ClientMessageHandler extends ChannelInboundHandlerAdapter {
             byte[] address = new byte[4];
             byteBuf.readBytes(address);
             //bind port
-            short port = byteBuf.readShort();
+            int port = byteBuf.readChar();
             logger.info("[{} -> {} -> {} -> {}]: cmd响应, version: {}, status: {}, addressType: {}, address: {}, port: {}", remoteChannelHandlerContext.channel().remoteAddress(),
                 remoteChannelHandlerContext.channel().localAddress(),
                 ctx.channel().localAddress(),
@@ -153,7 +153,7 @@ public class Socks5ClientMessageHandler extends ChannelInboundHandlerAdapter {
         Socks5TraceUtil.recordNegotiateSendTime(ctx.channel());
     }
 
-    public Socks5ClientMessageHandler(String targetHost, short targetPort, Socks5ClientConfig socks5ClientConfig, ProxyConnectionBuildResultListener proxyConnectionBuildResultListener, ChannelHandlerContext remoteChannelHandlerContext) {
+    public Socks5ClientMessageHandler(String targetHost, int targetPort, Socks5ClientConfig socks5ClientConfig, ProxyConnectionBuildResultListener proxyConnectionBuildResultListener, ChannelHandlerContext remoteChannelHandlerContext) {
         this.targetHost = targetHost;
         this.targetPort = targetPort;
         this.socks5ClientConfig = socks5ClientConfig;

@@ -17,7 +17,7 @@ import io.netty.buffer.ByteBufAllocator;
  **/
 public class Socks5MessageUtil {
 
-    public static CmdRequest buildConnectRequest(byte[] hostBytes, short port) {
+    public static CmdRequest buildConnectRequest(byte[] hostBytes, int port) {
         CmdRequest cmdRequest = new CmdRequest();
         cmdRequest.setVersion(Socks5ProtocolConstants.VERSION);
         cmdRequest.setRequestSocks5Cmd(Socks5Cmd.CONNECT);
@@ -28,7 +28,7 @@ public class Socks5MessageUtil {
         return cmdRequest;
     }
 
-    public static ByteBuf buildConnectBuf(byte[] hostBytes, short port) {
+    public static ByteBuf buildConnectBuf(byte[] hostBytes, int port) {
         ByteBuf outputBuf = ByteBufAllocator.DEFAULT.buffer(5 + hostBytes.length + 2);
         //version
         outputBuf.writeByte(Socks5ProtocolConstants.VERSION);

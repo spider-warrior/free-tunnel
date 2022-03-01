@@ -17,7 +17,7 @@ public class CmdRequest {
     private byte rsv;
     private Socks5AddressType socks5AddressType;
     private byte[] targetAddress;
-    private short targetPort;
+    private int targetPort;
 
     public byte getVersion() {
         return version;
@@ -59,11 +59,11 @@ public class CmdRequest {
         this.targetAddress = targetAddress;
     }
 
-    public short getTargetPort() {
+    public int getTargetPort() {
         return targetPort;
     }
 
-    public void setTargetPort(short targetPort) {
+    public void setTargetPort(int targetPort) {
         this.targetPort = targetPort;
     }
 

@@ -38,11 +38,11 @@ public class HttpProxyServerViaSocks5Handler extends SimpleChannelInboundHandler
         String host = request.headers().get(HttpHeaderNames.HOST);
         String[] elements = host.split(":");
         String targetHost = elements[0];
-        short targetPort;
+        int targetPort;
         if(elements.length == 1) {
             targetPort = 80;
         } else {
-            targetPort= Short.parseShort(elements[1]);
+            targetPort= Integer.parseInt(elements[1]);
         }
         HttpVersion httpVersion = request.protocolVersion();
         if(httpMethod == HttpMethod.CONNECT) {
@@ -52,7 +52,7 @@ public class HttpProxyServerViaSocks5Handler extends SimpleChannelInboundHandler
         }
     }
 
-    private void buildHttpsProxy(ChannelHandlerContext ctx, String targetHost, short targetPort, HttpVersion httpVersion) {
+    private void buildHttpsProxy(ChannelHandlerContext ctx, String targetHost, int targetPort, HttpVersion httpVersion) {
         InetSocketAddress clientAddress = (InetSocketAddress)ctx.channel().remoteAddress();
         String clientName = NetProxyUtil.buildProxyConnectionName(clientAddress.getHostString(), clientAddress.getPort(), targetHost, targetPort);
         ProxyConnectionBuildResultListener proxyConnectionBuildResultListener = (status, remoteChannelHandlerContext) -> {
@@ -71,7 +71,7 @@ public class HttpProxyServerViaSocks5Handler extends SimpleChannelInboundHandler
         NetProxyUtil.startSocks5ProxyClient(ctx, proxyConnectionBuildResultListener, clientName, targetHost, targetPort, socks5ClientConfig);
     }
 
-    private void buildHttpProxy(ChannelHandlerContext ctx, String targetHost, short targetPort, HttpVersion httpVersion, FullHttpRequest request) {
+    private void buildHttpProxy(ChannelHandlerContext ctx, String targetHost, int targetPort, HttpVersion httpVersion, FullHttpRequest request) {
         InetSocketAddress clientAddress = (InetSocketAddress)ctx.channel().remoteAddress();
         String clientName = NetProxyUtil.buildProxyConnectionName(clientAddress.getHostString(), clientAddress.getPort(), targetHost, targetPort);
         FullHttpRequest proxiedRequest = request.retainedDuplicate();

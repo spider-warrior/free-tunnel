@@ -126,7 +126,7 @@ public class Socks5ServerMessageHandler extends ChannelInboundHandlerAdapter {
                 byte[] targetAddressBytes = getAddressBytes(byteBuf, socks5AddressType);
                 String targetHost = new String(targetAddressBytes);
                 //target port
-                short targetPort = byteBuf.readShort();
+                int targetPort = byteBuf.readChar();
 
                 InetSocketAddress clientAddress = (InetSocketAddress)ctx.channel().remoteAddress();
                 logger.info("[{}]: [{}], 命令类型: {}, 地址: {}:{}", clientAddress, cmdByte, addressTypeByte, targetHost, targetPort);
