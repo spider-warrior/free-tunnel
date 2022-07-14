@@ -39,7 +39,7 @@ public class InitializerBuilder {
         //http response encoder
         supplierList.add(HttpResponseEncoder::new);
         //http message aggregate
-        supplierList.add(() -> new HttpObjectAggregator(1024 * 1024));
+        supplierList.add(() -> new HttpObjectAggregator(1024 * 1024 * 4));
         //http proxy handler
         supplierList.add(HttpProxyServerHandler::new);
         daemonConfigBuilder.configHandler(supplierList);

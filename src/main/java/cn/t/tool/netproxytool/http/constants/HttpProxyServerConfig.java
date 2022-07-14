@@ -14,7 +14,7 @@ public class HttpProxyServerConfig {
 
     public static final int HTTP_PROXY_READ_TIME_OUT_IN_SECONDS = 0;
     public static final int HTTP_PROXY_WRITE_TIME_OUT_IN_SECONDS = 0;
-    public static final int HTTP_PROXY_ALL_IDLE_TIME_OUT_IN_SECONDS = 60;
+    public static final int HTTP_PROXY_ALL_IDLE_TIME_OUT_IN_SECONDS = 10;
 
     public static final LogLevel LOGGING_HANDLER_LOGGER_LEVEL = LogLevel.DEBUG;
 
