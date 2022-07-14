@@ -51,8 +51,6 @@ public class InitializerBuilder {
         DaemonConfigBuilder daemonConfigBuilder = DaemonConfigBuilder.newInstance();
         //logging
         daemonConfigBuilder.configLogLevel(HttpProxyServerClientConfig.LOGGING_HANDLER_LOGGER_LEVEL);
-        //idle
-        daemonConfigBuilder.configIdleHandler(HttpProxyServerClientConfig.HTTP_PROXY_READ_TIME_OUT_IN_SECONDS, HttpProxyServerClientConfig.HTTP_PROXY_WRITE_TIME_OUT_IN_SECONDS, HttpProxyServerClientConfig.HTTP_PROXY_ALL_IDLE_TIME_OUT_IN_SECONDS);
         //fetch message handler
         daemonConfigBuilder.configHandler(Collections.singletonList(() -> new FetchMessageHandler(remoteChannelHandlerContext, proxyConnectionBuildResultListener)));
         DaemonConfig daemonConfig = daemonConfigBuilder.build();
