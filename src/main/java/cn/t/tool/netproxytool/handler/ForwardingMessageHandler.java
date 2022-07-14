@@ -3,7 +3,9 @@ package cn.t.tool.netproxytool.handler;
 import cn.t.tool.netproxytool.exception.ProxyException;
 import cn.t.tool.netproxytool.util.NetProxyUtil;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelDuplexHandler;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
@@ -51,14 +53,14 @@ public class ForwardingMessageHandler extends ChannelDuplexHandler {
         if(this.getClass().equals(ForwardingMessageHandler.class)) {
             if(remoteOpen) {
                 log.info("[{} -> {}]: 断开连接, 释放代理资源", ctx.channel().remoteAddress(), ctx.channel().localAddress());
-                remoteChannelHandlerContext.close();
+                remoteChannelHandlerContext.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
             } else {
                 log.info("[{} -> {}]: 断开连接", ctx.channel().remoteAddress(), ctx.channel().localAddress());
             }
         } else {
             if(remoteOpen) {
                 log.info("[{} -> {}]: 断开连接, 关闭客户端连接", ctx.channel().localAddress(), ctx.channel().remoteAddress());
-                remoteChannelHandlerContext.close();
+                remoteChannelHandlerContext.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
             } else {
                 log.info("[{} -> {}]: 断开连接", ctx.channel().localAddress(), ctx.channel().remoteAddress());
             }
