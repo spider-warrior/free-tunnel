@@ -1,0 +1,4 @@
+free-tunnel-client /usr/bin
+clientConfig.json /etc/free-tunnel-client
+free-tunnel-client.jar /var/lib/free-tunnel-client
+libs /var/lib/free-tunnel-client

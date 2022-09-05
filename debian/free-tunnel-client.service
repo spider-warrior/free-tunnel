@@ -1,0 +1,28 @@
+#https://blog.csdn.net/seaship/article/details/108235858
+#https://blog.csdn.net/u013705128/article/details/82219425
+[Unit]
+#对该服务的一个简要说明
+Description=free-tunnel-client
+#定义启动顺序，例子：Before=nginx.service，表示该服务需要在nginx启动之前启动[Before|After]
+After=network.target
+
+[Service]
+#指定service的类型
+#oneshot：程序执行完成就自动结束了，没有后台进程，比如执行一个shell
+#forking：需要一个后台守护进程一直在运行，比如运行nginx、apache、sshd
+Type=forking
+#指定如何启动服务（指定启动服务要执行的命令）
+#如果服务类型是oneshot类型，那么可以直接写上他要执行命令即可，通常不能添加参数和选项
+#如果服务类型不是oneshot类型，那么在写要执行的命令的时候，可以添加一些参数，比如指定选项、配置文件、用户
+#【如果要执行多个命令，那么多个命令之间用;分割，如果需要换行可以用 \ 来续行】
+ExecStart=/usr/bin/free-tunnel-client
+#指定在执行启动服务之前、之后要执行什么命令
+#ExecStartPre, ExecStartPost=
+#ExecReload=/usr/local/nginx/sbin/nginx -s reload
+#停止服务
+ExecStop=ps -ef|grep -v grep|grep free-tunnel-client| awk '{print $2}'| xargs -r kill
+#设置是否使用私有的tmp目录,/tmp目录一般是所有用户和所有service都共享的，对于所有用户和service来说，都会有写和读的权限。把各个service的tmp目录隔离开的话，可以保证一定的安全性。
+PrivateTmp=true
+[Install]
+#指定运行级别
+WantedBy=multi-user.target

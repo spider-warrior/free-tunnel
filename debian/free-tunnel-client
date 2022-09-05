@@ -1,0 +1,2 @@
+#!/bin/bash
+nohup java -jar /var/lib/free-tunnel-client/free-tunnel-client.jar "$@" > /dev/null 2>&1 &

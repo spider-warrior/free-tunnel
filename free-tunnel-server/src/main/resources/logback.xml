@@ -1,0 +1,77 @@
+<configuration>
+    <property name="logHome" value="${user.home}/logs/tunnel-server"/>
+    <!--    <property name="pattern" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36}.%M \\(%line\\) - %msg%n"/>-->
+    <property name="pattern" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level - %msg%n"/>
+    <property name="defaultMaxFileSize" value="10MB"/>
+    <property name="defaultMaxHistory" value="10"/>
+    <property name="defaultCharset" value="UTF-8"/>
+
+    <appender name="ConsoleAppender" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${pattern}</pattern>
+            <charset>${defaultCharset}</charset>
+        </encoder>
+    </appender>
+    <appender name="DefaultAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <File>${logHome}/default.log</File>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <FileNamePattern>${logHome}/default.%d{yyyy-MM-dd}.%i.log</FileNamePattern>
+            <maxFileSize>${defaultMaxFileSize}</maxFileSize>
+            <maxHistory>${defaultMaxHistory}</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${pattern}</pattern>
+            <charset>${defaultCharset}</charset>
+        </encoder>
+    </appender>
+    <appender name="NettyEventLoggerAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <File>${logHome}/netty-event.log</File>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <FileNamePattern>${logHome}/netty-event.%d{yyyy-MM-dd}.%i.log</FileNamePattern>
+            <maxFileSize>${defaultMaxFileSize}</maxFileSize>
+            <maxHistory>${defaultMaxHistory}</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${pattern}</pattern>
+            <charset>${defaultCharset}</charset>
+        </encoder>
+    </appender>
+    <appender name="Socks5TraceLoggerAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <File>${logHome}/socks5-trace.log</File>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <FileNamePattern>${logHome}/socks5-trace.%d{yyyy-MM-dd}.%i.log</FileNamePattern>
+            <maxFileSize>${defaultMaxFileSize}</maxFileSize>
+            <maxHistory>${defaultMaxHistory}</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${pattern}</pattern>
+            <charset>${defaultCharset}</charset>
+        </encoder>
+    </appender>
+    <appender name="TunnelEventLoggerAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <File>${logHome}/tunnel-event.log</File>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <FileNamePattern>${logHome}/tunnel-event.%d{yyyy-MM-dd}.%i.log</FileNamePattern>
+            <!-- keep 10 days worth of history -->
+            <maxFileSize>${defaultMaxFileSize}</maxFileSize>
+            <maxHistory>${defaultMaxHistory}</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${pattern}</pattern>
+            <charset>${defaultCharset}</charset>
+        </encoder>
+    </appender>
+    <logger name="Socks5TraceLogger" level="INFO" additivity="false">
+        <appender-ref ref="Socks5TraceLoggerAppender"/>
+    </logger>
+    <logger name="NettyEventLogger" level="INFO" additivity="false">
+        <appender-ref ref="NettyEventLoggerAppender"/>
+    </logger>
+    <logger name="TunnelEventLogger" level="INFO" additivity="false">
+        <appender-ref ref="TunnelEventLoggerAppender"/>
+    </logger>
+    <root level="INFO">
+        <appender-ref ref="ConsoleAppender"/>
+        <appender-ref ref="DefaultAppender"/>
+    </root>
+</configuration>
