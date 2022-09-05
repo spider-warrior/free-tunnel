@@ -3,7 +3,7 @@ package cn.t.freetunnel.server.http.handler;
 import cn.t.freetunnel.common.constants.TunnelBuildResult;
 import cn.t.freetunnel.common.listener.TunnelBuildResultListener;
 import cn.t.freetunnel.common.util.TunnelUtil;
-import cn.t.freetunnel.server.http.listener.TunnelReadyListener;
+import cn.t.freetunnel.server.http.listener.HttpTunnelReadyListener;
 import cn.t.freetunnel.server.tunnelprovider.UnPooledTunnelProvider;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -52,7 +52,7 @@ public class HttpProxyServerMessageHandler extends SimpleChannelInboundHandler<F
         TunnelBuildResultListener tunnelBuildResultListener = (status, remoteChannelHandlerContext) -> {
             if(TunnelBuildResult.SUCCEEDED.value == status) {
                 ChannelPromise promise = ctx.newPromise();
-                promise.addListener(new TunnelReadyListener(ctx, remoteChannelHandlerContext, targetHost + ":" +targetPort));
+                promise.addListener(new HttpTunnelReadyListener(ctx, remoteChannelHandlerContext, targetHost + ":" +targetPort));
                 ctx.writeAndFlush(new DefaultFullHttpResponse(httpVersion, OK), promise);
             } else {
                 logger.error("[{}]: 代理客户端失败, remote: {}:{}", ctx.channel().remoteAddress(), targetHost, targetPort);
@@ -68,7 +68,7 @@ public class HttpProxyServerMessageHandler extends SimpleChannelInboundHandler<F
             if(TunnelBuildResult.SUCCEEDED.value == status) {
                 TunnelUtil.prepareProxiedRequest(proxiedRequest);
                 ChannelPromise promise = remoteChannelHandlerContext.newPromise();
-                promise.addListener(new TunnelReadyListener(ctx, remoteChannelHandlerContext, targetHost + ":" +targetPort));
+                promise.addListener(new HttpTunnelReadyListener(ctx, remoteChannelHandlerContext, targetHost + ":" +targetPort));
                 remoteChannelHandlerContext.channel().writeAndFlush(proxiedRequest, promise);
             } else {
                 ReferenceCountUtil.release(proxiedRequest);

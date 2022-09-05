@@ -1,6 +1,7 @@
 package cn.t.freetunnel.server.http.listener;
 
 import cn.t.freetunnel.common.handler.ForwardingMessageHandler;
+import cn.t.freetunnel.common.listener.TunnelReadyListener;
 import cn.t.freetunnel.server.http.handler.HttpProxyServerMessageHandler;
 import cn.t.tool.nettytool.util.NettyComponentUtil;
 import io.netty.channel.ChannelFuture;
@@ -16,7 +17,7 @@ import io.netty.handler.codec.http.HttpResponseEncoder;
  * @version V1.0
  * @since 2020-02-27 15:42
  **/
-public class TunnelReadyListener extends cn.t.freetunnel.common.listener.TunnelReadyListener {
+public class HttpTunnelReadyListener extends TunnelReadyListener {
 
     @Override
     protected void notifySuccess(ChannelFuture future) {
@@ -29,7 +30,7 @@ public class TunnelReadyListener extends cn.t.freetunnel.common.listener.TunnelR
         NettyComponentUtil.addLastHandler(pipeline, "proxy-forwarding-handler", new ForwardingMessageHandler(remoteChannelHandlerContext));
     }
 
-    public TunnelReadyListener(ChannelHandlerContext localChannelHandlerContext, ChannelHandlerContext remoteChannelHandlerContext, String host) {
+    public HttpTunnelReadyListener(ChannelHandlerContext localChannelHandlerContext, ChannelHandlerContext remoteChannelHandlerContext, String host) {
         super(localChannelHandlerContext, remoteChannelHandlerContext, host);
     }
 }
