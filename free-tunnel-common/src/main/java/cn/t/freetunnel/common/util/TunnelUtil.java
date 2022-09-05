@@ -45,6 +45,10 @@ public class TunnelUtil {
         }
     }
 
+    public static boolean isClosedByCallMethod(ChannelHandlerContext ctx) {
+        return ctx.channel().hasAttr(NettyAttrConstants.CLOSE_BY_CALL_METHOD);
+    }
+
     public static String buildProxyConnectionName(String clientHost, int clientPort, String targetHost, int targetPort) {
         return clientHost + ":" + clientPort + " -> " + targetHost + ":" + targetPort;
     }
