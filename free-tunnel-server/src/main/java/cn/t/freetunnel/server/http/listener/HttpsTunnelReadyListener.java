@@ -12,23 +12,25 @@ import io.netty.handler.codec.http.HttpRequestDecoder;
 import io.netty.handler.codec.http.HttpResponseEncoder;
 
 /**
- * http代理结果监听器
+ * https代理结果监听器
  * @author <a href="mailto:jian.yang@liby.ltd">野生程序员-杨建</a>
  * @version V1.0
  * @since 2020-02-27 15:42
  **/
-public class HttpTunnelReadyListener extends TunnelReadyListener {
+public class HttpsTunnelReadyListener extends TunnelReadyListener {
 
     @Override
     protected void notifySuccess(ChannelFuture future) {
         //已经通知客户端代理成功, 切换handler
         ChannelPipeline pipeline = localChannelHandlerContext.channel().pipeline();
         pipeline.remove(HttpResponseEncoder.class);
+        pipeline.remove(HttpRequestDecoder.class);
+        pipeline.remove(HttpObjectAggregator.class);
         pipeline.remove(HttpProxyServerMessageHandler.class);
         NettyComponentUtil.addLastHandler(pipeline, "proxy-forwarding-handler", new ForwardingMessageHandler(remoteChannelHandlerContext));
     }
 
-    public HttpTunnelReadyListener(ChannelHandlerContext localChannelHandlerContext, ChannelHandlerContext remoteChannelHandlerContext, String host) {
+    public HttpsTunnelReadyListener(ChannelHandlerContext localChannelHandlerContext, ChannelHandlerContext remoteChannelHandlerContext, String host) {
         super(localChannelHandlerContext, remoteChannelHandlerContext, host);
     }
 }
