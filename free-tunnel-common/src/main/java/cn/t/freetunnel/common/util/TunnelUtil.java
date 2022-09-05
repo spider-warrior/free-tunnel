@@ -14,26 +14,28 @@ import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 
 /**
+ * TunnelUtil
+ *
  * @author <a href="mailto:yangjian@liby.ltd">研发部-杨建</a>
  * @version V1.0
  * @since 2021-06-23 21:45
  **/
 public class TunnelUtil {
 
-    public static void closeByRemoteGracefully(ChannelHandlerContext ctx) {
+    public static void closeGracefully(ChannelHandlerContext ctx) {
         if(ctx.channel().isOpen()) {
-            ctx.channel().attr(NettyAttrConstants.CLOSE_BY_REMOTE).set(true);
+            ctx.channel().attr(NettyAttrConstants.CLOSE_BY_CALL_METHOD).set(true);
             ctx.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
         }
     }
 
-    public static void closeByRemoteImmediately(ChannelHandlerContext ctx) {
-        closeByRemoteImmediately(ctx, null);
+    public static void closeImmediately(ChannelHandlerContext ctx) {
+        closeImmediately(ctx, null);
     }
 
-    public static void closeByRemoteImmediately(ChannelHandlerContext ctx, GenericFutureListener<? extends Future<? super Void>> listener) {
+    public static void closeImmediately(ChannelHandlerContext ctx, GenericFutureListener<? extends Future<? super Void>> listener) {
         if(ctx.channel().isOpen()) {
-            ctx.channel().attr(NettyAttrConstants.CLOSE_BY_REMOTE).set(true);
+            ctx.channel().attr(NettyAttrConstants.CLOSE_BY_CALL_METHOD).set(true);
             if(listener == null) {
                 ctx.close();
             } else {

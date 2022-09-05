@@ -13,7 +13,7 @@ import io.netty.util.concurrent.EventExecutor;
  * @since 2022-03-11 19:16
  **/
 public class NettyAttrConstants {
-    public static final AttributeKey<Boolean> CLOSE_BY_REMOTE = AttributeKey.newInstance("closedByRemote");
+    public static final AttributeKey<Boolean> CLOSE_BY_CALL_METHOD = AttributeKey.newInstance("closedByCallMethod");
     public static final AttributeKey<EventExecutor> EVENT_EXECUTOR = AttributeKey.newInstance("eventExecutor");
     public static final AttributeKey<String> CONNECT_USERNAME = AttributeKey.newInstance("connectUsername");
     public static final AttributeKey<String> CONNECT_PASSWORD = AttributeKey.newInstance("connectPassword");

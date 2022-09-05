@@ -15,7 +15,7 @@ public class Socks5TunnelServerFetchHandler extends FetchMessageHandler {
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
-        if(ctx.channel().hasAttr(NettyAttrConstants.CLOSE_BY_REMOTE)) {
+        if(ctx.channel().hasAttr(NettyAttrConstants.CLOSE_BY_CALL_METHOD)) {
             log.info("[{} -> {}]: 断开连接", ctx.channel().localAddress(), ctx.channel().remoteAddress());
         } else {
             if(remoteChannelHandlerContext.channel().isOpen()) {

@@ -37,7 +37,7 @@ public abstract class TunnelReadyListener implements ChannelFutureListener {
                     notifyFailed(localContextToUse, future);
                 } else {
                     logger.error("{}[{}]: 代理连接失败: {}, 本地连接状态: {}, 远端连接状态: {}， 即将释放连接: {}", TunnelUtil.buildProxyTunnelName(localChannelHandlerContext, remoteChannelHandlerContext), this.getClass().getSimpleName(), host, localChannelHandlerContext.channel().isOpen(), remoteChannelHandlerContext.channel().isOpen(), localContextToUse.channel());
-                    TunnelUtil.closeByRemoteImmediately(localContextToUse);
+                    TunnelUtil.closeImmediately(localContextToUse);
                 }
             }
         } else {
@@ -51,7 +51,7 @@ public abstract class TunnelReadyListener implements ChannelFutureListener {
 
     protected void notifyFailed(ChannelHandlerContext ctx, ChannelFuture future) {
         logger.error("{}[{}]: 代理结果通知失败: {}, 即将关闭远程连接, 失败原因: {}", TunnelUtil.buildProxyTunnelName(localChannelHandlerContext, remoteChannelHandlerContext), this.getClass().getSimpleName(), host, future.cause());
-        TunnelUtil.closeByRemoteImmediately(ctx);
+        TunnelUtil.closeImmediately(ctx);
     }
 
     public TunnelReadyListener(ChannelHandlerContext localChannelHandlerContext, ChannelHandlerContext remoteChannelHandlerContext, String host) {

@@ -20,7 +20,7 @@ public class HttpSocks5TunnelClientForwardingHandler extends ForwardingMessageHa
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
-        if(ctx.channel().hasAttr(NettyAttrConstants.CLOSE_BY_REMOTE)) {
+        if(ctx.channel().hasAttr(NettyAttrConstants.CLOSE_BY_CALL_METHOD)) {
             log.info("[{} -> {}]: 断开连接", ctx.channel().remoteAddress(), ctx.channel().localAddress());
         } else {
             if(remoteChannelHandlerContext.channel().isOpen()) {
