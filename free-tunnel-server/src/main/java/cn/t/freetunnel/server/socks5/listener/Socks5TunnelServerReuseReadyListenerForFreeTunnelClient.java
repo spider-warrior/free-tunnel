@@ -26,7 +26,7 @@ public class Socks5TunnelServerReuseReadyListenerForFreeTunnelClient extends Tun
         NettyComponentUtil.addLastHandler(channelPipeline, "socks5ProxyServerMessageHandler", socks5TunnelServerMessageHandler);
     }
 
-    public Socks5TunnelServerReuseReadyListenerForFreeTunnelClient(ChannelHandlerContext localChannelHandlerContext, ChannelHandlerContext remoteChannelHandlerContext, String host) {
-        super(localChannelHandlerContext, remoteChannelHandlerContext, host);
+    public Socks5TunnelServerReuseReadyListenerForFreeTunnelClient(ChannelHandlerContext localChannelHandlerContext, ChannelHandlerContext remoteChannelHandlerContext, String host, int port) {
+        super(localChannelHandlerContext, remoteChannelHandlerContext, host, port);
     }
 }

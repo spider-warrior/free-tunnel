@@ -14,6 +14,7 @@ public abstract class TunnelReadyListener implements ChannelFutureListener {
     protected final ChannelHandlerContext localChannelHandlerContext;
     protected final ChannelHandlerContext remoteChannelHandlerContext;
     protected final String host;
+    protected final int port;
 
     @Override
     public void operationComplete(ChannelFuture future) {
@@ -36,7 +37,7 @@ public abstract class TunnelReadyListener implements ChannelFutureListener {
                 if(remoteContextToUse == localChannelHandlerContext) {
                     notifyFailed(localContextToUse, future);
                 } else {
-                    logger.error("{}[{}]: 代理连接失败: {}, 本地连接状态: {}, 远端连接状态: {}， 即将释放连接: {}", TunnelUtil.buildProxyTunnelName(localChannelHandlerContext, remoteChannelHandlerContext), this.getClass().getSimpleName(), host, localChannelHandlerContext.channel().isOpen(), remoteChannelHandlerContext.channel().isOpen(), localContextToUse.channel());
+                    logger.error("{}[{}]: 代理连接失败: {}:{}, 本地连接状态: {}, 远端连接状态: {}， 即将释放连接: {}", TunnelUtil.buildProxyTunnelName(localChannelHandlerContext, remoteChannelHandlerContext), this.getClass().getSimpleName(), host, port, localChannelHandlerContext.channel().isOpen(), remoteChannelHandlerContext.channel().isOpen(), localContextToUse.channel());
                     TunnelUtil.closeImmediately(localContextToUse);
                 }
             }
@@ -50,13 +51,14 @@ public abstract class TunnelReadyListener implements ChannelFutureListener {
 
 
     protected void notifyFailed(ChannelHandlerContext ctx, ChannelFuture future) {
-        logger.error("{}[{}]: 代理结果通知失败: {}, 即将关闭远程连接, 失败原因: {}", TunnelUtil.buildProxyTunnelName(localChannelHandlerContext, remoteChannelHandlerContext), this.getClass().getSimpleName(), host, future.cause());
+        logger.error("{}[{}]: 代理结果通知失败: {}:{}, 即将关闭远程连接, 失败原因: {}", TunnelUtil.buildProxyTunnelName(localChannelHandlerContext, remoteChannelHandlerContext), this.getClass().getSimpleName(), host, port, future.cause());
         TunnelUtil.closeImmediately(ctx);
     }
 
-    public TunnelReadyListener(ChannelHandlerContext localChannelHandlerContext, ChannelHandlerContext remoteChannelHandlerContext, String host) {
+    public TunnelReadyListener(ChannelHandlerContext localChannelHandlerContext, ChannelHandlerContext remoteChannelHandlerContext, String host, int port) {
         this.localChannelHandlerContext = localChannelHandlerContext;
         this.remoteChannelHandlerContext = remoteChannelHandlerContext;
         this.host = host;
+        this.port = port;
     }
 }

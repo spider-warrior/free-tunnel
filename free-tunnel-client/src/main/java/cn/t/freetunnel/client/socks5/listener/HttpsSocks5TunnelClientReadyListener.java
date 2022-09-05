@@ -26,10 +26,10 @@ public class HttpsSocks5TunnelClientReadyListener extends Socks5TunnelClientRead
         channelPipeline.remove(HttpRequestDecoder.class);
         channelPipeline.remove(HttpResponseEncoder.class);
         channelPipeline.remove(HttpObjectAggregator.class);
-        NettyComponentUtil.addLastHandler(channelPipeline, "proxy-forwarding-handler", new HttpSocks5TunnelClientForwardingHandler(remoteChannelHandlerContext));
+        NettyComponentUtil.addLastHandler(channelPipeline, "https-socks5-client-forwarding-handler", new HttpSocks5TunnelClientForwardingHandler(remoteChannelHandlerContext));
     }
 
-    public HttpsSocks5TunnelClientReadyListener(ChannelHandlerContext localChannelHandlerContext, ChannelHandlerContext remoteChannelHandlerContext, String host) {
-        super(localChannelHandlerContext, remoteChannelHandlerContext, host);
+    public HttpsSocks5TunnelClientReadyListener(ChannelHandlerContext localChannelHandlerContext, ChannelHandlerContext remoteChannelHandlerContext, String host, int port) {
+        super(localChannelHandlerContext, remoteChannelHandlerContext, host, port);
     }
 }

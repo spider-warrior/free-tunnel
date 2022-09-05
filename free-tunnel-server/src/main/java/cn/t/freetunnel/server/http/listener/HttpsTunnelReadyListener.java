@@ -30,7 +30,7 @@ public class HttpsTunnelReadyListener extends TunnelReadyListener {
         NettyComponentUtil.addLastHandler(pipeline, "proxy-forwarding-handler", new ForwardingMessageHandler(remoteChannelHandlerContext));
     }
 
-    public HttpsTunnelReadyListener(ChannelHandlerContext localChannelHandlerContext, ChannelHandlerContext remoteChannelHandlerContext, String host) {
-        super(localChannelHandlerContext, remoteChannelHandlerContext, host);
+    public HttpsTunnelReadyListener(ChannelHandlerContext localChannelHandlerContext, ChannelHandlerContext remoteChannelHandlerContext, String host, int port) {
+        super(localChannelHandlerContext, remoteChannelHandlerContext, host, port);
     }
 }

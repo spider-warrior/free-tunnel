@@ -21,7 +21,7 @@ public class Socks5TunnelServerFirstTimeReadyListener extends TunnelReadyListene
         NettyComponentUtil.addLastHandler(channelPipeline, "socks5ProxyServerMessageHandler", socks5TunnelServerMessageHandler);
     }
 
-    public Socks5TunnelServerFirstTimeReadyListener(ChannelHandlerContext localChannelHandlerContext, ChannelHandlerContext remoteChannelHandlerContext, String host) {
-        super(localChannelHandlerContext, remoteChannelHandlerContext, host);
+    public Socks5TunnelServerFirstTimeReadyListener(ChannelHandlerContext localChannelHandlerContext, ChannelHandlerContext remoteChannelHandlerContext, String host, int port) {
+        super(localChannelHandlerContext, remoteChannelHandlerContext, host, port);
     }
 }

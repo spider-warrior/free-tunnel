@@ -17,12 +17,12 @@ public abstract class Socks5TunnelClientReadyListener extends TunnelReadyListene
     @Override
     protected void notifyFailed(ChannelHandlerContext ctx, ChannelFuture future) {
         if(remoteChannelHandlerContext.channel().isOpen()) {
-            logger.error("{}[{}]: 代理结果通知失败: {}, 复位远程连接, 失败原因: {}", TunnelUtil.buildProxyTunnelName(localChannelHandlerContext, remoteChannelHandlerContext), this.getClass().getSimpleName(), host, future.cause());
+            logger.error("{}[{}]: 代理结果通知失败: {}:{}, 复位远程连接, 失败原因: {}", TunnelUtil.buildProxyTunnelName(localChannelHandlerContext, remoteChannelHandlerContext), this.getClass().getSimpleName(), host, port, future.cause());
             remoteChannelHandlerContext.channel().writeAndFlush(TunnelCommand.RESET_STATUS_TO_COMMAND_REQUEST);
         }
     }
 
-    public Socks5TunnelClientReadyListener(ChannelHandlerContext localChannelHandlerContext, ChannelHandlerContext remoteChannelHandlerContext, String host) {
-        super(localChannelHandlerContext, remoteChannelHandlerContext, host);
+    public Socks5TunnelClientReadyListener(ChannelHandlerContext localChannelHandlerContext, ChannelHandlerContext remoteChannelHandlerContext, String host, int port) {
+        super(localChannelHandlerContext, remoteChannelHandlerContext, host, port);
     }
 }

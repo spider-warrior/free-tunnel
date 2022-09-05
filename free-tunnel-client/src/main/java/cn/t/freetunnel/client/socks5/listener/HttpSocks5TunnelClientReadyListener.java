@@ -23,10 +23,10 @@ public class HttpSocks5TunnelClientReadyListener extends Socks5TunnelClientReady
         pipeline.remove(HttpSocks5TunnelClientHandler.class);
         //http请求每次都需要修改header(connection), uri路径，所以不移除HttpRequestDecoder, HttpObjectAggregator
         pipeline.remove(HttpResponseEncoder.class);
-        NettyComponentUtil.addLastHandler(pipeline, "proxy-forwarding-handler", new HttpSocks5TunnelClientForwardingHandler(remoteChannelHandlerContext));
+        NettyComponentUtil.addLastHandler(pipeline, "http-socks5-client-forwarding-handler", new HttpSocks5TunnelClientForwardingHandler(remoteChannelHandlerContext));
     }
 
-    public HttpSocks5TunnelClientReadyListener(ChannelHandlerContext localChannelHandlerContext, ChannelHandlerContext remoteChannelHandlerContext, String host) {
-        super(localChannelHandlerContext, remoteChannelHandlerContext, host);
+    public HttpSocks5TunnelClientReadyListener(ChannelHandlerContext localChannelHandlerContext, ChannelHandlerContext remoteChannelHandlerContext, String host, int port) {
+        super(localChannelHandlerContext, remoteChannelHandlerContext, host, port);
     }
 }

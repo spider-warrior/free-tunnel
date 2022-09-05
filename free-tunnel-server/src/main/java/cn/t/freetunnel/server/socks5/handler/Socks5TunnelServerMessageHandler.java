@@ -163,7 +163,8 @@ public class Socks5TunnelServerMessageHandler extends SimpleChannelInboundHandle
                                     promise.addListener(new Socks5TunnelServerFirstTimeReadyListenerForFreeTunnelClient(
                                         ctx,
                                         remoteChannelHandlerContext,
-                                        targetHost + ":" + targetPort,
+                                        targetHost,
+                                        targetPort,
                                         security
                                     ));
 
@@ -171,7 +172,8 @@ public class Socks5TunnelServerMessageHandler extends SimpleChannelInboundHandle
                                     promise.addListener(new Socks5TunnelServerFirstTimeReadyListener(
                                         ctx,
                                         remoteChannelHandlerContext,
-                                        targetHost + ":" + targetPort
+                                        targetHost,
+                                        targetPort
                                     ));
                                 }
                             } else {
@@ -180,13 +182,15 @@ public class Socks5TunnelServerMessageHandler extends SimpleChannelInboundHandle
                                     promise.addListener(new Socks5TunnelServerReuseReadyListenerForFreeTunnelClient(
                                         ctx,
                                         remoteChannelHandlerContext,
-                                        targetHost + ":" + targetPort
+                                        targetHost,
+                                        targetPort
                                     ));
                                 } else {
                                     promise.addListener(new Socks5TunnelServerReuseReadyListener(
                                         ctx,
                                         remoteChannelHandlerContext,
-                                        targetHost + ":" + targetPort
+                                        targetHost,
+                                        targetPort
                                     ));
                                 }
                             }

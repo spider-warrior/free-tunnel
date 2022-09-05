@@ -60,7 +60,7 @@ public class HttpSocks5TunnelClientHandler extends SimpleChannelInboundHandler<F
         TunnelBuildResultListener tunnelBuildResultListener = (status, remoteChannelHandlerContext) -> {
             if(TunnelBuildResult.SUCCEEDED.value == status) {
                 ChannelPromise promise = ctx.newPromise();
-                promise.addListener(new HttpsSocks5TunnelClientReadyListener(ctx, remoteChannelHandlerContext, targetHost + ":" + targetPort));
+                promise.addListener(new HttpsSocks5TunnelClientReadyListener(ctx, remoteChannelHandlerContext, targetHost, targetPort));
                 ctx.writeAndFlush(new DefaultFullHttpResponse(httpVersion, OK), promise);
             } else {
                 logger.error("[{}]: 代理客户端失败, remote: {}:{}", remoteAddress, targetHost, targetPort);
@@ -77,7 +77,7 @@ public class HttpSocks5TunnelClientHandler extends SimpleChannelInboundHandler<F
         TunnelBuildResultListener tunnelBuildResultListener = (status, remoteChannelHandlerContext) -> {
             if(TunnelBuildResult.SUCCEEDED.value == status) {
                 ChannelPromise promise = remoteChannelHandlerContext.newPromise();
-                promise.addListener(new HttpSocks5TunnelClientReadyListener(ctx, remoteChannelHandlerContext, targetHost + ":" + targetPort));
+                promise.addListener(new HttpSocks5TunnelClientReadyListener(ctx, remoteChannelHandlerContext, targetHost, targetPort));
                 ByteBuf buf = TunnelUtil.httpRequestToByteBuf(ctx.alloc(), proxiedRequest);
                 remoteChannelHandlerContext.channel().writeAndFlush(buf, promise);
             } else {
