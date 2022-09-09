@@ -7,7 +7,6 @@ import cn.t.freetunnel.common.handler.EncryptMessageDecoder;
 import cn.t.freetunnel.common.handler.EncryptMessageEncoder;
 import cn.t.freetunnel.common.handler.LayerMessageDecoder;
 import cn.t.freetunnel.common.handler.LayerMessageEncoder;
-import cn.t.freetunnel.common.util.Socks5TraceUtil;
 import cn.t.tool.nettytool.util.NettyComponentUtil;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandler;
@@ -35,7 +34,6 @@ public class Socks5TunnelClientMessageHandler extends SimpleChannelInboundHandle
     @Override
     public void channelRead0(ChannelHandlerContext ctx, ByteBuf byteBuf) throws Exception {
         if(Socks5ServerState.NEGOTIATE == state) {
-            Socks5TraceUtil.recordNegotiateReceiveTime(ctx.channel());
             //解析协商响应要素
             byte version = byteBuf.readByte();
             byte methodByte = byteBuf.readByte();
@@ -49,7 +47,6 @@ public class Socks5TunnelClientMessageHandler extends SimpleChannelInboundHandle
                 ByteBuf outputBuf = Socks5MessageUtil.buildConnectBuf(ctx.alloc(), ctx.channel().attr(NettyAttrConstants.CONNECT_TARGET_HOST).get(), ctx.channel().attr(NettyAttrConstants.CONNECT_TARGET_PORT).get());
                 ctx.writeAndFlush(outputBuf);
                 state = Socks5ServerState.CMD;
-                Socks5TraceUtil.recordCommandSendTime(ctx.channel());
                 //用户名密码认证
             } else if(Socks5Method.USERNAME_PASSWORD == socks5Method) {
                 String username = ctx.channel().attr(NettyAttrConstants.CONNECT_USERNAME).get();
@@ -60,12 +57,10 @@ public class Socks5TunnelClientMessageHandler extends SimpleChannelInboundHandle
                 ByteBuf outputBuf = Socks5MessageUtil.buildUsernamePasswordAuthenticationBuf(ctx.alloc(), username.getBytes(), password.getBytes());
                 ctx.writeAndFlush(outputBuf);
                 state = Socks5ServerState.AUTHENTICATE;
-                Socks5TraceUtil.recordAuthenticationSendTime(ctx.channel());
             } else {
                 throw new TunnelException("客户端未实现的方法处理: " + socks5Method);
             }
         } else if(Socks5ServerState.AUTHENTICATE == state) {
-            Socks5TraceUtil.recordAuthenticationReceiveTime(ctx.channel());
             //解析鉴权响应要素
             byte version = byteBuf.readByte();
             byte status = byteBuf.readByte();
@@ -75,12 +70,10 @@ public class Socks5TunnelClientMessageHandler extends SimpleChannelInboundHandle
                 ByteBuf outputBuf = Socks5MessageUtil.buildConnectBuf(ctx.alloc(), ctx.channel().attr(NettyAttrConstants.CONNECT_TARGET_HOST).get(), ctx.channel().attr(NettyAttrConstants.CONNECT_TARGET_PORT).get());
                 ctx.writeAndFlush(outputBuf);
                 state = Socks5ServerState.CMD;
-                Socks5TraceUtil.recordCommandSendTime(ctx.channel());
             } else {
                 throw new TunnelException("鉴权失败");
             }
         } else if(Socks5ServerState.CMD == state) {
-            Socks5TraceUtil.recordCommandReceiveTime(ctx.channel());
             //解析命令响应要素
             //version
             byte version = byteBuf.readByte();
@@ -109,7 +102,6 @@ public class Socks5TunnelClientMessageHandler extends SimpleChannelInboundHandle
                 port);
             //处理命令响应
             if(Socks5CmdExecutionStatus.SUCCEEDED.value == status) {
-                Socks5TraceUtil.connectionComplete(remoteChannelHandlerContext.channel(), ctx.channel(), true);
                 ChannelPipeline channelPipeline = ctx.channel().pipeline();
                 Socks5TunnelClientForwardingHandler forwardingMessageHandler = (Socks5TunnelClientForwardingHandler)channelPipeline.get(NettyHandlerName.SOCKS5_TUNNEL_CLIENT_FORWARDING_MESSAGE_HANDLER);
                 if(forwardingMessageHandler == null) {
@@ -139,7 +131,6 @@ public class Socks5TunnelClientMessageHandler extends SimpleChannelInboundHandle
                 }
                 ctx.channel().attr(NettyAttrConstants.CONNECT_TUNNEL_BUILD_RESULT_LISTENER).get().handle(TunnelBuildResult.SUCCEEDED.value, ctx);
             } else {
-                Socks5TraceUtil.connectionComplete(remoteChannelHandlerContext.channel(), ctx.channel(), false);
                 ctx.channel().attr(NettyAttrConstants.CONNECT_TUNNEL_BUILD_RESULT_LISTENER).get().handle(TunnelBuildResult.FAILED.value, ctx);
             }
         } else {
@@ -159,6 +150,5 @@ public class Socks5TunnelClientMessageHandler extends SimpleChannelInboundHandle
             outputBuf.writeByte(Socks5Method.NO_AUTHENTICATION_REQUIRED.rangeStart);
         }
         ctx.writeAndFlush(outputBuf);
-        Socks5TraceUtil.recordNegotiateSendTime(ctx.channel());
     }
 }

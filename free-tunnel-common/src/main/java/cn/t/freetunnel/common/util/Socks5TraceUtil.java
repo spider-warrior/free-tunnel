@@ -16,25 +16,25 @@ import org.slf4j.LoggerFactory;
 public class Socks5TraceUtil {
     private static final Logger socks5TraceLogger = LoggerFactory.getLogger(Socks5TraceConstants.SOCKS5_TRACE_LOG_NAME);
 
-    public static void recordNegotiateSendTime(Channel channel) {
+    private static void recordNegotiateSendTime(Channel channel) {
         channel.attr(Socks5TraceConstants.NEGOTIATE_SEND_TIME_KEY).set(System.currentTimeMillis());
     }
-    public static void recordNegotiateReceiveTime(Channel channel) {
+    private static void recordNegotiateReceiveTime(Channel channel) {
         channel.attr(Socks5TraceConstants.NEGOTIATE_RECEIVE_TIME_KEY).set(System.currentTimeMillis());
     }
-    public static void recordAuthenticationSendTime(Channel channel) {
+    private static void recordAuthenticationSendTime(Channel channel) {
         channel.attr(Socks5TraceConstants.AUTHENTICATION_SEND_TIME_KEY).set(System.currentTimeMillis());
     }
-    public static void recordAuthenticationReceiveTime(Channel channel) {
+    private static void recordAuthenticationReceiveTime(Channel channel) {
         channel.attr(Socks5TraceConstants.AUTHENTICATION_RECEIVE_TIME_KEY).set(System.currentTimeMillis());
     }
-    public static void recordCommandSendTime(Channel channel) {
+    private static void recordCommandSendTime(Channel channel) {
         channel.attr(Socks5TraceConstants.COMMAND_SEND_TIME_KEY).set(System.currentTimeMillis());
     }
-    public static void recordCommandReceiveTime(Channel channel) {
+    private static void recordCommandReceiveTime(Channel channel) {
         channel.attr(Socks5TraceConstants.COMMAND_RECEIVE_TIME_KEY).set(System.currentTimeMillis());
     }
-    public static void connectionComplete(Channel remoteChannel, Channel localChannel, boolean success) {
+    private static void connectionComplete(Channel remoteChannel, Channel localChannel, boolean success) {
         String status = success ? "成功" : "失败";
         Long negotiateSendTime = localChannel.attr(Socks5TraceConstants.NEGOTIATE_SEND_TIME_KEY).get();
         Long negotiateReceiveTime = localChannel.attr(Socks5TraceConstants.NEGOTIATE_RECEIVE_TIME_KEY).get();
