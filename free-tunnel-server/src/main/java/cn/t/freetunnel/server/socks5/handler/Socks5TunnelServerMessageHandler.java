@@ -199,7 +199,7 @@ public class Socks5TunnelServerMessageHandler extends SimpleChannelInboundHandle
                         } else {
                             logger.error("[{}]: 代理客户端失败, remote: {}:{}", ctx.channel().remoteAddress(), targetHost, targetPort);
                             ByteBuf responseBuf = Socks5MessageUtil.buildConnectResponse(ctx.alloc(), version, Socks5CmdExecutionStatus.GENERAL_SOCKS_SERVER_FAILURE.value, Socks5AddressType.IPV4.value, Socks5TunnelServerConfig.SERVER_HOST_BYTES, Socks5TunnelServerConfig.SERVER_PORT);
-                            ctx.writeAndFlush(responseBuf).addListener(ChannelFutureListener.CLOSE);
+                            ctx.writeAndFlush(responseBuf);
                         }
                     };
                     if(freeTunnelClient) {

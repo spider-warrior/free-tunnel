@@ -1,5 +1,6 @@
 package cn.t.freetunnel.client.socks5.handler;
 
+import cn.t.freetunnel.client.socks5.tunnelprovider.PooledTunnelProvider;
 import cn.t.freetunnel.client.socks5.util.Socks5MessageUtil;
 import cn.t.freetunnel.common.constants.*;
 import cn.t.freetunnel.common.exception.TunnelException;
@@ -66,12 +67,12 @@ public class Socks5TunnelClientMessageHandler extends SimpleChannelInboundHandle
             byte status = byteBuf.readByte();
             logger.info("[{} -> {}]鉴权结果: version: {}, status: {}({})", ctx.channel().localAddress(), ctx.channel().remoteAddress(), version, status, Socks5CmdExecutionStatus.getSocks5CmdExecutionStatus(status));
             //处理鉴权结果
-            if(Socks5CmdExecutionStatus.SUCCEEDED.value == status) {
+            if(AuthenticationStatus.SUCCESS.value == status) {
                 ByteBuf outputBuf = Socks5MessageUtil.buildConnectBuf(ctx.alloc(), ctx.channel().attr(NettyAttrConstants.CONNECT_TARGET_HOST).get(), ctx.channel().attr(NettyAttrConstants.CONNECT_TARGET_PORT).get());
                 ctx.writeAndFlush(outputBuf);
                 state = Socks5ServerState.CMD;
             } else {
-                throw new TunnelException("鉴权失败");
+                throw new TunnelException("鉴权失败: " + status);
             }
         } else if(Socks5ServerState.CMD == state) {
             //解析命令响应要素
@@ -131,7 +132,8 @@ public class Socks5TunnelClientMessageHandler extends SimpleChannelInboundHandle
                 }
                 ctx.channel().attr(NettyAttrConstants.CONNECT_TUNNEL_BUILD_RESULT_LISTENER).get().handle(TunnelBuildResult.SUCCEEDED.value, ctx);
             } else {
-                ctx.channel().attr(NettyAttrConstants.CONNECT_TUNNEL_BUILD_RESULT_LISTENER).get().handle(TunnelBuildResult.FAILED.value, ctx);
+                ctx.channel().attr(NettyAttrConstants.CONNECT_TUNNEL_BUILD_RESULT_LISTENER).get().handle(TunnelBuildResult.FAILED.value, null);
+                PooledTunnelProvider.closeTunnel(ctx);
             }
         } else {
             throw new TunnelException("未实现的状态处理: " + state);
