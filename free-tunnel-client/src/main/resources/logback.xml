@@ -24,30 +24,6 @@
             <charset>${defaultCharset}</charset>
         </encoder>
     </appender>
-    <appender name="NettyEventLoggerAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <File>${logHome}/netty-event.log</File>
-        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <FileNamePattern>${logHome}/netty-event.%d{yyyy-MM-dd}.%i.log</FileNamePattern>
-            <maxFileSize>${defaultMaxFileSize}</maxFileSize>
-            <maxHistory>${defaultMaxHistory}</maxHistory>
-        </rollingPolicy>
-        <encoder>
-            <pattern>${pattern}</pattern>
-            <charset>${defaultCharset}</charset>
-        </encoder>
-    </appender>
-    <appender name="Socks5TraceLoggerAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <File>${logHome}/socks5-trace.log</File>
-        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <FileNamePattern>${logHome}/socks5-trace.%d{yyyy-MM-dd}.%i.log</FileNamePattern>
-            <maxFileSize>${defaultMaxFileSize}</maxFileSize>
-            <maxHistory>${defaultMaxHistory}</maxHistory>
-        </rollingPolicy>
-        <encoder>
-            <pattern>${pattern}</pattern>
-            <charset>${defaultCharset}</charset>
-        </encoder>
-    </appender>
     <appender name="TunnelEventLoggerAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <File>${logHome}/tunnel-event.log</File>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
@@ -61,12 +37,6 @@
             <charset>${defaultCharset}</charset>
         </encoder>
     </appender>
-    <logger name="Socks5TraceLogger" level="INFO" additivity="false">
-        <appender-ref ref="Socks5TraceLoggerAppender"/>
-    </logger>
-    <logger name="NettyEventLogger" level="INFO" additivity="false">
-        <appender-ref ref="NettyEventLoggerAppender"/>
-    </logger>
     <logger name="TunnelEventLogger" level="INFO" additivity="false">
         <appender-ref ref="TunnelEventLoggerAppender"/>
     </logger>
