@@ -153,7 +153,7 @@ public class Socks5TunnelServerMessageHandler extends SimpleChannelInboundHandle
                 logger.info("[{}]命令类型: {}, 地址: {}:{}", ctx.channel(), socks5Cmd, targetHost, targetPort);
                 //2.处理CMD消息
                 if(Socks5Cmd.CONNECT == socks5Cmd) {
-                    TunnelBuildResultListener tunnelBuildResultListener = (status, remoteChannelHandlerContext) -> {
+                    TunnelBuildResultListener tunnelBuildResultListener = (status, channel) -> {
                         if(TunnelBuildResult.SUCCEEDED.value == status) {
                             ChannelPromise promise = ctx.newPromise();
                             boolean firstTime = ctx.pipeline().get(NettyHandlerName.SOCKS5_TUNNEL_SERVER_FORWARDING_MESSAGE_HANDLER) == null;
@@ -161,8 +161,8 @@ public class Socks5TunnelServerMessageHandler extends SimpleChannelInboundHandle
                             if(firstTime) {
                                 if(freeTunnelClient) {
                                     promise.addListener(new Socks5TunnelServerFirstTimeReadyListenerForFreeTunnelClient(
-                                        ctx,
-                                        remoteChannelHandlerContext,
+                                        ctx.channel(),
+                                        channel,
                                         targetHost,
                                         targetPort,
                                         security
@@ -170,8 +170,8 @@ public class Socks5TunnelServerMessageHandler extends SimpleChannelInboundHandle
 
                                 } else {
                                     promise.addListener(new Socks5TunnelServerFirstTimeReadyListener(
-                                        ctx,
-                                        remoteChannelHandlerContext,
+                                        ctx.channel(),
+                                        channel,
                                         targetHost,
                                         targetPort
                                     ));
@@ -180,15 +180,15 @@ public class Socks5TunnelServerMessageHandler extends SimpleChannelInboundHandle
                                 //复用连接
                                 if(freeTunnelClient) {
                                     promise.addListener(new Socks5TunnelServerReuseReadyListenerForFreeTunnelClient(
-                                        ctx,
-                                        remoteChannelHandlerContext,
+                                        ctx.channel(),
+                                        channel,
                                         targetHost,
                                         targetPort
                                     ));
                                 } else {
                                     promise.addListener(new Socks5TunnelServerReuseReadyListener(
-                                        ctx,
-                                        remoteChannelHandlerContext,
+                                        ctx.channel(),
+                                        channel,
                                         targetHost,
                                         targetPort
                                     ));
@@ -203,9 +203,9 @@ public class Socks5TunnelServerMessageHandler extends SimpleChannelInboundHandle
                         }
                     };
                     if(freeTunnelClient) {
-                        UnPooledTunnelProvider.acquireTcpTunnelForSocks5FreeTunnelClient(ctx, targetHost, targetPort, tunnelBuildResultListener);
+                        UnPooledTunnelProvider.acquireTcpTunnelForSocks5FreeTunnelClient(ctx.channel(), targetHost, targetPort, tunnelBuildResultListener);
                     } else {
-                        UnPooledTunnelProvider.acquireTcpTunnelForSocks5(ctx, targetHost, targetPort, tunnelBuildResultListener);
+                        UnPooledTunnelProvider.acquireTcpTunnelForSocks5(ctx.channel(), targetHost, targetPort, tunnelBuildResultListener);
                     }
                 } else {
                     throw new TunnelException("未实现的命令处理: " + socks5Cmd);

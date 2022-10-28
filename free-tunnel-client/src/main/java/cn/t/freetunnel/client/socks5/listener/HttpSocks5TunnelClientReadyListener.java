@@ -1,10 +1,10 @@
 package cn.t.freetunnel.client.socks5.listener;
 
-import cn.t.freetunnel.client.socks5.handler.HttpSocks5TunnelClientHandler;
 import cn.t.freetunnel.client.socks5.handler.HttpSocks5TunnelClientForwardingHandler;
+import cn.t.freetunnel.client.socks5.handler.HttpSocks5TunnelClientHandler;
 import cn.t.tool.nettytool.util.NettyComponentUtil;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.http.HttpResponseEncoder;
 
@@ -19,14 +19,14 @@ public class HttpSocks5TunnelClientReadyListener extends Socks5TunnelClientReady
     @Override
     protected void notifySuccess(ChannelFuture future) {
         //已经通知客户端代理成功, 切换handler
-        ChannelPipeline pipeline = localChannelHandlerContext.channel().pipeline();
+        ChannelPipeline pipeline = localChannel.pipeline();
         pipeline.remove(HttpSocks5TunnelClientHandler.class);
         //http请求每次都需要修改header(connection), uri路径，所以不移除HttpRequestDecoder, HttpObjectAggregator
         pipeline.remove(HttpResponseEncoder.class);
-        NettyComponentUtil.addLastHandler(pipeline, "http-socks5-client-forwarding-handler", new HttpSocks5TunnelClientForwardingHandler(remoteChannelHandlerContext));
+        NettyComponentUtil.addLastHandler(pipeline, "http-socks5-client-forwarding-handler", new HttpSocks5TunnelClientForwardingHandler(remoteChannel));
     }
 
-    public HttpSocks5TunnelClientReadyListener(ChannelHandlerContext localChannelHandlerContext, ChannelHandlerContext remoteChannelHandlerContext, String host, int port) {
-        super(localChannelHandlerContext, remoteChannelHandlerContext, host, port);
+    public HttpSocks5TunnelClientReadyListener(Channel localChannel, Channel remoteChannel, String host, int port) {
+        super(localChannel, remoteChannel, host, port);
     }
 }

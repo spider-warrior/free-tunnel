@@ -1,10 +1,10 @@
 package cn.t.freetunnel.client.socks5.listener;
 
-import cn.t.freetunnel.client.socks5.handler.HttpSocks5TunnelClientHandler;
 import cn.t.freetunnel.client.socks5.handler.HttpSocks5TunnelClientForwardingHandler;
+import cn.t.freetunnel.client.socks5.handler.HttpSocks5TunnelClientHandler;
 import cn.t.tool.nettytool.util.NettyComponentUtil;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpRequestDecoder;
@@ -21,15 +21,15 @@ public class HttpsSocks5TunnelClientReadyListener extends Socks5TunnelClientRead
     @Override
     protected void notifySuccess(ChannelFuture future) {
         //已经通知客户端代理成功, 切换handler
-        ChannelPipeline channelPipeline = localChannelHandlerContext.channel().pipeline();
+        ChannelPipeline channelPipeline = localChannel.pipeline();
         channelPipeline.remove(HttpSocks5TunnelClientHandler.class);
         channelPipeline.remove(HttpRequestDecoder.class);
         channelPipeline.remove(HttpResponseEncoder.class);
         channelPipeline.remove(HttpObjectAggregator.class);
-        NettyComponentUtil.addLastHandler(channelPipeline, "https-socks5-client-forwarding-handler", new HttpSocks5TunnelClientForwardingHandler(remoteChannelHandlerContext));
+        NettyComponentUtil.addLastHandler(channelPipeline, "https-socks5-client-forwarding-handler", new HttpSocks5TunnelClientForwardingHandler(remoteChannel));
     }
 
-    public HttpsSocks5TunnelClientReadyListener(ChannelHandlerContext localChannelHandlerContext, ChannelHandlerContext remoteChannelHandlerContext, String host, int port) {
-        super(localChannelHandlerContext, remoteChannelHandlerContext, host, port);
+    public HttpsSocks5TunnelClientReadyListener(Channel localChannel, Channel remoteChannel, String host, int port) {
+        super(localChannel, remoteChannel, host, port);
     }
 }

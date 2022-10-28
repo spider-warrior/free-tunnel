@@ -22,24 +22,24 @@ import io.netty.util.concurrent.GenericFutureListener;
  **/
 public class TunnelUtil {
 
-    public static void closeGracefully(ChannelHandlerContext ctx) {
-        if(ctx.channel().isOpen()) {
-            ctx.channel().attr(NettyAttrConstants.CLOSE_BY_CALL_METHOD).set(true);
-            ctx.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
+    public static void closeGracefully(Channel channel) {
+        if(channel.isOpen()) {
+            channel.attr(NettyAttrConstants.CLOSE_BY_CALL_METHOD).set(true);
+            channel.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
         }
     }
 
-    public static void closeImmediately(ChannelHandlerContext ctx) {
+    public static void closeImmediately(Channel ctx) {
         closeImmediately(ctx, null);
     }
 
-    public static void closeImmediately(ChannelHandlerContext ctx, GenericFutureListener<? extends Future<? super Void>> listener) {
-        if(ctx.channel().isOpen()) {
-            ctx.channel().attr(NettyAttrConstants.CLOSE_BY_CALL_METHOD).set(true);
+    public static void closeImmediately(Channel channel, GenericFutureListener<? extends Future<? super Void>> listener) {
+        if(channel.isOpen()) {
+            channel.attr(NettyAttrConstants.CLOSE_BY_CALL_METHOD).set(true);
             if(listener == null) {
-                ctx.close();
+                channel.close();
             } else {
-                ctx.close().addListener(listener);
+                channel.close().addListener(listener);
             }
 
         }
@@ -53,9 +53,7 @@ public class TunnelUtil {
         return clientHost + ":" + clientPort + " -> " + targetHost + ":" + targetPort;
     }
 
-    public static String buildProxyTunnelName(ChannelHandlerContext localContext, ChannelHandlerContext remoteContext) {
-        Channel localChannel = localContext.channel();
-        Channel remoteChannel = remoteContext.channel();
+    public static String buildProxyTunnelName(Channel localChannel, Channel remoteChannel) {
         return remoteChannel.remoteAddress() + " -> " + remoteChannel.localAddress() + " --> " + localChannel.localAddress() + " -> " + localChannel.remoteAddress();
     }
 

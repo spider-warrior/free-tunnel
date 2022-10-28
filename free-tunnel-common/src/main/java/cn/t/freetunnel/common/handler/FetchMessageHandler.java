@@ -3,6 +3,7 @@ package cn.t.freetunnel.common.handler;
 import cn.t.freetunnel.common.constants.TunnelBuildResult;
 import cn.t.freetunnel.common.listener.TunnelBuildResultListener;
 import io.netty.buffer.Unpooled;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
@@ -26,10 +27,10 @@ public class FetchMessageHandler extends ForwardingMessageHandler {
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
-        boolean remoteOpen = remoteChannelHandlerContext.channel().isOpen();
+        boolean remoteOpen = remoteChannel.isOpen();
         if(remoteOpen) {
-            logger.info("[{} -> {}]: 断开连接, 关闭客户端连接: [{} -> {}]", ctx.channel().localAddress(), ctx.channel().remoteAddress(), remoteChannelHandlerContext.channel().remoteAddress(), remoteChannelHandlerContext.channel().localAddress());
-            remoteChannelHandlerContext.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
+            logger.info("[{} -> {}]: 断开连接, 关闭客户端连接: [{} -> {}]", ctx.channel().localAddress(), ctx.channel().remoteAddress(), remoteChannel.remoteAddress(), remoteChannel.localAddress());
+            remoteChannel.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
         } else {
             logger.info("[{} -> {}]: 断开连接", ctx.channel().localAddress(), ctx.channel().remoteAddress());
         }
@@ -37,7 +38,7 @@ public class FetchMessageHandler extends ForwardingMessageHandler {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
-        tunnelBuildResultListener.handle(TunnelBuildResult.SUCCEEDED.value, ctx);
+        tunnelBuildResultListener.handle(TunnelBuildResult.SUCCEEDED.value, ctx.channel());
     }
 
     @Override
@@ -46,13 +47,13 @@ public class FetchMessageHandler extends ForwardingMessageHandler {
             if (!future.isSuccess()) {
                 //连接失败处理
                 logger.error("[{}]: 连接失败, 回调监听器", remoteAddress, future.cause());
-                tunnelBuildResultListener.handle(TunnelBuildResult.FAILED.value, ctx);
+                tunnelBuildResultListener.handle(TunnelBuildResult.FAILED.value, ctx.channel());
             }
         }));
     }
 
-    public FetchMessageHandler(ChannelHandlerContext remoteChannelHandlerContext, TunnelBuildResultListener tunnelBuildResultListener) {
-        super(remoteChannelHandlerContext);
+    public FetchMessageHandler(Channel remoteChannel, TunnelBuildResultListener tunnelBuildResultListener) {
+        super(remoteChannel);
         this.tunnelBuildResultListener = tunnelBuildResultListener;
     }
 }

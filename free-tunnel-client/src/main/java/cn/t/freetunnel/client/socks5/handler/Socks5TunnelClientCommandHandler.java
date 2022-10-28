@@ -6,10 +6,7 @@ import cn.t.freetunnel.common.constants.NettyHandlerName;
 import cn.t.freetunnel.common.constants.TunnelCommand;
 import cn.t.freetunnel.common.exception.TunnelException;
 import cn.t.freetunnel.common.util.TunnelUtil;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelPipeline;
-import io.netty.channel.ChannelPromise;
-import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.channel.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,13 +21,13 @@ public class Socks5TunnelClientCommandHandler extends SimpleChannelInboundHandle
 
     private static final Logger logger = LoggerFactory.getLogger(FreeTunnelConstants.TUNNEL_EVENT_LOGGER_NAME);
 
-    private volatile ChannelHandlerContext remoteChannelHandlerContext;
+    private volatile Channel remoteChannel;
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, TunnelCommand command) {
         if(TunnelCommand.RESET_STATUS_TO_COMMAND_REQUEST == command) {
             logger.info("服务端请求复位连接,channel: {}", ctx.channel());
-            TunnelUtil.closeGracefully(remoteChannelHandlerContext);
+            TunnelUtil.closeGracefully(remoteChannel);
             ChannelPromise responsePromise = ctx.newPromise();
             responsePromise.addListener(f -> {
                 if(f.isSuccess()) {
@@ -54,15 +51,15 @@ public class Socks5TunnelClientCommandHandler extends SimpleChannelInboundHandle
         pipeline.addBefore(NettyHandlerName.SOCKS5_TUNNEL_CLIENT_FORWARDING_MESSAGE_HANDLER, "socks5ProxyClientMessageHandler", socks5TunnelClientMessageHandler);
     }
 
-    public ChannelHandlerContext getRemoteChannelHandlerContext() {
-        return remoteChannelHandlerContext;
+    public Channel getRemoteChannel() {
+        return remoteChannel;
     }
 
-    public void setRemoteChannelHandlerContext(ChannelHandlerContext remoteChannelHandlerContext) {
-        this.remoteChannelHandlerContext = remoteChannelHandlerContext;
+    public void setRemoteChannel(Channel remoteChannel) {
+        this.remoteChannel = remoteChannel;
     }
 
-    public Socks5TunnelClientCommandHandler(ChannelHandlerContext remoteChannelHandlerContext) {
-        this.remoteChannelHandlerContext = remoteChannelHandlerContext;
+    public Socks5TunnelClientCommandHandler(Channel remoteChannel) {
+        this.remoteChannel = remoteChannel;
     }
 }

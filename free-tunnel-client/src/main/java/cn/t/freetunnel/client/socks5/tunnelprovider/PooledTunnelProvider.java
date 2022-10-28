@@ -44,7 +44,7 @@ public class PooledTunnelProvider {
         if(channel != null && channel.isOpen()) {
             logger.info("复用连接,channel: {}, target host: {}, target port: {}", channel, targetHost, targetPort);
             inUseTunnelPool.add(channel);
-            channel.attr(NettyAttrConstants.CONNECT_TUNNEL_REMOTE_CONTEXT).set(localContext);
+            channel.attr(NettyAttrConstants.CONNECT_TUNNEL_REMOTE_CHANNEL).set(localContext.channel());
             channel.attr(NettyAttrConstants.CONNECT_TUNNEL_BUILD_RESULT_LISTENER).set(listener);
             ByteBuf outputBuf = Socks5MessageUtil.buildConnectBuf(channel.alloc(), targetHost, targetPort);
             channel.writeAndFlush(outputBuf);
@@ -59,7 +59,7 @@ public class PooledTunnelProvider {
             nettyTcpClient.childAttr(NettyAttrConstants.CONNECT_SECURITY, socks5TunnelClientConfig.getSecurity());
             nettyTcpClient.childAttr(NettyAttrConstants.CONNECT_TARGET_HOST, targetHost);
             nettyTcpClient.childAttr(NettyAttrConstants.CONNECT_TARGET_PORT, targetPort);
-            nettyTcpClient.childAttr(NettyAttrConstants.CONNECT_TUNNEL_REMOTE_CONTEXT, localContext);
+            nettyTcpClient.childAttr(NettyAttrConstants.CONNECT_TUNNEL_REMOTE_CHANNEL, localContext.channel());
             nettyTcpClient.childAttr(NettyAttrConstants.CONNECT_TUNNEL_BUILD_RESULT_LISTENER, listener);
             nettyTcpClient.addListener(new ClientLifeStyleListener());
             nettyTcpClient.start();

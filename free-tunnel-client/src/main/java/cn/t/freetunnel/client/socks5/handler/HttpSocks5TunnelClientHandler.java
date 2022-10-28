@@ -57,10 +57,10 @@ public class HttpSocks5TunnelClientHandler extends SimpleChannelInboundHandler<F
 
     private void buildHttpsProxy(ChannelHandlerContext ctx, String targetHost, int targetPort, HttpVersion httpVersion) {
         SocketAddress remoteAddress = ctx.channel().remoteAddress();
-        TunnelBuildResultListener tunnelBuildResultListener = (status, remoteChannelHandlerContext) -> {
+        TunnelBuildResultListener tunnelBuildResultListener = (status, remoteChannel) -> {
             if(TunnelBuildResult.SUCCEEDED.value == status) {
                 ChannelPromise promise = ctx.newPromise();
-                promise.addListener(new HttpsSocks5TunnelClientReadyListener(ctx, remoteChannelHandlerContext, targetHost, targetPort));
+                promise.addListener(new HttpsSocks5TunnelClientReadyListener(ctx.channel(), remoteChannel, targetHost, targetPort));
                 ctx.writeAndFlush(new DefaultFullHttpResponse(httpVersion, OK), promise);
             } else {
                 logger.error("[{}]: 代理客户端失败, remote: {}:{}", remoteAddress, targetHost, targetPort);
@@ -74,12 +74,12 @@ public class HttpSocks5TunnelClientHandler extends SimpleChannelInboundHandler<F
     private void buildHttpProxy(ChannelHandlerContext ctx, String targetHost, int targetPort, HttpVersion httpVersion, FullHttpRequest request) {
         FullHttpRequest proxiedRequest = request.retainedDuplicate();
         SocketAddress remoteAddress = ctx.channel().remoteAddress();
-        TunnelBuildResultListener tunnelBuildResultListener = (status, remoteChannelHandlerContext) -> {
+        TunnelBuildResultListener tunnelBuildResultListener = (status, remoteChannel) -> {
             if(TunnelBuildResult.SUCCEEDED.value == status) {
-                ChannelPromise promise = remoteChannelHandlerContext.newPromise();
-                promise.addListener(new HttpSocks5TunnelClientReadyListener(ctx, remoteChannelHandlerContext, targetHost, targetPort));
+                ChannelPromise promise = remoteChannel.newPromise();
+                promise.addListener(new HttpSocks5TunnelClientReadyListener(ctx.channel(), remoteChannel, targetHost, targetPort));
                 ByteBuf buf = TunnelUtil.httpRequestToByteBuf(ctx.alloc(), proxiedRequest);
-                remoteChannelHandlerContext.channel().writeAndFlush(buf, promise);
+                remoteChannel.writeAndFlush(buf, promise);
             } else {
                 ReferenceCountUtil.release(proxiedRequest);
                 logger.error("[{}]: 代理客户端失败, remote: {}:{}", remoteAddress, targetHost, targetPort);

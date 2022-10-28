@@ -2,6 +2,7 @@ package cn.t.freetunnel.server.socks5.handler;
 
 import cn.t.freetunnel.common.handler.ForwardingMessageHandler;
 import cn.t.freetunnel.common.util.TunnelUtil;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 
@@ -17,16 +18,16 @@ public class Socks5TunnelServerForwardingHandler extends ForwardingMessageHandle
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
-        boolean remoteOpen = remoteChannelHandlerContext.channel().isOpen();
+        boolean remoteOpen = remoteChannel.isOpen();
         if(remoteOpen) {
-            logger.info("[{} -> {}]: 客户端通道断开, 释放代理资源: [{} -> {}]", ctx.channel().remoteAddress(), ctx.channel().localAddress(), remoteChannelHandlerContext.channel().localAddress(), remoteChannelHandlerContext.channel().remoteAddress());
-            TunnelUtil.closeImmediately(remoteChannelHandlerContext);
+            logger.info("[{} -> {}]: 客户端通道断开, 释放代理资源: [{} -> {}]", ctx.channel().remoteAddress(), ctx.channel().localAddress(), remoteChannel.localAddress(), remoteChannel.remoteAddress());
+            TunnelUtil.closeImmediately(remoteChannel);
         } else {
             logger.info("[{} -> {}]: 断开连接", ctx.channel().remoteAddress(), ctx.channel().localAddress());
         }
     }
 
-    public Socks5TunnelServerForwardingHandler(ChannelHandlerContext remoteChannelHandlerContext) {
-        super(remoteChannelHandlerContext);
+    public Socks5TunnelServerForwardingHandler(Channel remoteChannel) {
+        super(remoteChannel);
     }
 }

@@ -1,6 +1,6 @@
 package cn.t.freetunnel.common.listener;
 
-import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.Channel;
 
 /**
  * 代理构建结果通知
@@ -10,5 +10,5 @@ import io.netty.channel.ChannelHandlerContext;
  **/
 @FunctionalInterface
 public interface TunnelBuildResultListener {
-    void handle(byte status, ChannelHandlerContext remoteChannelHandlerContext);
+    void handle(byte status, Channel channel);
 }

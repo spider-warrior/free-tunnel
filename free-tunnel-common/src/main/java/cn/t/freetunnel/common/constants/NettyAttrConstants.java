@@ -1,7 +1,7 @@
 package cn.t.freetunnel.common.constants;
 
 import cn.t.freetunnel.common.listener.TunnelBuildResultListener;
-import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.Channel;
 import io.netty.util.AttributeKey;
 import io.netty.util.concurrent.EventExecutor;
 
@@ -20,6 +20,6 @@ public class NettyAttrConstants {
     public static final AttributeKey<String> CONNECT_TARGET_HOST = AttributeKey.newInstance("connectTargetHost");
     public static final AttributeKey<Integer> CONNECT_TARGET_PORT = AttributeKey.newInstance("connectTargetPort");
     public static final AttributeKey<byte[]> CONNECT_SECURITY = AttributeKey.newInstance("connectSecurity");
-    public static final AttributeKey<ChannelHandlerContext> CONNECT_TUNNEL_REMOTE_CONTEXT = AttributeKey.newInstance("connectTunnelRemoteContext");
+    public static final AttributeKey<Channel> CONNECT_TUNNEL_REMOTE_CHANNEL = AttributeKey.newInstance("connectTunnelRemoteChannel");
     public static final AttributeKey<TunnelBuildResultListener> CONNECT_TUNNEL_BUILD_RESULT_LISTENER = AttributeKey.newInstance("connectTunnelBuildResultListener");
 }

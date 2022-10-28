@@ -5,6 +5,7 @@ import cn.t.freetunnel.common.constants.NettyHandlerName;
 import cn.t.freetunnel.common.constants.TunnelCommand;
 import cn.t.freetunnel.common.exception.TunnelException;
 import cn.t.freetunnel.common.util.TunnelUtil;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -22,13 +23,13 @@ public class Socks5TunnelServerCommandHandler extends SimpleChannelInboundHandle
 
     private static final Logger logger = LoggerFactory.getLogger(FreeTunnelConstants.TUNNEL_EVENT_LOGGER_NAME);
 
-    private volatile ChannelHandlerContext remoteChannelHandlerContext;
+    private volatile Channel remoteChannel;
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, TunnelCommand command) {
         if(TunnelCommand.RESET_STATUS_TO_COMMAND_REQUEST == command) {
             logger.info("客户端请求复位连接,channel: {}", ctx.channel());
-            TunnelUtil.closeImmediately(remoteChannelHandlerContext, future -> {
+            TunnelUtil.closeImmediately(remoteChannel, future -> {
                 resetStatusToCommand(ctx);
                 ctx.writeAndFlush(TunnelCommand.RESET_STATUS_TO_COMMAND_RESPONSE);
             });
@@ -46,15 +47,15 @@ public class Socks5TunnelServerCommandHandler extends SimpleChannelInboundHandle
         pipeline.addBefore(NettyHandlerName.SOCKS5_TUNNEL_SERVER_FORWARDING_MESSAGE_HANDLER, "socks5ProxyServerMessageHandler", socks5TunnelServerMessageHandler);
     }
 
-    public ChannelHandlerContext getRemoteChannelHandlerContext() {
-        return remoteChannelHandlerContext;
+    public Channel getRemoteChannel() {
+        return remoteChannel;
     }
 
-    public void setRemoteChannelHandlerContext(ChannelHandlerContext remoteChannelHandlerContext) {
-        this.remoteChannelHandlerContext = remoteChannelHandlerContext;
+    public void setRemoteChannel(Channel remoteChannel) {
+        this.remoteChannel = remoteChannel;
     }
 
-    public Socks5TunnelServerCommandHandler(ChannelHandlerContext remoteChannelHandlerContext) {
-        this.remoteChannelHandlerContext = remoteChannelHandlerContext;
+    public Socks5TunnelServerCommandHandler(Channel remoteChannel) {
+        this.remoteChannel = remoteChannel;
     }
 }

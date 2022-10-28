@@ -10,10 +10,7 @@ import cn.t.freetunnel.common.handler.LayerMessageDecoder;
 import cn.t.freetunnel.common.handler.LayerMessageEncoder;
 import cn.t.tool.nettytool.util.NettyComponentUtil;
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandler;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelPipeline;
-import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.channel.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -89,9 +86,9 @@ public class Socks5TunnelClientMessageHandler extends SimpleChannelInboundHandle
             byteBuf.readBytes(address);
             //bind port
             int port = byteBuf.readChar();
-            ChannelHandlerContext remoteChannelHandlerContext = ctx.channel().attr(NettyAttrConstants.CONNECT_TUNNEL_REMOTE_CONTEXT).get();
-            logger.info("[{} -> {} -> {} -> {}]: cmd响应, version: {}, status: {}({}), addressType: {}({}), address: {}, port: {}", remoteChannelHandlerContext.channel().remoteAddress(),
-                remoteChannelHandlerContext.channel().localAddress(),
+            Channel remoteChannel = ctx.channel().attr(NettyAttrConstants.CONNECT_TUNNEL_REMOTE_CHANNEL).get();
+            logger.info("[{} -> {} -> {} -> {}]: cmd响应, version: {}, status: {}({}), addressType: {}({}), address: {}, port: {}", remoteChannel.remoteAddress(),
+                remoteChannel.localAddress(),
                 ctx.channel().localAddress(),
                 ctx.channel().remoteAddress(),
                 version,
@@ -114,23 +111,23 @@ public class Socks5TunnelClientMessageHandler extends SimpleChannelInboundHandle
                     NettyComponentUtil.addLastHandler(channelPipeline, NettyHandlerName.LAYER_MESSAGE_DECODER, new LayerMessageDecoder());
                     NettyComponentUtil.addLastHandler(channelPipeline, NettyHandlerName.LAYER_MESSAGE_ENCODER, new LayerMessageEncoder());
                     //forwarding
-                    NettyComponentUtil.addLastHandler(channelPipeline, NettyHandlerName.SOCKS5_TUNNEL_CLIENT_FORWARDING_MESSAGE_HANDLER, new Socks5TunnelClientForwardingHandler(remoteChannelHandlerContext));
+                    NettyComponentUtil.addLastHandler(channelPipeline, NettyHandlerName.SOCKS5_TUNNEL_CLIENT_FORWARDING_MESSAGE_HANDLER, new Socks5TunnelClientForwardingHandler(remoteChannel));
                     //command
-                    NettyComponentUtil.addLastHandler(channelPipeline, NettyHandlerName.SOCKS5_TUNNEL_CLIENT_COMMAND_HANDLER, new Socks5TunnelClientCommandHandler(remoteChannelHandlerContext));
+                    NettyComponentUtil.addLastHandler(channelPipeline, NettyHandlerName.SOCKS5_TUNNEL_CLIENT_COMMAND_HANDLER, new Socks5TunnelClientCommandHandler(remoteChannel));
                     //备份Socks5ProxyClientMessageHandler
                     Socks5TunnelClientMessageHandler socks5TunnelClientMessageHandler = channelPipeline.remove(Socks5TunnelClientMessageHandler.class);
                     NettyComponentUtil.addLastHandler(channelPipeline, "socks5ProxyClientMessageHandler", socks5TunnelClientMessageHandler);
                 } else {
                     //forwardingHandler切换remoteContext
-                    forwardingMessageHandler.setRemoteChannelHandlerContext(remoteChannelHandlerContext);
+                    forwardingMessageHandler.setRemoteChannel(remoteChannel);
                     //commandHandler切换remoteContext
                     Socks5TunnelClientCommandHandler commandHandler = (Socks5TunnelClientCommandHandler)channelPipeline.get(NettyHandlerName.SOCKS5_TUNNEL_CLIENT_COMMAND_HANDLER);
-                    commandHandler.setRemoteChannelHandlerContext(remoteChannelHandlerContext);
+                    commandHandler.setRemoteChannel(remoteChannel);
                     //备份Socks5ProxyClientMessageHandler
                     Socks5TunnelClientMessageHandler socks5TunnelClientMessageHandler = channelPipeline.remove(Socks5TunnelClientMessageHandler.class);
                     NettyComponentUtil.addLastHandler(channelPipeline, "socks5ProxyClientMessageHandler", socks5TunnelClientMessageHandler);
                 }
-                ctx.channel().attr(NettyAttrConstants.CONNECT_TUNNEL_BUILD_RESULT_LISTENER).get().handle(TunnelBuildResult.SUCCEEDED.value, ctx);
+                ctx.channel().attr(NettyAttrConstants.CONNECT_TUNNEL_BUILD_RESULT_LISTENER).get().handle(TunnelBuildResult.SUCCEEDED.value, ctx.channel());
             } else {
                 ctx.channel().attr(NettyAttrConstants.CONNECT_TUNNEL_BUILD_RESULT_LISTENER).get().handle(TunnelBuildResult.FAILED.value, null);
                 PooledTunnelProvider.closeTunnel(ctx.channel());

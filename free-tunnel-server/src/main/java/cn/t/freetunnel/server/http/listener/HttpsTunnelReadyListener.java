@@ -4,8 +4,8 @@ import cn.t.freetunnel.common.handler.ForwardingMessageHandler;
 import cn.t.freetunnel.common.listener.TunnelReadyListener;
 import cn.t.freetunnel.server.http.handler.HttpProxyServerMessageHandler;
 import cn.t.tool.nettytool.util.NettyComponentUtil;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpRequestDecoder;
@@ -22,15 +22,15 @@ public class HttpsTunnelReadyListener extends TunnelReadyListener {
     @Override
     protected void notifySuccess(ChannelFuture future) {
         //已经通知客户端代理成功, 切换handler
-        ChannelPipeline pipeline = localChannelHandlerContext.channel().pipeline();
+        ChannelPipeline pipeline = localChannel.pipeline();
         pipeline.remove(HttpResponseEncoder.class);
         pipeline.remove(HttpRequestDecoder.class);
         pipeline.remove(HttpObjectAggregator.class);
         pipeline.remove(HttpProxyServerMessageHandler.class);
-        NettyComponentUtil.addLastHandler(pipeline, "proxy-forwarding-handler", new ForwardingMessageHandler(remoteChannelHandlerContext));
+        NettyComponentUtil.addLastHandler(pipeline, "proxy-forwarding-handler", new ForwardingMessageHandler(remoteChannel));
     }
 
-    public HttpsTunnelReadyListener(ChannelHandlerContext localChannelHandlerContext, ChannelHandlerContext remoteChannelHandlerContext, String host, int port) {
-        super(localChannelHandlerContext, remoteChannelHandlerContext, host, port);
+    public HttpsTunnelReadyListener(Channel localChannel, Channel remoteChannel, String host, int port) {
+        super(localChannel, remoteChannel, host, port);
     }
 }

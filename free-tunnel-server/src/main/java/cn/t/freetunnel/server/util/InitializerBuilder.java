@@ -12,8 +12,8 @@ import cn.t.freetunnel.server.socks5.handler.Socks5TunnelServerMessageHandler;
 import cn.t.tool.nettytool.daemon.DaemonConfig;
 import cn.t.tool.nettytool.initializer.DaemonConfigBuilder;
 import cn.t.tool.nettytool.initializer.NettyTcpChannelInitializer;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
-import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpRequestDecoder;
 import io.netty.handler.codec.http.HttpResponseEncoder;
@@ -43,36 +43,36 @@ public class InitializerBuilder {
         return new NettyTcpChannelInitializer(daemonConfig);
     }
 
-    public static NettyTcpChannelInitializer buildHttpFetchMessageClientChannelInitializer(ChannelHandlerContext remoteChannelHandlerContext, TunnelBuildResultListener tunnelBuildResultListener) {
+    public static NettyTcpChannelInitializer buildHttpFetchMessageClientChannelInitializer(Channel remoteChannel, TunnelBuildResultListener tunnelBuildResultListener) {
         DaemonConfigBuilder daemonConfigBuilder = DaemonConfigBuilder.newInstance();
         //http encoder
         daemonConfigBuilder.configM2bEncoder(Collections.singletonList(ProxiedRequestEncoder::new));
         //fetch message handler
-        daemonConfigBuilder.configHandler(Collections.singletonList(() -> new FetchMessageHandler(remoteChannelHandlerContext, tunnelBuildResultListener)));
+        daemonConfigBuilder.configHandler(Collections.singletonList(() -> new FetchMessageHandler(remoteChannel, tunnelBuildResultListener)));
         DaemonConfig daemonConfig = daemonConfigBuilder.build();
         return new NettyTcpChannelInitializer(daemonConfig);
     }
 
-    public static NettyTcpChannelInitializer buildHttpsFetchMessageClientChannelInitializer(ChannelHandlerContext remoteChannelHandlerContext, TunnelBuildResultListener tunnelBuildResultListener) {
+    public static NettyTcpChannelInitializer buildHttpsFetchMessageClientChannelInitializer(Channel remoteChannel, TunnelBuildResultListener tunnelBuildResultListener) {
         DaemonConfigBuilder daemonConfigBuilder = DaemonConfigBuilder.newInstance();
         //fetch message handler
-        daemonConfigBuilder.configHandler(Collections.singletonList(() -> new FetchMessageHandler(remoteChannelHandlerContext, tunnelBuildResultListener)));
+        daemonConfigBuilder.configHandler(Collections.singletonList(() -> new FetchMessageHandler(remoteChannel, tunnelBuildResultListener)));
         DaemonConfig daemonConfig = daemonConfigBuilder.build();
         return new NettyTcpChannelInitializer(daemonConfig);
     }
 
-    public static NettyTcpChannelInitializer buildHttpFetchMessageClientChannelInitializerForSocks5(ChannelHandlerContext remoteChannelHandlerContext, TunnelBuildResultListener tunnelBuildResultListener) {
+    public static NettyTcpChannelInitializer buildHttpFetchMessageClientChannelInitializerForSocks5(Channel remoteChannel, TunnelBuildResultListener tunnelBuildResultListener) {
         DaemonConfigBuilder daemonConfigBuilder = DaemonConfigBuilder.newInstance();
         //fetch message handler
-        daemonConfigBuilder.configHandler(Collections.singletonList(() -> new Socks5TunnelServerFetchHandler(remoteChannelHandlerContext, tunnelBuildResultListener)));
+        daemonConfigBuilder.configHandler(Collections.singletonList(() -> new Socks5TunnelServerFetchHandler(remoteChannel, tunnelBuildResultListener)));
         DaemonConfig daemonConfig = daemonConfigBuilder.build();
         return new NettyTcpChannelInitializer(daemonConfig);
     }
 
-    public static NettyTcpChannelInitializer buildHttpFetchMessageClientChannelInitializerForSocks5FreeTunnelClient(ChannelHandlerContext remoteChannelHandlerContext, TunnelBuildResultListener tunnelBuildResultListener) {
+    public static NettyTcpChannelInitializer buildHttpFetchMessageClientChannelInitializerForSocks5FreeTunnelClient(Channel remoteChannel, TunnelBuildResultListener tunnelBuildResultListener) {
         DaemonConfigBuilder daemonConfigBuilder = DaemonConfigBuilder.newInstance();
         //fetch message handler
-        daemonConfigBuilder.configHandler(Collections.singletonList(() -> new Socks5TunnelServerFetchHandlerForFreeTunnelClient(remoteChannelHandlerContext, tunnelBuildResultListener)));
+        daemonConfigBuilder.configHandler(Collections.singletonList(() -> new Socks5TunnelServerFetchHandlerForFreeTunnelClient(remoteChannel, tunnelBuildResultListener)));
         DaemonConfig daemonConfig = daemonConfigBuilder.build();
         return new NettyTcpChannelInitializer(daemonConfig);
     }
