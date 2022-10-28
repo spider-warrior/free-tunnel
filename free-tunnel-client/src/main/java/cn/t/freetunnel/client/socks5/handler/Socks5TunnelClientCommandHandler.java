@@ -35,14 +35,14 @@ public class Socks5TunnelClientCommandHandler extends SimpleChannelInboundHandle
             responsePromise.addListener(f -> {
                 if(f.isSuccess()) {
                     resetToCommandStatus(ctx);
-                    PooledTunnelProvider.closeTunnel(ctx);
+                    PooledTunnelProvider.closeTunnel(ctx.channel());
                 }
             });
             ctx.writeAndFlush(TunnelCommand.RESET_STATUS_TO_COMMAND_RESPONSE, responsePromise);
         } else if(TunnelCommand.RESET_STATUS_TO_COMMAND_RESPONSE == command) {
             logger.info("服务端已复位连接,channel: {}", ctx.channel());
             resetToCommandStatus(ctx);
-            PooledTunnelProvider.closeTunnel(ctx);
+            PooledTunnelProvider.closeTunnel(ctx.channel());
         } else {
             throw new TunnelException("不支持的命令: " + command);
         }

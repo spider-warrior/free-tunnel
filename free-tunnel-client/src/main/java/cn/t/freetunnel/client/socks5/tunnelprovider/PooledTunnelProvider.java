@@ -8,15 +8,20 @@ import cn.t.freetunnel.common.constants.Socks5TunnelClientConfig;
 import cn.t.freetunnel.common.constants.TunnelConstants;
 import cn.t.freetunnel.common.listener.TunnelBuildResultListener;
 import cn.t.freetunnel.common.util.TunnelUtil;
+import cn.t.tool.nettytool.daemon.DaemonService;
 import cn.t.tool.nettytool.daemon.client.NettyTcpClient;
+import cn.t.tool.nettytool.daemon.listener.DaemonListener;
 import cn.t.tool.nettytool.initializer.NettyTcpChannelInitializer;
 import io.netty.buffer.ByteBuf;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
 import java.util.Queue;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
@@ -30,17 +35,19 @@ public class PooledTunnelProvider {
 
     private static final Logger logger = LoggerFactory.getLogger(FreeTunnelConstants.TUNNEL_EVENT_LOGGER_NAME);
 
-    private static final Queue<ChannelHandlerContext> tunnelPool = new ConcurrentLinkedQueue<>();
+    private static final Queue<Channel> idledTunnelPool = new ConcurrentLinkedQueue<>();
+    private static final Set<Channel> inUseTunnelPool = ConcurrentHashMap.newKeySet();
 
     public static void acquireSocks5Tunnel(ChannelHandlerContext localContext, String targetHost, int targetPort, Socks5TunnelClientConfig socks5TunnelClientConfig, TunnelBuildResultListener listener) {
-        ChannelHandlerContext context;
-        while ((context = tunnelPool.poll()) != null && !context.channel().isOpen());
-        if(context != null && context.channel().isOpen()) {
-            logger.info("复用连接,channel: {}, target host: {}, target port: {}", context.channel(), targetHost, targetPort);
-            context.channel().attr(NettyAttrConstants.CONNECT_TUNNEL_REMOTE_CONTEXT).set(localContext);
-            context.channel().attr(NettyAttrConstants.CONNECT_TUNNEL_BUILD_RESULT_LISTENER).set(listener);
-            ByteBuf outputBuf = Socks5MessageUtil.buildConnectBuf(context.alloc(), targetHost, targetPort);
-            context.channel().writeAndFlush(outputBuf);
+        Channel channel;
+        while ((channel = idledTunnelPool.poll()) != null && !channel.isOpen());
+        if(channel != null && channel.isOpen()) {
+            logger.info("复用连接,channel: {}, target host: {}, target port: {}", channel, targetHost, targetPort);
+            inUseTunnelPool.add(channel);
+            channel.attr(NettyAttrConstants.CONNECT_TUNNEL_REMOTE_CONTEXT).set(localContext);
+            channel.attr(NettyAttrConstants.CONNECT_TUNNEL_BUILD_RESULT_LISTENER).set(listener);
+            ByteBuf outputBuf = Socks5MessageUtil.buildConnectBuf(channel.alloc(), targetHost, targetPort);
+            channel.writeAndFlush(outputBuf);
         } else {
             logger.info("请求建立连接, localChannel: {}, target host: {}, target port: {}", localContext.channel(), targetHost, targetPort);
             InetSocketAddress clientAddress = (InetSocketAddress)localContext.channel().remoteAddress();
@@ -54,16 +61,36 @@ public class PooledTunnelProvider {
             nettyTcpClient.childAttr(NettyAttrConstants.CONNECT_TARGET_PORT, targetPort);
             nettyTcpClient.childAttr(NettyAttrConstants.CONNECT_TUNNEL_REMOTE_CONTEXT, localContext);
             nettyTcpClient.childAttr(NettyAttrConstants.CONNECT_TUNNEL_BUILD_RESULT_LISTENER, listener);
+            nettyTcpClient.addListener(new ClientLifeStyleListener());
             nettyTcpClient.start();
         }
     }
 
-    public static void closeTunnel(ChannelHandlerContext remoteChannelHandlerContext) {
-        if(remoteChannelHandlerContext.channel().isOpen()) {
-            tunnelPool.add(remoteChannelHandlerContext);
-            logger.info("返还连接,channel: {},可复用连接数量: {}", remoteChannelHandlerContext.channel(), tunnelPool.size());
+    public static void closeTunnel(Channel remoteChannel) {
+        if(remoteChannel.isOpen()) {
+            idledTunnelPool.add(remoteChannel);
+            logger.info("返还连接,channel: {},可复用连接数量: {}", remoteChannel, idledTunnelPool.size());
         } else {
-            logger.error("返还连接不可用,channel: {}", remoteChannelHandlerContext.channel());
+            logger.error("返还连接不可用,channel: {}", remoteChannel);
+        }
+    }
+
+    private static class ClientLifeStyleListener implements DaemonListener {
+        @Override
+        public void startup(DaemonService server, Channel channel) {
+            inUseTunnelPool.add(channel);
+        }
+
+        @Override
+        public void close(DaemonService server, Channel channel) {
+            idledTunnelPool.remove(channel);
+            inUseTunnelPool.remove(channel);
+        }
+
+        @Override
+        public void close(DaemonService server, Channel channel, Throwable t) {
+            idledTunnelPool.remove(channel);
+            inUseTunnelPool.remove(channel);
         }
     }
 }
