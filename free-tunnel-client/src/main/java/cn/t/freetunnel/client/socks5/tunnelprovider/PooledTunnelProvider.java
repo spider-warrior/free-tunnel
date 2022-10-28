@@ -2,6 +2,7 @@ package cn.t.freetunnel.client.socks5.tunnelprovider;
 
 import cn.t.freetunnel.client.socks5.util.InitializerBuilder;
 import cn.t.freetunnel.client.socks5.util.Socks5MessageUtil;
+import cn.t.freetunnel.client.socks5.util.ThreadUtil;
 import cn.t.freetunnel.common.constants.FreeTunnelConstants;
 import cn.t.freetunnel.common.constants.NettyAttrConstants;
 import cn.t.freetunnel.common.constants.Socks5TunnelClientConfig;
@@ -68,11 +69,16 @@ public class PooledTunnelProvider {
 
     public static void closeTunnel(Channel remoteChannel) {
         if(remoteChannel.isOpen()) {
+            inUseTunnelPool.remove(remoteChannel);
             idledTunnelPool.add(remoteChannel);
-            logger.info("返还连接,channel: {},可复用连接数量: {}", remoteChannel, idledTunnelPool.size());
+            logger.info("返还连接,channel: {}, 使用中: {}, 可复用: {}", remoteChannel, inUseTunnelPool.size(), idledTunnelPool.size());
         } else {
             logger.error("返还连接不可用,channel: {}", remoteChannel);
         }
+    }
+
+    static {
+        ThreadUtil.scheduleTask(() -> logger.info("线程统计, 使用中: {}, 空闲: {}", inUseTunnelPool.size(), idledTunnelPool.size()), 5, 5);
     }
 
     private static class ClientLifeStyleListener implements DaemonListener {
