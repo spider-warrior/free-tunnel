@@ -26,7 +26,7 @@ public class Socks5TunnelClientCommandHandler extends SimpleChannelInboundHandle
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, TunnelCommand command) {
         if(TunnelCommand.RESET_STATUS_TO_COMMAND_REQUEST == command) {
-            logger.info("服务端请求复位连接,channel: {}", ctx.channel());
+            logger.info("服务端请求复位连接,channel: {}， 即将断开客户端连接: {}", ctx.channel(), remoteChannel);
             TunnelUtil.closeGracefully(remoteChannel);
             ChannelPromise responsePromise = ctx.newPromise();
             responsePromise.addListener(f -> {

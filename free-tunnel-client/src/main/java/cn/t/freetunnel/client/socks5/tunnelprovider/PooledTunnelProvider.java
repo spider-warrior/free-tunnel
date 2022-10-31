@@ -78,7 +78,7 @@ public class PooledTunnelProvider {
     }
 
     static {
-        ThreadUtil.scheduleTask(() -> logger.info("线程统计, 使用中: {}, 空闲: {}", inUseTunnelPool.size(), idledTunnelPool.size()), 5, 5);
+        ThreadUtil.scheduleTask(() -> logger.info("连接池统计, 使用中: {}, 空闲: {}", inUseTunnelPool.size(), idledTunnelPool.size()), 5, 5);
     }
 
     private static class ClientLifeStyleListener implements DaemonListener {
