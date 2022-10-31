@@ -3,8 +3,8 @@ package cn.t.freetunnel.client.socks5.handler;
 import cn.t.freetunnel.client.socks5.listener.HttpSocks5TunnelClientReadyListener;
 import cn.t.freetunnel.client.socks5.listener.HttpsSocks5TunnelClientReadyListener;
 import cn.t.freetunnel.client.socks5.tunnelprovider.PooledTunnelProvider;
-import cn.t.freetunnel.common.constants.TunnelBuildResult;
 import cn.t.freetunnel.common.constants.Socks5TunnelClientConfig;
+import cn.t.freetunnel.common.constants.TunnelBuildResult;
 import cn.t.freetunnel.common.listener.TunnelBuildResultListener;
 import cn.t.freetunnel.common.util.TunnelUtil;
 import io.netty.buffer.ByteBuf;
@@ -43,7 +43,11 @@ public class HttpSocks5TunnelClientHandler extends SimpleChannelInboundHandler<F
         String targetHost = elements[0];
         int targetPort;
         if(elements.length == 1) {
-            targetPort = 80;
+            if(request.uri().startsWith("https")) {
+                targetPort = 443;
+            } else {
+                targetPort = 80;
+            }
         } else {
             targetPort= Integer.parseInt(elements[1]);
         }
