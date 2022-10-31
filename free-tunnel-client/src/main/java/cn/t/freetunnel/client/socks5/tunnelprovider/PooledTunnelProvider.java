@@ -15,7 +15,6 @@ import cn.t.tool.nettytool.daemon.listener.DaemonListener;
 import cn.t.tool.nettytool.initializer.NettyTcpChannelInitializer;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,19 +38,19 @@ public class PooledTunnelProvider {
     private static final Queue<Channel> idledTunnelPool = new ConcurrentLinkedQueue<>();
     private static final Set<Channel> inUseTunnelPool = ConcurrentHashMap.newKeySet();
 
-    public static void acquireSocks5Tunnel(ChannelHandlerContext localContext, String targetHost, int targetPort, Socks5TunnelClientConfig socks5TunnelClientConfig, TunnelBuildResultListener listener) {
+    public static void acquireSocks5Tunnel(Channel localChannel, String targetHost, int targetPort, Socks5TunnelClientConfig socks5TunnelClientConfig, TunnelBuildResultListener listener) {
         Channel channel;
         while ((channel = idledTunnelPool.poll()) != null && !channel.isOpen());
         if(channel != null && channel.isOpen()) {
             logger.info("复用连接,channel: {}, target host: {}, target port: {}", channel, targetHost, targetPort);
             inUseTunnelPool.add(channel);
-            channel.attr(NettyAttrConstants.CONNECT_TUNNEL_REMOTE_CHANNEL).set(localContext.channel());
+            channel.attr(NettyAttrConstants.CONNECT_TUNNEL_REMOTE_CHANNEL).set(localChannel);
             channel.attr(NettyAttrConstants.CONNECT_TUNNEL_BUILD_RESULT_LISTENER).set(listener);
             ByteBuf outputBuf = Socks5MessageUtil.buildConnectBuf(channel.alloc(), targetHost, targetPort);
             channel.writeAndFlush(outputBuf);
         } else {
-            logger.info("请求建立连接, localChannel: {}, target host: {}, target port: {}", localContext.channel(), targetHost, targetPort);
-            InetSocketAddress clientAddress = (InetSocketAddress)localContext.channel().remoteAddress();
+            logger.info("请求建立连接, localChannel: {}, target host: {}, target port: {}", localChannel, targetHost, targetPort);
+            InetSocketAddress clientAddress = (InetSocketAddress)localChannel.remoteAddress();
             String clientName = TunnelUtil.buildProxyConnectionName(clientAddress.getHostString(), clientAddress.getPort(), targetHost, targetPort);
             NettyTcpChannelInitializer channelInitializer = InitializerBuilder.buildHttpProxyServerViaSocks5ClientChannelInitializer();
             NettyTcpClient nettyTcpClient = new NettyTcpClient(clientName, socks5TunnelClientConfig.getSocks5ServerHost(), socks5TunnelClientConfig.getSocks5ServerPort(), channelInitializer, TunnelConstants.WORKER_GROUP, false, false);
@@ -60,8 +59,9 @@ public class PooledTunnelProvider {
             nettyTcpClient.childAttr(NettyAttrConstants.CONNECT_SECURITY, socks5TunnelClientConfig.getSecurity());
             nettyTcpClient.childAttr(NettyAttrConstants.CONNECT_TARGET_HOST, targetHost);
             nettyTcpClient.childAttr(NettyAttrConstants.CONNECT_TARGET_PORT, targetPort);
-            nettyTcpClient.childAttr(NettyAttrConstants.CONNECT_TUNNEL_REMOTE_CHANNEL, localContext.channel());
+            nettyTcpClient.childAttr(NettyAttrConstants.CONNECT_TUNNEL_REMOTE_CHANNEL, localChannel);
             nettyTcpClient.childAttr(NettyAttrConstants.CONNECT_TUNNEL_BUILD_RESULT_LISTENER, listener);
+            nettyTcpClient.childAttr(NettyAttrConstants.EVENT_EXECUTOR, localChannel.eventLoop());
             nettyTcpClient.addListener(new ClientLifeStyleListener());
             nettyTcpClient.start();
         }
