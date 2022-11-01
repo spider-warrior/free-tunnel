@@ -1,23 +1,24 @@
 package cn.t.freetunnel.client.socks5;
 
 import cn.t.freetunnel.client.socks5.constants.HttpSocks5TunnelClientConfig;
-import cn.t.freetunnel.common.constants.TunnelConstants;
 import cn.t.freetunnel.client.socks5.util.InitializerBuilder;
 import cn.t.freetunnel.common.constants.Socks5TunnelClientConfig;
+import cn.t.freetunnel.common.constants.TunnelConstants;
 import cn.t.tool.nettytool.daemon.DaemonService;
 import cn.t.tool.nettytool.daemon.server.NettyTcpServer;
 import cn.t.tool.nettytool.initializer.NettyTcpChannelInitializer;
 import cn.t.tool.nettytool.launcher.DefaultLauncher;
+import cn.t.util.common.FileUtil;
 import cn.t.util.common.JsonUtil;
 import cn.t.util.common.StringUtil;
-import cn.t.util.io.FileUtil;
 import cn.t.util.security.message.base64.Base64Util;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.FileInputStream;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -96,7 +97,7 @@ public class HttpSocks5TunnelClient {
                 System.exit(1);
             } else {
                 try (
-                    InputStream clientConfPathInputStream = new FileInputStream(analysePath(clientConfPath));
+                    InputStream clientConfPathInputStream = Files.newInputStream(Paths.get(analysePath(clientConfPath)));
                 ) {
                     byte[] data = new byte[clientConfPathInputStream.available()];
                     int length = clientConfPathInputStream.read(data);
@@ -104,7 +105,7 @@ public class HttpSocks5TunnelClient {
                         System.err.println("clientConf内容为空, 目录: " + clientConfPath);
                         System.exit(1);
                     } else {
-                        Map<String, String> configMap = JsonUtil.deserialize(new String(data), new TypeReference<>(){});
+                        Map<String, String> configMap = JsonUtil.deserialize(new String(data), new TypeReference<Map<String, String>>(){});
                         socks5TunnelClientConfig.setSocks5ServerHost(configMap.get("socks5ServerHost").trim());
                         socks5TunnelClientConfig.setSocks5ServerPort(Integer.parseInt(configMap.get("socks5ServerPort").trim()));
                         socks5TunnelClientConfig.setUsername(configMap.get("username").trim());

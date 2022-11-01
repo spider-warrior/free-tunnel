@@ -19,10 +19,6 @@
         </dependency>
         <dependency>
             <groupId>cn.t</groupId>
-            <artifactId>io-util</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>cn.t</groupId>
             <artifactId>security-util</artifactId>
         </dependency>
         <dependency>
