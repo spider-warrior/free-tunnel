@@ -81,7 +81,7 @@ public class HttpSocks5TunnelClientHandler extends SimpleChannelInboundHandler<F
         TunnelBuildResultListener tunnelBuildResultListener = (status, remoteChannel) -> {
             if(TunnelBuildResult.SUCCEEDED.value == status) {
                 ChannelPromise promise = remoteChannel.newPromise();
-                promise.addListener(new HttpSocks5TunnelClientReadyListener(ctx.channel(), remoteChannel, targetHost, targetPort));
+                promise.addListener(new HttpSocks5TunnelClientReadyListener(remoteChannel, ctx.channel(), targetHost, targetPort));
                 ByteBuf buf = TunnelUtil.httpRequestToByteBuf(ctx.alloc(), proxiedRequest);
                 remoteChannel.writeAndFlush(buf, promise);
             } else {

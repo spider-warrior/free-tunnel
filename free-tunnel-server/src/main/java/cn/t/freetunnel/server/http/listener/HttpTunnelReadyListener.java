@@ -18,12 +18,12 @@ import io.netty.handler.codec.http.HttpResponseEncoder;
 public class HttpTunnelReadyListener extends TunnelReadyListener {
 
     @Override
-    protected void notifySuccess(ChannelFuture future) {
+    protected void operationSuccess(ChannelFuture future) {
         //已经通知客户端代理成功, 切换handler
-        ChannelPipeline pipeline = localChannel.pipeline();
+        ChannelPipeline pipeline = remoteChannel.pipeline();
         pipeline.remove(HttpResponseEncoder.class);
         pipeline.remove(HttpProxyServerMessageHandler.class);
-        NettyComponentUtil.addLastHandler(pipeline, "proxy-forwarding-handler", new ForwardingMessageHandler(remoteChannel));
+        NettyComponentUtil.addLastHandler(pipeline, "proxy-forwarding-handler", new ForwardingMessageHandler(localChannel));
     }
 
     public HttpTunnelReadyListener(Channel localChannel, Channel remoteChannel, String host, int port) {

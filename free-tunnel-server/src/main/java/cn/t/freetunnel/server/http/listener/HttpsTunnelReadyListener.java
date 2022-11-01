@@ -20,7 +20,7 @@ import io.netty.handler.codec.http.HttpResponseEncoder;
 public class HttpsTunnelReadyListener extends TunnelReadyListener {
 
     @Override
-    protected void notifySuccess(ChannelFuture future) {
+    protected void operationSuccess(ChannelFuture future) {
         //已经通知客户端代理成功, 切换handler
         ChannelPipeline pipeline = localChannel.pipeline();
         pipeline.remove(HttpResponseEncoder.class);

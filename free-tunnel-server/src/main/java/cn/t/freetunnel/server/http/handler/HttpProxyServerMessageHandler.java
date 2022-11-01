@@ -50,10 +50,10 @@ public class HttpProxyServerMessageHandler extends SimpleChannelInboundHandler<F
     }
 
     private void buildHttpsProxy(ChannelHandlerContext ctx, String targetHost, int targetPort, HttpVersion httpVersion) {
-        TunnelBuildResultListener tunnelBuildResultListener = (status, remoteChannelHandlerContext) -> {
+        TunnelBuildResultListener tunnelBuildResultListener = (status, remoteChannel) -> {
             if(TunnelBuildResult.SUCCEEDED.value == status) {
                 ChannelPromise promise = ctx.newPromise();
-                promise.addListener(new HttpsTunnelReadyListener(ctx.channel(), remoteChannelHandlerContext, targetHost, targetPort));
+                promise.addListener(new HttpsTunnelReadyListener(ctx.channel(), remoteChannel, targetHost, targetPort));
                 ctx.writeAndFlush(new DefaultFullHttpResponse(httpVersion, OK), promise);
             } else {
                 logger.error("[{}]: 代理客户端失败, remote: {}:{}", ctx.channel().remoteAddress(), targetHost, targetPort);
@@ -69,7 +69,7 @@ public class HttpProxyServerMessageHandler extends SimpleChannelInboundHandler<F
             if(TunnelBuildResult.SUCCEEDED.value == status) {
                 TunnelUtil.prepareProxiedRequest(proxiedRequest);
                 ChannelPromise promise = remoteChannel.newPromise();
-                promise.addListener(new HttpTunnelReadyListener(ctx.channel(), remoteChannel, targetHost, targetPort));
+                promise.addListener(new HttpTunnelReadyListener(remoteChannel, ctx.channel(), targetHost, targetPort));
                 remoteChannel.writeAndFlush(proxiedRequest, promise);
             } else {
                 ReferenceCountUtil.release(proxiedRequest);

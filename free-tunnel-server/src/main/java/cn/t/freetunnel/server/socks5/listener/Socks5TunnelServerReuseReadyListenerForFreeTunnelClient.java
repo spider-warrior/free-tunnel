@@ -13,7 +13,7 @@ import io.netty.channel.ChannelPipeline;
 public class Socks5TunnelServerReuseReadyListenerForFreeTunnelClient extends TunnelReadyListener {
 
     @Override
-    protected void notifySuccess(ChannelFuture future) {
+    protected void operationSuccess(ChannelFuture future) {
         ChannelPipeline channelPipeline = localChannel.pipeline();
         //forwardingHandler切换remoteContext
         Socks5TunnelServerForwardingHandler forwardingHandler = (Socks5TunnelServerForwardingHandler)channelPipeline.get(NettyHandlerName.SOCKS5_TUNNEL_SERVER_FORWARDING_MESSAGE_HANDLER);

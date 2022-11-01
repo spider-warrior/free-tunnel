@@ -2,6 +2,8 @@ package cn.t.freetunnel.client.socks5.listener;
 
 import cn.t.freetunnel.client.socks5.handler.HttpSocks5TunnelClientForwardingHandler;
 import cn.t.freetunnel.client.socks5.handler.HttpSocks5TunnelClientHandler;
+import cn.t.freetunnel.common.constants.TunnelCommand;
+import cn.t.freetunnel.common.util.TunnelUtil;
 import cn.t.tool.nettytool.util.NettyComponentUtil;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -9,17 +11,22 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpRequestDecoder;
 import io.netty.handler.codec.http.HttpResponseEncoder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * https代理结果监听器
+ * 触发时机: 成功通知浏览器代理结果
  * @author <a href="mailto:jian.yang@liby.ltd">野生程序员-杨建</a>
  * @version V1.0
  * @since 2020-02-27 15:42
  **/
 public class HttpsSocks5TunnelClientReadyListener extends Socks5TunnelClientReadyListener {
 
+    private static final Logger logger = LoggerFactory.getLogger(HttpsSocks5TunnelClientReadyListener.class);
+
     @Override
-    protected void notifySuccess(ChannelFuture future) {
+    protected void operationSuccess(ChannelFuture future) {
         //已经通知客户端代理成功, 切换handler
         ChannelPipeline channelPipeline = localChannel.pipeline();
         channelPipeline.remove(HttpSocks5TunnelClientHandler.class);
@@ -27,6 +34,16 @@ public class HttpsSocks5TunnelClientReadyListener extends Socks5TunnelClientRead
         channelPipeline.remove(HttpResponseEncoder.class);
         channelPipeline.remove(HttpObjectAggregator.class);
         NettyComponentUtil.addLastHandler(channelPipeline, "https-socks5-client-forwarding-handler", new HttpSocks5TunnelClientForwardingHandler(remoteChannel));
+    }
+
+    @Override
+    protected void operationFailed(ChannelFuture future) {
+        if(remoteChannel.isOpen()) {
+            logger.error("[{}]代理结果通知失败: {}:{}, 即将复位远程连接, 失败原因: {}", TunnelUtil.buildProxyTunnelName(localChannel, remoteChannel), host, port, future.cause());
+            remoteChannel.writeAndFlush(TunnelCommand.RESET_STATUS_TO_COMMAND_REQUEST);
+        } else {
+            logger.error("[{}]代理结果通知失败: {}:{}, 远程连接已关闭, 失败原因: {}", TunnelUtil.buildProxyTunnelName(localChannel, remoteChannel), host, port, future.cause());
+        }
     }
 
     public HttpsSocks5TunnelClientReadyListener(Channel localChannel, Channel remoteChannel, String host, int port) {

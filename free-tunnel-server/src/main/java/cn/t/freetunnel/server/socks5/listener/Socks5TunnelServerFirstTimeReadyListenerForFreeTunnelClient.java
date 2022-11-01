@@ -19,7 +19,7 @@ public class Socks5TunnelServerFirstTimeReadyListenerForFreeTunnelClient extends
 
     private final byte[] security;
     @Override
-    protected void notifySuccess(ChannelFuture future) {
+    protected void operationSuccess(ChannelFuture future) {
         ChannelPipeline channelPipeline = localChannel.pipeline();
         //加解密
         try {
