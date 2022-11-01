@@ -1,11 +1,8 @@
 package cn.t.freetunnel.client.socks5.tunnelprovider;
 
-import cn.t.freetunnel.common.constants.TunnelConstants;
 import cn.t.freetunnel.client.socks5.util.InitializerBuilder;
 import cn.t.freetunnel.client.socks5.util.Socks5MessageUtil;
-import cn.t.freetunnel.common.constants.FreeTunnelConstants;
-import cn.t.freetunnel.common.constants.NettyAttrConstants;
-import cn.t.freetunnel.common.constants.Socks5TunnelClientConfig;
+import cn.t.freetunnel.common.constants.*;
 import cn.t.freetunnel.common.listener.TunnelBuildResultListener;
 import cn.t.freetunnel.common.util.TunnelUtil;
 import cn.t.tool.nettytool.daemon.DaemonService;
@@ -15,21 +12,25 @@ import cn.t.tool.nettytool.initializer.NettyTcpChannelInitializer;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.EventLoop;
+import io.netty.util.Attribute;
+import io.netty.util.AttributeKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
-import java.util.Queue;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class ChannelProvider {
-    private static final Logger logger = LoggerFactory.getLogger(FreeTunnelConstants.TUNNEL_EVENT_LOGGER_NAME);
 
-    private final Queue<Channel> idledTunnelPool = new ConcurrentLinkedQueue<>();
-    private final Set<Channel> inUseTunnelPool = ConcurrentHashMap.newKeySet();
+    private static final Logger logger = LoggerFactory.getLogger(FreeTunnelConstants.TUNNEL_EVENT_LOGGER_NAME);
+    private static final AttributeKey<Long> channelUpTime = AttributeKey.newInstance("channelUpTime");
+
+//    private final Queue<Channel> idledTunnelPool = new ConcurrentLinkedQueue<>();
+//    private final Set<Channel> inUseTunnelPool = ConcurrentHashMap.newKeySet();
+
+    private final Queue<Channel> idledTunnelPool = new LinkedList<>();
+    private final Set<Channel> inUseTunnelPool = new HashSet<>();
 
     public void acquireSocks5Tunnel(Channel localChannel, String targetHost, int targetPort, Socks5TunnelClientConfig socks5TunnelClientConfig, TunnelBuildResultListener listener) {
         Channel channel;
@@ -62,7 +63,24 @@ public class ChannelProvider {
 
     public ChannelProvider(EventLoop eventLoop) {
         eventLoop.scheduleAtFixedRate(
-            () -> logger.info("连接池统计, 使用中: {}, 空闲: {}", inUseTunnelPool.size(), idledTunnelPool.size()),
+            () -> {
+                logger.info("连接池统计, 使用中: {}, 空闲: {}", inUseTunnelPool.size(), idledTunnelPool.size());
+                long now = System.currentTimeMillis();
+                Iterator<Channel> iterator = idledTunnelPool.iterator();
+                while (iterator.hasNext()) {
+                    Channel channel = iterator.next();
+                    if(channel.isOpen()) {
+                        Attribute<Long> attr = channel.attr(channelUpTime);
+                        if(now - attr.get() > 10000) {
+                            channel.writeAndFlush(TunnelCommand.HEART_BEAT).addListener(future -> {
+                                if(future.isSuccess()) {
+                                    attr.set(now);
+                                }
+                            });
+                        }
+                    }
+                }
+            },
             5,
             5,
             TimeUnit.SECONDS
@@ -74,6 +92,7 @@ public class ChannelProvider {
             inUseTunnelPool.remove(remoteChannel);
             idledTunnelPool.add(remoteChannel);
             logger.info("返还连接,channel: {}, 使用中: {}, 可复用: {}", remoteChannel, inUseTunnelPool.size(), idledTunnelPool.size());
+            remoteChannel.attr(channelUpTime).set(System.currentTimeMillis());
         } else {
             logger.error("返还连接不可用,channel: {}", remoteChannel);
         }

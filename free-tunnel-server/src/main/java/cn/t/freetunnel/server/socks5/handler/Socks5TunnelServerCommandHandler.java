@@ -36,6 +36,8 @@ public class Socks5TunnelServerCommandHandler extends SimpleChannelInboundHandle
         } else if(TunnelCommand.RESET_STATUS_TO_COMMAND_RESPONSE == command) {
             logger.info("客户端已复位连接,channel: {}", ctx.channel());
             resetStatusToCommand(ctx);
+        } else if(TunnelCommand.HEART_BEAT == command) {
+            logger.info("心跳包: {}", ctx.channel());
         } else {
             throw new TunnelException("不支持的命令: " + command);
         }

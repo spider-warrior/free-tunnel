@@ -20,6 +20,10 @@ public enum TunnelCommand {
      * 重置连接到command步骤响应
      */
     RESET_STATUS_TO_COMMAND_RESPONSE((byte)3),
+    /**
+     * 心跳
+     */
+    HEART_BEAT((byte)9)
     ;
     public final byte value;
 
