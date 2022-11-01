@@ -1,4 +1,4 @@
-package cn.t.freetunnel.common.eventloppgroup;
+package cn.t.freetunnel.common.eventloop;
 
 import cn.t.freetunnel.common.constants.NettyAttrConstants;
 import io.netty.channel.Channel;

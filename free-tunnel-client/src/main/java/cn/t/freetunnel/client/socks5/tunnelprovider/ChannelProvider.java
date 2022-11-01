@@ -1,12 +1,11 @@
 package cn.t.freetunnel.client.socks5.tunnelprovider;
 
+import cn.t.freetunnel.common.constants.TunnelConstants;
 import cn.t.freetunnel.client.socks5.util.InitializerBuilder;
 import cn.t.freetunnel.client.socks5.util.Socks5MessageUtil;
-import cn.t.freetunnel.client.socks5.util.ThreadUtil;
 import cn.t.freetunnel.common.constants.FreeTunnelConstants;
 import cn.t.freetunnel.common.constants.NettyAttrConstants;
 import cn.t.freetunnel.common.constants.Socks5TunnelClientConfig;
-import cn.t.freetunnel.common.constants.TunnelConstants;
 import cn.t.freetunnel.common.listener.TunnelBuildResultListener;
 import cn.t.freetunnel.common.util.TunnelUtil;
 import cn.t.tool.nettytool.daemon.DaemonService;
@@ -15,6 +14,7 @@ import cn.t.tool.nettytool.daemon.listener.DaemonListener;
 import cn.t.tool.nettytool.initializer.NettyTcpChannelInitializer;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
+import io.netty.channel.EventLoop;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,22 +23,15 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.TimeUnit;
 
-/**
- * PooledTunnelProvider
- *
- * @author <a href="mailto:yangjian@liby.ltd">研发部-杨建</a>
- * @version V1.0
- * @since 2022-03-10 14:10
- **/
-public class PooledTunnelProvider {
-
+public class ChannelProvider {
     private static final Logger logger = LoggerFactory.getLogger(FreeTunnelConstants.TUNNEL_EVENT_LOGGER_NAME);
 
-    private static final Queue<Channel> idledTunnelPool = new ConcurrentLinkedQueue<>();
-    private static final Set<Channel> inUseTunnelPool = ConcurrentHashMap.newKeySet();
+    private final Queue<Channel> idledTunnelPool = new ConcurrentLinkedQueue<>();
+    private final Set<Channel> inUseTunnelPool = ConcurrentHashMap.newKeySet();
 
-    public static void acquireSocks5Tunnel(Channel localChannel, String targetHost, int targetPort, Socks5TunnelClientConfig socks5TunnelClientConfig, TunnelBuildResultListener listener) {
+    public void acquireSocks5Tunnel(Channel localChannel, String targetHost, int targetPort, Socks5TunnelClientConfig socks5TunnelClientConfig, TunnelBuildResultListener listener) {
         Channel channel;
         while ((channel = idledTunnelPool.poll()) != null && !channel.isOpen());
         if(channel != null && channel.isOpen()) {
@@ -67,7 +60,16 @@ public class PooledTunnelProvider {
         }
     }
 
-    public static void closeTunnel(Channel remoteChannel) {
+    public ChannelProvider(EventLoop eventLoop) {
+        eventLoop.scheduleAtFixedRate(
+            () -> logger.info("连接池统计, 使用中: {}, 空闲: {}", inUseTunnelPool.size(), idledTunnelPool.size()),
+            5,
+            5,
+            TimeUnit.SECONDS
+        );
+    }
+
+    public void closeTunnel(Channel remoteChannel) {
         if(remoteChannel.isOpen()) {
             inUseTunnelPool.remove(remoteChannel);
             idledTunnelPool.add(remoteChannel);
@@ -77,11 +79,7 @@ public class PooledTunnelProvider {
         }
     }
 
-    static {
-        ThreadUtil.scheduleTask(() -> logger.info("连接池统计, 使用中: {}, 空闲: {}", inUseTunnelPool.size(), idledTunnelPool.size()), 5, 5);
-    }
-
-    private static class ClientLifeStyleListener implements DaemonListener {
+    private class ClientLifeStyleListener implements DaemonListener {
         @Override
         public void startup(DaemonService server, Channel channel) {
             inUseTunnelPool.add(channel);

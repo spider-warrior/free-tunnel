@@ -1,6 +1,6 @@
 package cn.t.freetunnel.client.socks5.handler;
 
-import cn.t.freetunnel.client.socks5.tunnelprovider.PooledTunnelProvider;
+import cn.t.freetunnel.client.socks5.tunnelprovider.StaticChannelProvider;
 import cn.t.freetunnel.common.constants.FreeTunnelConstants;
 import cn.t.freetunnel.common.constants.NettyHandlerName;
 import cn.t.freetunnel.common.constants.TunnelCommand;
@@ -32,14 +32,14 @@ public class Socks5TunnelClientCommandHandler extends SimpleChannelInboundHandle
             responsePromise.addListener(f -> {
                 if(f.isSuccess()) {
                     resetToCommandStatus(ctx);
-                    PooledTunnelProvider.closeTunnel(ctx.channel());
+                    StaticChannelProvider.closeTunnel(ctx.channel());
                 }
             });
             ctx.writeAndFlush(TunnelCommand.RESET_STATUS_TO_COMMAND_RESPONSE, responsePromise);
         } else if(TunnelCommand.RESET_STATUS_TO_COMMAND_RESPONSE == command) {
             logger.info("服务端已复位连接,channel: {}", ctx.channel());
             resetToCommandStatus(ctx);
-            PooledTunnelProvider.closeTunnel(ctx.channel());
+            StaticChannelProvider.closeTunnel(ctx.channel());
         } else {
             throw new TunnelException("不支持的命令: " + command);
         }

@@ -2,7 +2,7 @@ package cn.t.freetunnel.client.socks5.handler;
 
 import cn.t.freetunnel.client.socks5.listener.HttpSocks5TunnelClientReadyListener;
 import cn.t.freetunnel.client.socks5.listener.HttpsSocks5TunnelClientReadyListener;
-import cn.t.freetunnel.client.socks5.tunnelprovider.PooledTunnelProvider;
+import cn.t.freetunnel.client.socks5.tunnelprovider.StaticChannelProvider;
 import cn.t.freetunnel.common.constants.Socks5TunnelClientConfig;
 import cn.t.freetunnel.common.constants.TunnelBuildResult;
 import cn.t.freetunnel.common.listener.TunnelBuildResultListener;
@@ -72,7 +72,7 @@ public class HttpSocks5TunnelClientHandler extends SimpleChannelInboundHandler<F
             }
         };
         //请求socks5通道
-        PooledTunnelProvider.acquireSocks5Tunnel(ctx.channel(), targetHost, targetPort, socks5TunnelClientConfig, tunnelBuildResultListener);
+        StaticChannelProvider.acquireSocks5Tunnel(ctx.channel(), targetHost, targetPort, socks5TunnelClientConfig, tunnelBuildResultListener);
     }
 
     private void buildHttpProxy(ChannelHandlerContext ctx, String targetHost, int targetPort, HttpVersion httpVersion, FullHttpRequest request) {
@@ -90,7 +90,7 @@ public class HttpSocks5TunnelClientHandler extends SimpleChannelInboundHandler<F
                 ctx.writeAndFlush(new DefaultFullHttpResponse(httpVersion, BAD_GATEWAY)).addListener(ChannelFutureListener.CLOSE);
             }
         };
-        PooledTunnelProvider.acquireSocks5Tunnel(ctx.channel(), targetHost, targetPort, socks5TunnelClientConfig, tunnelBuildResultListener);
+        StaticChannelProvider.acquireSocks5Tunnel(ctx.channel(), targetHost, targetPort, socks5TunnelClientConfig, tunnelBuildResultListener);
     }
 
 

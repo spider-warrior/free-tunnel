@@ -1,9 +1,9 @@
 package cn.t.freetunnel.client.socks5;
 
 import cn.t.freetunnel.client.socks5.constants.HttpSocks5TunnelClientConfig;
+import cn.t.freetunnel.common.constants.TunnelConstants;
 import cn.t.freetunnel.client.socks5.util.InitializerBuilder;
 import cn.t.freetunnel.common.constants.Socks5TunnelClientConfig;
-import cn.t.freetunnel.common.constants.TunnelConstants;
 import cn.t.tool.nettytool.daemon.DaemonService;
 import cn.t.tool.nettytool.daemon.server.NettyTcpServer;
 import cn.t.tool.nettytool.initializer.NettyTcpChannelInitializer;

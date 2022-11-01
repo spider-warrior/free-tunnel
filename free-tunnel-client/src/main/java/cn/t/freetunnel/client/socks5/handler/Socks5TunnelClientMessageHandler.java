@@ -1,6 +1,6 @@
 package cn.t.freetunnel.client.socks5.handler;
 
-import cn.t.freetunnel.client.socks5.tunnelprovider.PooledTunnelProvider;
+import cn.t.freetunnel.client.socks5.tunnelprovider.StaticChannelProvider;
 import cn.t.freetunnel.client.socks5.util.Socks5MessageUtil;
 import cn.t.freetunnel.common.constants.*;
 import cn.t.freetunnel.common.exception.TunnelException;
@@ -130,7 +130,7 @@ public class Socks5TunnelClientMessageHandler extends SimpleChannelInboundHandle
                 ctx.channel().attr(NettyAttrConstants.CONNECT_TUNNEL_BUILD_RESULT_LISTENER).get().handle(TunnelBuildResult.SUCCEEDED.value, ctx.channel());
             } else {
                 ctx.channel().attr(NettyAttrConstants.CONNECT_TUNNEL_BUILD_RESULT_LISTENER).get().handle(TunnelBuildResult.FAILED.value, null);
-                PooledTunnelProvider.closeTunnel(ctx.channel());
+                StaticChannelProvider.closeTunnel(ctx.channel());
             }
         } else {
             throw new TunnelException("未实现的状态处理: " + state);
