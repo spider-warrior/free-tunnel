@@ -2,7 +2,7 @@ package cn.t.freetunnel.client.socks5.listener;
 
 import cn.t.freetunnel.client.socks5.handler.HttpSocks5TunnelClientForwardingHandler;
 import cn.t.freetunnel.client.socks5.handler.HttpSocks5TunnelClientHandler;
-import cn.t.freetunnel.common.constants.TunnelCommand;
+import cn.t.freetunnel.client.socks5.util.Socks5MessageUtil;
 import cn.t.freetunnel.common.util.TunnelUtil;
 import cn.t.tool.nettytool.util.NettyComponentUtil;
 import io.netty.channel.Channel;
@@ -40,7 +40,7 @@ public class HttpsSocks5TunnelClientReadyListener extends Socks5TunnelClientRead
     protected void operationFailed(ChannelFuture future) {
         if(remoteChannel.isOpen()) {
             logger.error("[{}]代理结果通知失败: {}:{}, 即将复位远程连接, 失败原因: {}", TunnelUtil.buildProxyTunnelName(localChannel, remoteChannel), host, port, future.cause());
-            remoteChannel.writeAndFlush(TunnelCommand.RESET_STATUS_TO_COMMAND_REQUEST);
+            Socks5MessageUtil.sendResetChannelRequest(remoteChannel);
         } else {
             logger.error("[{}]代理结果通知失败: {}:{}, 远程连接已关闭, 失败原因: {}", TunnelUtil.buildProxyTunnelName(localChannel, remoteChannel), host, port, future.cause());
         }

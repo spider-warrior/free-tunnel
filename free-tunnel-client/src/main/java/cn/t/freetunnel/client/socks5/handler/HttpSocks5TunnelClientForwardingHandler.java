@@ -1,6 +1,6 @@
 package cn.t.freetunnel.client.socks5.handler;
 
-import cn.t.freetunnel.common.constants.TunnelCommand;
+import cn.t.freetunnel.client.socks5.util.Socks5MessageUtil;
 import cn.t.freetunnel.common.handler.ForwardingMessageHandler;
 import cn.t.freetunnel.common.util.TunnelUtil;
 import io.netty.channel.Channel;
@@ -26,7 +26,7 @@ public class HttpSocks5TunnelClientForwardingHandler extends ForwardingMessageHa
         } else {
             if(remoteChannel.isOpen()) {
                 log.info("[{} -> {}]: 断开连接, 复位通道: [{} -> {}]", ctx.channel().remoteAddress(), ctx.channel().localAddress(), remoteChannel.localAddress(), remoteChannel.remoteAddress());
-                remoteChannel.writeAndFlush(TunnelCommand.RESET_STATUS_TO_COMMAND_REQUEST);
+                Socks5MessageUtil.sendResetChannelRequest(remoteChannel);
             }
         }
     }

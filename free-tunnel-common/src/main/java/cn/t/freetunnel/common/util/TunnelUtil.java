@@ -10,8 +10,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.codec.http.*;
 import io.netty.util.ReferenceCountUtil;
-import io.netty.util.concurrent.Future;
-import io.netty.util.concurrent.GenericFutureListener;
 
 /**
  * TunnelUtil
@@ -29,20 +27,9 @@ public class TunnelUtil {
         }
     }
 
-    public static void closeImmediately(Channel ctx) {
-        closeImmediately(ctx, null);
-    }
-
-    public static void closeImmediately(Channel channel, GenericFutureListener<? extends Future<? super Void>> listener) {
-        if(channel.isOpen()) {
-            channel.attr(NettyAttrConstants.CLOSE_BY_CALL_METHOD).set(true);
-            if(listener == null) {
-                channel.close();
-            } else {
-                channel.close().addListener(listener);
-            }
-
-        }
+    public static void closeImmediately(Channel channel) {
+        channel.attr(NettyAttrConstants.CLOSE_BY_CALL_METHOD).set(true);
+        channel.close();
     }
 
     public static boolean isClosedByCallMethod(ChannelHandlerContext ctx) {

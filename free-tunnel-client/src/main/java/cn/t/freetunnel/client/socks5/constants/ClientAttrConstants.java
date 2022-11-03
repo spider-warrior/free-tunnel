@@ -12,4 +12,5 @@ import io.netty.util.AttributeKey;
  **/
 public class ClientAttrConstants {
     public static final AttributeKey<TunnelSpecification> TUNNEL_SPECIFICATION = AttributeKey.newInstance("tunnelSpecification");
+    public static final AttributeKey<Boolean> TUNNEL_IN_USE = AttributeKey.newInstance("tunnelInUse");
 }

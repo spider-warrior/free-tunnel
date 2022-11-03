@@ -44,6 +44,7 @@ public class ChannelProvider {
             logger.info("复用连接,channel: {}, target host: {}, target port: {}", channel, targetHost, targetPort);
             inUseTunnelPool.add(channel);
             channel.attr(NettyAttrConstants.CONNECT_TUNNEL_REMOTE_CHANNEL).set(localChannel);
+            channel.attr(ClientAttrConstants.TUNNEL_IN_USE).set(Boolean.TRUE);
             TunnelSpecification tunnelSpecification = channel.attr(ClientAttrConstants.TUNNEL_SPECIFICATION).get();
             tunnelSpecification.setTargetHost(targetHost);
             tunnelSpecification.setTargetPort(targetPort);
@@ -56,9 +57,10 @@ public class ChannelProvider {
             String clientName = TunnelUtil.buildProxyConnectionName(clientAddress.getHostString(), clientAddress.getPort(), targetHost, targetPort);
             NettyTcpChannelInitializer channelInitializer = InitializerBuilder.buildHttpProxyServerViaSocks5ClientChannelInitializer();
             NettyTcpClient nettyTcpClient = new NettyTcpClient(clientName, Socks5TunnelClientConfig.socks5ServerHost, Socks5TunnelClientConfig.socks5ServerPort, channelInitializer, TunnelConstants.WORKER_GROUP, false, false);
-            nettyTcpClient.childAttr(ClientAttrConstants.TUNNEL_SPECIFICATION, new TunnelSpecification(targetHost, targetPort, listener));
             nettyTcpClient.childAttr(NettyAttrConstants.CONNECT_TUNNEL_REMOTE_CHANNEL, localChannel);
-            nettyTcpClient.addListener(new ClientLifeStyleListener());
+            nettyTcpClient.childAttr(ClientAttrConstants.TUNNEL_IN_USE, Boolean.TRUE);
+            nettyTcpClient.childAttr(ClientAttrConstants.TUNNEL_SPECIFICATION, new TunnelSpecification(targetHost, targetPort, listener));
+            nettyTcpClient.addListener(new ClientLifeCycleListener());
             nettyTcpClient.start();
         }
     }
@@ -100,9 +102,12 @@ public class ChannelProvider {
         }
     }
 
-    private class ClientLifeStyleListener implements DaemonListener {
+    private class ClientLifeCycleListener implements DaemonListener {
+
         @Override
         public void startup(DaemonService server, Channel channel) {
+            TunnelSpecification tunnelSpecification = channel.attr(ClientAttrConstants.TUNNEL_SPECIFICATION).get();
+            logger.info("新建通道: {}, targetHost: {}, targetPort: {}", channel, tunnelSpecification.getTargetHost(), tunnelSpecification.getTargetPort());
             inUseTunnelPool.add(channel);
         }
 

@@ -29,10 +29,9 @@ public class Socks5TunnelServerCommandHandler extends SimpleChannelInboundHandle
     protected void channelRead0(ChannelHandlerContext ctx, TunnelCommand command) {
         if(TunnelCommand.RESET_STATUS_TO_COMMAND_REQUEST == command) {
             logger.info("客户端请求复位连接,channel: {}", ctx.channel());
-            TunnelUtil.closeImmediately(remoteChannel, future -> {
-                resetStatusToCommand(ctx);
-                ctx.writeAndFlush(TunnelCommand.RESET_STATUS_TO_COMMAND_RESPONSE);
-            });
+            TunnelUtil.closeImmediately(remoteChannel);
+            resetStatusToCommand(ctx);
+            ctx.writeAndFlush(TunnelCommand.RESET_STATUS_TO_COMMAND_RESPONSE);
         } else if(TunnelCommand.RESET_STATUS_TO_COMMAND_RESPONSE == command) {
             logger.info("客户端已复位连接,channel: {}", ctx.channel());
             resetStatusToCommand(ctx);

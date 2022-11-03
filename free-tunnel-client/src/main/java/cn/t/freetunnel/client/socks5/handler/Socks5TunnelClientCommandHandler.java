@@ -1,12 +1,17 @@
 package cn.t.freetunnel.client.socks5.handler;
 
+import cn.t.freetunnel.client.socks5.constants.ClientAttrConstants;
 import cn.t.freetunnel.client.socks5.tunnelprovider.StaticChannelProvider;
 import cn.t.freetunnel.common.constants.FreeTunnelConstants;
 import cn.t.freetunnel.common.constants.NettyHandlerName;
 import cn.t.freetunnel.common.constants.TunnelCommand;
 import cn.t.freetunnel.common.exception.TunnelException;
 import cn.t.freetunnel.common.util.TunnelUtil;
-import io.netty.channel.*;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelPipeline;
+import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.util.Attribute;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,20 +31,33 @@ public class Socks5TunnelClientCommandHandler extends SimpleChannelInboundHandle
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, TunnelCommand command) {
         if(TunnelCommand.RESET_STATUS_TO_COMMAND_REQUEST == command) {
-            logger.info("服务端请求复位连接,channel: {}， 即将断开客户端连接: {}", ctx.channel(), remoteChannel);
-            TunnelUtil.closeGracefully(remoteChannel);
-            ChannelPromise responsePromise = ctx.newPromise();
-            responsePromise.addListener(f -> {
-                if(f.isSuccess()) {
-                    resetToCommandStatus(ctx);
-                    StaticChannelProvider.closeTunnel(ctx.channel());
-                }
-            });
-            ctx.writeAndFlush(TunnelCommand.RESET_STATUS_TO_COMMAND_RESPONSE, responsePromise);
+            Attribute<Boolean> inUseAttr = ctx.channel().attr(ClientAttrConstants.TUNNEL_IN_USE);
+            Boolean inUse = inUseAttr.get();
+            if(Boolean.TRUE == inUse) {
+                logger.info("服务端请求复位, channel: {}， 即将断开客户端连接: {}", ctx.channel(), remoteChannel);
+                TunnelUtil.closeGracefully(remoteChannel);
+                resetToCommandStatus(ctx);
+                inUseAttr.set(null);
+                ctx.writeAndFlush(TunnelCommand.RESET_STATUS_TO_COMMAND_RESPONSE);
+                StaticChannelProvider.closeTunnel(ctx.channel());
+            } else if(Boolean.FALSE == inUse) {
+                logger.warn("客户端已发送复位请求, 忽略来自服务端的复位请求, channel: {}", ctx.channel());
+            } else {
+                logger.warn("通道不在使用中, 忽略来自服务端的复位请求, channel: {}", ctx.channel());
+            }
         } else if(TunnelCommand.RESET_STATUS_TO_COMMAND_RESPONSE == command) {
-            logger.info("服务端已复位连接,channel: {}", ctx.channel());
-            resetToCommandStatus(ctx);
-            StaticChannelProvider.closeTunnel(ctx.channel());
+            Attribute<Boolean> inUseAttr = ctx.channel().attr(ClientAttrConstants.TUNNEL_IN_USE);
+            Boolean inUse = inUseAttr.get();
+            if(Boolean.TRUE == inUse) {
+                logger.warn("客户端未发送复位请求, 忽略来自服务端的复位响应, channel: {}", ctx.channel());
+            } else if(Boolean.FALSE == inUse) {
+                logger.info("来自服务端复位响应, 即将归还连接: {}", ctx.channel());
+                resetToCommandStatus(ctx);
+                inUseAttr.set(null);
+                StaticChannelProvider.closeTunnel(ctx.channel());
+            } else {
+                logger.warn("通道不在使用中, 忽略自服务端的复位响应, channel: {}", ctx.channel());
+            }
         } else {
             throw new TunnelException("不支持的命令: " + command);
         }
