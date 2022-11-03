@@ -1,6 +1,5 @@
 package cn.t.freetunnel.client.socks5.tunnelprovider;
 
-import cn.t.freetunnel.common.constants.Socks5TunnelClientConfig;
 import cn.t.freetunnel.common.listener.TunnelBuildResultListener;
 import io.netty.channel.Channel;
 import io.netty.util.concurrent.FastThreadLocal;
@@ -19,13 +18,13 @@ public class StaticChannelProvider {
     private static final Logger logger = LoggerFactory.getLogger(StaticChannelProvider.class);
     private static final FastThreadLocal<ChannelProvider> threadChannelProvider = new FastThreadLocal<>();
 
-    public static void acquireSocks5Tunnel(Channel localChannel, String targetHost, int targetPort, Socks5TunnelClientConfig socks5TunnelClientConfig, TunnelBuildResultListener listener) {
+    public static void acquireSocks5Tunnel(Channel localChannel, String targetHost, int targetPort, TunnelBuildResultListener listener) {
         ChannelProvider channelProvider = threadChannelProvider.get();
         if(channelProvider == null) {
             channelProvider = new ChannelProvider(localChannel.eventLoop());
             threadChannelProvider.set(channelProvider);
         }
-        channelProvider.acquireSocks5Tunnel(localChannel, targetHost, targetPort, socks5TunnelClientConfig, listener);
+        channelProvider.acquireSocks5Tunnel(localChannel, targetHost, targetPort, listener);
     }
 
     public static void closeTunnel(Channel remoteChannel) {

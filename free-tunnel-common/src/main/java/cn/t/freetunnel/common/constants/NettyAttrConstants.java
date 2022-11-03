@@ -15,11 +15,8 @@ import io.netty.util.concurrent.EventExecutor;
 public class NettyAttrConstants {
     public static final AttributeKey<Boolean> CLOSE_BY_CALL_METHOD = AttributeKey.newInstance("closedByCallMethod");
     public static final AttributeKey<EventExecutor> EVENT_EXECUTOR = AttributeKey.newInstance("eventExecutor");
-    public static final AttributeKey<String> CONNECT_USERNAME = AttributeKey.newInstance("connectUsername");
-    public static final AttributeKey<String> CONNECT_PASSWORD = AttributeKey.newInstance("connectPassword");
     public static final AttributeKey<String> CONNECT_TARGET_HOST = AttributeKey.newInstance("connectTargetHost");
     public static final AttributeKey<Integer> CONNECT_TARGET_PORT = AttributeKey.newInstance("connectTargetPort");
-    public static final AttributeKey<byte[]> CONNECT_SECURITY = AttributeKey.newInstance("connectSecurity");
     public static final AttributeKey<Channel> CONNECT_TUNNEL_REMOTE_CHANNEL = AttributeKey.newInstance("connectTunnelRemoteChannel");
     public static final AttributeKey<TunnelBuildResultListener> CONNECT_TUNNEL_BUILD_RESULT_LISTENER = AttributeKey.newInstance("connectTunnelBuildResultListener");
 }

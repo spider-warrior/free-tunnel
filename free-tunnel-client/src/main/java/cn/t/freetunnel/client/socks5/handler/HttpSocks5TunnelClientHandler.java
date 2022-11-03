@@ -3,7 +3,6 @@ package cn.t.freetunnel.client.socks5.handler;
 import cn.t.freetunnel.client.socks5.listener.HttpSocks5TunnelClientReadyListener;
 import cn.t.freetunnel.client.socks5.listener.HttpsSocks5TunnelClientReadyListener;
 import cn.t.freetunnel.client.socks5.tunnelprovider.StaticChannelProvider;
-import cn.t.freetunnel.common.constants.Socks5TunnelClientConfig;
 import cn.t.freetunnel.common.constants.TunnelBuildResult;
 import cn.t.freetunnel.common.listener.TunnelBuildResultListener;
 import cn.t.freetunnel.common.util.TunnelUtil;
@@ -32,8 +31,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 public class HttpSocks5TunnelClientHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
 
     private static final Logger logger = LoggerFactory.getLogger(HttpSocks5TunnelClientHandler.class);
-
-    private final Socks5TunnelClientConfig socks5TunnelClientConfig;
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest request) {
@@ -72,7 +69,7 @@ public class HttpSocks5TunnelClientHandler extends SimpleChannelInboundHandler<F
             }
         };
         //请求socks5通道
-        StaticChannelProvider.acquireSocks5Tunnel(ctx.channel(), targetHost, targetPort, socks5TunnelClientConfig, tunnelBuildResultListener);
+        StaticChannelProvider.acquireSocks5Tunnel(ctx.channel(), targetHost, targetPort, tunnelBuildResultListener);
     }
 
     private void buildHttpProxy(ChannelHandlerContext ctx, String targetHost, int targetPort, HttpVersion httpVersion, FullHttpRequest request) {
@@ -90,11 +87,9 @@ public class HttpSocks5TunnelClientHandler extends SimpleChannelInboundHandler<F
                 ctx.writeAndFlush(new DefaultFullHttpResponse(httpVersion, BAD_GATEWAY)).addListener(ChannelFutureListener.CLOSE);
             }
         };
-        StaticChannelProvider.acquireSocks5Tunnel(ctx.channel(), targetHost, targetPort, socks5TunnelClientConfig, tunnelBuildResultListener);
+        StaticChannelProvider.acquireSocks5Tunnel(ctx.channel(), targetHost, targetPort, tunnelBuildResultListener);
     }
 
 
-    public HttpSocks5TunnelClientHandler(Socks5TunnelClientConfig socks5TunnelClientConfig) {
-        this.socks5TunnelClientConfig = socks5TunnelClientConfig;
-    }
+    public HttpSocks5TunnelClientHandler() {}
 }

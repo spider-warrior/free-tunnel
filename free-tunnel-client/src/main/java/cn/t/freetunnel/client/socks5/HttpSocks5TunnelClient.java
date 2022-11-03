@@ -2,7 +2,7 @@ package cn.t.freetunnel.client.socks5;
 
 import cn.t.freetunnel.client.socks5.constants.HttpSocks5TunnelClientConfig;
 import cn.t.freetunnel.client.socks5.util.InitializerBuilder;
-import cn.t.freetunnel.common.constants.Socks5TunnelClientConfig;
+import cn.t.freetunnel.client.socks5.constants.Socks5TunnelClientConfig;
 import cn.t.freetunnel.common.constants.TunnelConstants;
 import cn.t.tool.nettytool.daemon.DaemonService;
 import cn.t.tool.nettytool.daemon.server.NettyTcpServer;
@@ -36,18 +36,17 @@ public class HttpSocks5TunnelClient {
     private static final Logger logger = LoggerFactory.getLogger(HttpSocks5TunnelClient.class);
 
     public static void main(String[] args) {
-        Socks5TunnelClientConfig socks5TunnelClientConfig = new Socks5TunnelClientConfig();
         if(args.length == 0) {
-            configSocks5ClientConfig(socks5TunnelClientConfig);
+            configSocks5ClientConfig();
         } else if(args.length < 3) {
             System.err.println("参数格式: host:port username:password security");
             System.exit(1);
         } else {
-            analyseAndConfigSocks5Server(socks5TunnelClientConfig, args[0]);
-            analyseAndConfigUser(socks5TunnelClientConfig, args[1]);
-            analyseAndConfigSecurity(socks5TunnelClientConfig, args[2]);
+            analyseAndConfigSocks5Server(args[0]);
+            analyseAndConfigUser(args[1]);
+            analyseAndConfigSecurity(args[2]);
         }
-        NettyTcpChannelInitializer nettyChannelInitializer = InitializerBuilder.httpSocks5TunnelClientInitializer(socks5TunnelClientConfig);
+        NettyTcpChannelInitializer nettyChannelInitializer = InitializerBuilder.httpSocks5TunnelClientInitializer();
         NettyTcpServer proxyServer = new NettyTcpServer("http-socks5-tunnel-client", HttpSocks5TunnelClientConfig.SERVER_PORT, nettyChannelInitializer, TunnelConstants.WORKER_GROUP, false, true);
         List<DaemonService> daemonServerList = new ArrayList<>();
         daemonServerList.add(proxyServer);
@@ -56,36 +55,36 @@ public class HttpSocks5TunnelClient {
         defaultLauncher.startup();
     }
 
-    private static void analyseAndConfigSocks5Server(Socks5TunnelClientConfig socks5TunnelClientConfig, String socks5ServerElement) {
+    private static void analyseAndConfigSocks5Server(String socks5ServerElement) {
         if(StringUtil.isEmpty(socks5ServerElement)) {
             return;
         }
         String[] elements = socks5ServerElement.split(":");
-        socks5TunnelClientConfig.setSocks5ServerHost(elements[0]);
+        Socks5TunnelClientConfig.socks5ServerHost = elements[0];
         if(elements.length > 1) {
-            socks5TunnelClientConfig.setSocks5ServerPort(Integer.parseInt(elements[1]));
+            Socks5TunnelClientConfig.socks5ServerPort = Integer.parseInt(elements[1]);
         }
     }
 
-    private static void analyseAndConfigUser(Socks5TunnelClientConfig socks5TunnelClientConfig, String userElement) {
+    private static void analyseAndConfigUser(String userElement) {
         if(StringUtil.isEmpty(userElement)) {
             return;
         }
         String[] elements = userElement.split(":");
-        socks5TunnelClientConfig.setUsername(elements[0]);
+        Socks5TunnelClientConfig.username = elements[0];
         if(elements.length > 1) {
-            socks5TunnelClientConfig.setPassword(elements[1]);
+            Socks5TunnelClientConfig.password = elements[1];
         }
     }
 
-    private static void analyseAndConfigSecurity(Socks5TunnelClientConfig socks5TunnelClientConfig, String security) {
+    private static void analyseAndConfigSecurity(String security) {
         if(StringUtil.isEmpty(security)) {
             return;
         }
-        socks5TunnelClientConfig.setSecurity(Base64Util.decode(security.getBytes()));
+        Socks5TunnelClientConfig.security = Base64Util.decode(security.getBytes());
     }
 
-    private static void configSocks5ClientConfig(Socks5TunnelClientConfig socks5TunnelClientConfig) {
+    private static void configSocks5ClientConfig() {
         try (
             InputStream inputStream = FileUtil.getResourceInputStream(HttpSocks5TunnelClient.class.getClassLoader(), "free-tunnel-client.properties")
         ) {
@@ -106,11 +105,11 @@ public class HttpSocks5TunnelClient {
                         System.exit(1);
                     } else {
                         Map<String, String> configMap = JsonUtil.deserialize(new String(data), new TypeReference<Map<String, String>>(){});
-                        socks5TunnelClientConfig.setSocks5ServerHost(configMap.get("socks5ServerHost").trim());
-                        socks5TunnelClientConfig.setSocks5ServerPort(Integer.parseInt(configMap.get("socks5ServerPort").trim()));
-                        socks5TunnelClientConfig.setUsername(configMap.get("username").trim());
-                        socks5TunnelClientConfig.setPassword(configMap.get("password").trim());
-                        analyseAndConfigSecurity(socks5TunnelClientConfig, configMap.get("security"));
+                        Socks5TunnelClientConfig.socks5ServerHost = configMap.get("socks5ServerHost").trim();
+                        Socks5TunnelClientConfig.socks5ServerPort = Integer.parseInt(configMap.get("socks5ServerPort").trim());
+                        Socks5TunnelClientConfig.username = configMap.get("username").trim();
+                        Socks5TunnelClientConfig.password = configMap.get("password").trim();
+                        Socks5TunnelClientConfig.security = Base64Util.decode(configMap.get("security").getBytes());
                     }
                 } catch (Exception e) {
                     System.err.println("clientConf配置异常, 目录: " + clientConfPath);

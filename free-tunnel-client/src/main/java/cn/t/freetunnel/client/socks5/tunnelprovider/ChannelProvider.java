@@ -1,5 +1,6 @@
 package cn.t.freetunnel.client.socks5.tunnelprovider;
 
+import cn.t.freetunnel.client.socks5.constants.Socks5TunnelClientConfig;
 import cn.t.freetunnel.client.socks5.util.InitializerBuilder;
 import cn.t.freetunnel.client.socks5.util.Socks5MessageUtil;
 import cn.t.freetunnel.common.constants.*;
@@ -32,7 +33,7 @@ public class ChannelProvider {
     private final Queue<Channel> idledTunnelPool = new LinkedList<>();
     private final Set<Channel> inUseTunnelPool = new HashSet<>();
 
-    public void acquireSocks5Tunnel(Channel localChannel, String targetHost, int targetPort, Socks5TunnelClientConfig socks5TunnelClientConfig, TunnelBuildResultListener listener) {
+    public void acquireSocks5Tunnel(Channel localChannel, String targetHost, int targetPort, TunnelBuildResultListener listener) {
         Channel channel;
         while ((channel = idledTunnelPool.poll()) != null && !channel.isOpen());
         if(channel != null && channel.isOpen()) {
@@ -47,10 +48,7 @@ public class ChannelProvider {
             InetSocketAddress clientAddress = (InetSocketAddress)localChannel.remoteAddress();
             String clientName = TunnelUtil.buildProxyConnectionName(clientAddress.getHostString(), clientAddress.getPort(), targetHost, targetPort);
             NettyTcpChannelInitializer channelInitializer = InitializerBuilder.buildHttpProxyServerViaSocks5ClientChannelInitializer();
-            NettyTcpClient nettyTcpClient = new NettyTcpClient(clientName, socks5TunnelClientConfig.getSocks5ServerHost(), socks5TunnelClientConfig.getSocks5ServerPort(), channelInitializer, TunnelConstants.WORKER_GROUP, false, false);
-            nettyTcpClient.childAttr(NettyAttrConstants.CONNECT_USERNAME, socks5TunnelClientConfig.getUsername());
-            nettyTcpClient.childAttr(NettyAttrConstants.CONNECT_PASSWORD, socks5TunnelClientConfig.getPassword());
-            nettyTcpClient.childAttr(NettyAttrConstants.CONNECT_SECURITY, socks5TunnelClientConfig.getSecurity());
+            NettyTcpClient nettyTcpClient = new NettyTcpClient(clientName, Socks5TunnelClientConfig.socks5ServerHost, Socks5TunnelClientConfig.socks5ServerPort, channelInitializer, TunnelConstants.WORKER_GROUP, false, false);
             nettyTcpClient.childAttr(NettyAttrConstants.CONNECT_TARGET_HOST, targetHost);
             nettyTcpClient.childAttr(NettyAttrConstants.CONNECT_TARGET_PORT, targetPort);
             nettyTcpClient.childAttr(NettyAttrConstants.CONNECT_TUNNEL_REMOTE_CHANNEL, localChannel);

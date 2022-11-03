@@ -3,7 +3,6 @@ package cn.t.freetunnel.client.socks5.util;
 import cn.t.freetunnel.client.socks5.constants.HttpSocks5TunnelClientConfig;
 import cn.t.freetunnel.client.socks5.handler.HttpSocks5TunnelClientHandler;
 import cn.t.freetunnel.client.socks5.handler.Socks5TunnelClientMessageHandler;
-import cn.t.freetunnel.common.constants.Socks5TunnelClientConfig;
 import cn.t.tool.nettytool.daemon.DaemonConfig;
 import cn.t.tool.nettytool.initializer.DaemonConfigBuilder;
 import cn.t.tool.nettytool.initializer.NettyTcpChannelInitializer;
@@ -26,7 +25,7 @@ public class InitializerBuilder {
         return new NettyTcpChannelInitializer(daemonConfig);
     }
 
-    public static NettyTcpChannelInitializer httpSocks5TunnelClientInitializer(Socks5TunnelClientConfig socks5TunnelClientConfig) {
+    public static NettyTcpChannelInitializer httpSocks5TunnelClientInitializer() {
         DaemonConfigBuilder daemonConfigBuilder = DaemonConfigBuilder.newInstance();
         //idle
         daemonConfigBuilder.configIdleHandler(HttpSocks5TunnelClientConfig.HTTP_PROXY_READ_TIME_OUT_IN_SECONDS, HttpSocks5TunnelClientConfig.HTTP_PROXY_WRITE_TIME_OUT_IN_SECONDS, HttpSocks5TunnelClientConfig.HTTP_PROXY_ALL_IDLE_TIME_OUT_IN_SECONDS);
@@ -36,7 +35,7 @@ public class InitializerBuilder {
         //http request decoder
         supplierList.add(HttpRequestDecoder::new);
         supplierList.add(() -> new HttpObjectAggregator(1024 * 1024 * 2));
-        supplierList.add(() -> new HttpSocks5TunnelClientHandler(socks5TunnelClientConfig));
+        supplierList.add(() -> new HttpSocks5TunnelClientHandler());
         daemonConfigBuilder.configHandler(supplierList);
         DaemonConfig daemonConfig = daemonConfigBuilder.build();
         return new NettyTcpChannelInitializer(daemonConfig);

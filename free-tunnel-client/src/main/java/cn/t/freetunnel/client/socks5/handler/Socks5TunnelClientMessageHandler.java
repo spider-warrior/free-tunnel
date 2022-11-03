@@ -1,5 +1,6 @@
 package cn.t.freetunnel.client.socks5.handler;
 
+import cn.t.freetunnel.client.socks5.constants.Socks5TunnelClientConfig;
 import cn.t.freetunnel.client.socks5.tunnelprovider.StaticChannelProvider;
 import cn.t.freetunnel.client.socks5.util.Socks5MessageUtil;
 import cn.t.freetunnel.common.constants.*;
@@ -47,8 +48,8 @@ public class Socks5TunnelClientMessageHandler extends SimpleChannelInboundHandle
                 state = Socks5ServerState.CMD;
                 //用户名密码认证
             } else if(Socks5Method.USERNAME_PASSWORD == socks5Method) {
-                String username = ctx.channel().attr(NettyAttrConstants.CONNECT_USERNAME).get();
-                String password = ctx.channel().attr(NettyAttrConstants.CONNECT_PASSWORD).get();
+                String username = Socks5TunnelClientConfig.username;
+                String password = Socks5TunnelClientConfig.password;
                 if(username == null || password == null) {
                     throw new TunnelException("客户端未配置用户名或密码, username: " + username + ", password: " + password);
                 }
@@ -104,7 +105,7 @@ public class Socks5TunnelClientMessageHandler extends SimpleChannelInboundHandle
                 Socks5TunnelClientForwardingHandler forwardingMessageHandler = (Socks5TunnelClientForwardingHandler)channelPipeline.get(NettyHandlerName.SOCKS5_TUNNEL_CLIENT_FORWARDING_MESSAGE_HANDLER);
                 if(forwardingMessageHandler == null) {
                     //encrypt and decrypt
-                    byte[] security = ctx.channel().attr(NettyAttrConstants.CONNECT_SECURITY).get();
+                    byte[] security = Socks5TunnelClientConfig.security;
                     NettyComponentUtil.addLastHandler(channelPipeline, NettyHandlerName.ENCRYPT_MESSAGE_DECODER, new EncryptMessageDecoder(security));
                     NettyComponentUtil.addLastHandler(channelPipeline, NettyHandlerName.ENCRYPT_MESSAGE_ENCODER, new EncryptMessageEncoder(security));
                     //layer
@@ -143,11 +144,7 @@ public class Socks5TunnelClientMessageHandler extends SimpleChannelInboundHandle
         ByteBuf outputBuf = ctx.alloc().buffer(2);
         outputBuf.writeByte(Socks5Constants.VERSION);
         outputBuf.writeByte(1);
-        if(ctx.channel().hasAttr(NettyAttrConstants.CONNECT_USERNAME) && ctx.channel().hasAttr(NettyAttrConstants.CONNECT_PASSWORD)) {
-            outputBuf.writeByte(Socks5Method.USERNAME_PASSWORD.rangeStart);
-        } else {
-            outputBuf.writeByte(Socks5Method.NO_AUTHENTICATION_REQUIRED.rangeStart);
-        }
+        outputBuf.writeByte(Socks5Method.USERNAME_PASSWORD.rangeStart);
         ctx.writeAndFlush(outputBuf);
     }
 }
