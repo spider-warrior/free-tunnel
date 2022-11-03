@@ -25,7 +25,6 @@ public class UnPooledTunnelProvider {
         NettyTcpChannelInitializer channelInitializer = InitializerBuilder.buildHttpFetchMessageClientChannelInitializer(localChannel, listener);
         NettyTcpClient nettyTcpClient = new NettyTcpClient(clientName, targetHost, targetPort, channelInitializer, TunnelConstants.WORKER_GROUP, false, false);
         nettyTcpClient.childAttr(NettyAttrConstants.CONNECT_TUNNEL_REMOTE_CHANNEL, localChannel);
-        nettyTcpClient.childAttr(NettyAttrConstants.EVENT_EXECUTOR, localChannel.eventLoop());
         nettyTcpClient.start();
     }
     public static void acquireTcpTunnelForHttps(Channel localChannel, String targetHost, int targetPort, TunnelBuildResultListener listener) {
@@ -34,7 +33,6 @@ public class UnPooledTunnelProvider {
         NettyTcpChannelInitializer channelInitializer = InitializerBuilder.buildHttpsFetchMessageClientChannelInitializer(localChannel, listener);
         NettyTcpClient nettyTcpClient = new NettyTcpClient(clientName, targetHost, targetPort, channelInitializer, TunnelConstants.WORKER_GROUP, false, false);
         nettyTcpClient.childAttr(NettyAttrConstants.CONNECT_TUNNEL_REMOTE_CHANNEL, localChannel);
-        nettyTcpClient.childAttr(NettyAttrConstants.EVENT_EXECUTOR, localChannel.eventLoop());
         nettyTcpClient.start();
     }
     public static void acquireTcpTunnelForSocks5(Channel localChannel, String targetHost, int targetPort, TunnelBuildResultListener listener) {
@@ -43,7 +41,6 @@ public class UnPooledTunnelProvider {
         NettyTcpChannelInitializer channelInitializer = InitializerBuilder.buildHttpFetchMessageClientChannelInitializerForSocks5(localChannel, listener);
         NettyTcpClient nettyTcpClient = new NettyTcpClient(clientName, targetHost, targetPort, channelInitializer, TunnelConstants.WORKER_GROUP, false, false);
         nettyTcpClient.childAttr(NettyAttrConstants.CONNECT_TUNNEL_REMOTE_CHANNEL, localChannel);
-        nettyTcpClient.childAttr(NettyAttrConstants.EVENT_EXECUTOR, localChannel.eventLoop());
         nettyTcpClient.start();
     }
 
@@ -53,7 +50,6 @@ public class UnPooledTunnelProvider {
         NettyTcpChannelInitializer channelInitializer = InitializerBuilder.buildHttpFetchMessageClientChannelInitializerForSocks5FreeTunnelClient(localChannel, listener);
         NettyTcpClient nettyTcpClient = new NettyTcpClient(clientName, targetHost, targetPort, channelInitializer, TunnelConstants.WORKER_GROUP, false, false);
         nettyTcpClient.childAttr(NettyAttrConstants.CONNECT_TUNNEL_REMOTE_CHANNEL, localChannel);
-        nettyTcpClient.childAttr(NettyAttrConstants.EVENT_EXECUTOR, localChannel.eventLoop());
         nettyTcpClient.start();
     }
 }

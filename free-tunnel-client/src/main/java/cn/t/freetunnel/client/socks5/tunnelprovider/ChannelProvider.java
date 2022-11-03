@@ -1,9 +1,13 @@
 package cn.t.freetunnel.client.socks5.tunnelprovider;
 
+import cn.t.freetunnel.client.socks5.constants.ClientAttrConstants;
 import cn.t.freetunnel.client.socks5.constants.Socks5TunnelClientConfig;
 import cn.t.freetunnel.client.socks5.util.InitializerBuilder;
 import cn.t.freetunnel.client.socks5.util.Socks5MessageUtil;
-import cn.t.freetunnel.common.constants.*;
+import cn.t.freetunnel.common.constants.FreeTunnelConstants;
+import cn.t.freetunnel.common.constants.NettyAttrConstants;
+import cn.t.freetunnel.common.constants.TunnelCommand;
+import cn.t.freetunnel.common.constants.TunnelConstants;
 import cn.t.freetunnel.common.listener.TunnelBuildResultListener;
 import cn.t.freetunnel.common.util.TunnelUtil;
 import cn.t.tool.nettytool.daemon.DaemonService;
@@ -40,7 +44,10 @@ public class ChannelProvider {
             logger.info("复用连接,channel: {}, target host: {}, target port: {}", channel, targetHost, targetPort);
             inUseTunnelPool.add(channel);
             channel.attr(NettyAttrConstants.CONNECT_TUNNEL_REMOTE_CHANNEL).set(localChannel);
-            channel.attr(NettyAttrConstants.CONNECT_TUNNEL_BUILD_RESULT_LISTENER).set(listener);
+            TunnelSpecification tunnelSpecification = channel.attr(ClientAttrConstants.TUNNEL_SPECIFICATION).get();
+            tunnelSpecification.setTargetHost(targetHost);
+            tunnelSpecification.setTargetPort(targetPort);
+            tunnelSpecification.setTunnelBuildResultListener(listener);
             ByteBuf outputBuf = Socks5MessageUtil.buildConnectBuf(channel.alloc(), targetHost, targetPort);
             channel.writeAndFlush(outputBuf);
         } else {
@@ -49,11 +56,8 @@ public class ChannelProvider {
             String clientName = TunnelUtil.buildProxyConnectionName(clientAddress.getHostString(), clientAddress.getPort(), targetHost, targetPort);
             NettyTcpChannelInitializer channelInitializer = InitializerBuilder.buildHttpProxyServerViaSocks5ClientChannelInitializer();
             NettyTcpClient nettyTcpClient = new NettyTcpClient(clientName, Socks5TunnelClientConfig.socks5ServerHost, Socks5TunnelClientConfig.socks5ServerPort, channelInitializer, TunnelConstants.WORKER_GROUP, false, false);
-            nettyTcpClient.childAttr(NettyAttrConstants.CONNECT_TARGET_HOST, targetHost);
-            nettyTcpClient.childAttr(NettyAttrConstants.CONNECT_TARGET_PORT, targetPort);
+            nettyTcpClient.childAttr(ClientAttrConstants.TUNNEL_SPECIFICATION, new TunnelSpecification(targetHost, targetPort, listener));
             nettyTcpClient.childAttr(NettyAttrConstants.CONNECT_TUNNEL_REMOTE_CHANNEL, localChannel);
-            nettyTcpClient.childAttr(NettyAttrConstants.CONNECT_TUNNEL_BUILD_RESULT_LISTENER, listener);
-            nettyTcpClient.childAttr(NettyAttrConstants.EVENT_EXECUTOR, localChannel.eventLoop());
             nettyTcpClient.addListener(new ClientLifeStyleListener());
             nettyTcpClient.start();
         }

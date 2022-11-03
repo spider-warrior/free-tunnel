@@ -1,7 +1,9 @@
 package cn.t.freetunnel.client.socks5.handler;
 
+import cn.t.freetunnel.client.socks5.constants.ClientAttrConstants;
 import cn.t.freetunnel.client.socks5.constants.Socks5TunnelClientConfig;
 import cn.t.freetunnel.client.socks5.tunnelprovider.StaticChannelProvider;
+import cn.t.freetunnel.client.socks5.tunnelprovider.TunnelSpecification;
 import cn.t.freetunnel.client.socks5.util.Socks5MessageUtil;
 import cn.t.freetunnel.common.constants.*;
 import cn.t.freetunnel.common.exception.TunnelException;
@@ -43,7 +45,8 @@ public class Socks5TunnelClientMessageHandler extends SimpleChannelInboundHandle
             //处理协商结果
             //不需要认证, 直接构建cmd请求
             if(Socks5Method.NO_AUTHENTICATION_REQUIRED == socks5Method) {
-                ByteBuf outputBuf = Socks5MessageUtil.buildConnectBuf(ctx.alloc(), ctx.channel().attr(NettyAttrConstants.CONNECT_TARGET_HOST).get(), ctx.channel().attr(NettyAttrConstants.CONNECT_TARGET_PORT).get());
+                TunnelSpecification tunnelSpecification = ctx.channel().attr(ClientAttrConstants.TUNNEL_SPECIFICATION).get();
+                ByteBuf outputBuf = Socks5MessageUtil.buildConnectBuf(ctx.alloc(), tunnelSpecification.getTargetHost(), tunnelSpecification.getTargetPort());
                 ctx.writeAndFlush(outputBuf);
                 state = Socks5ServerState.CMD;
                 //用户名密码认证
@@ -66,7 +69,8 @@ public class Socks5TunnelClientMessageHandler extends SimpleChannelInboundHandle
             logger.info("[{} -> {}]鉴权结果: version: {}, status: {}({})", ctx.channel().localAddress(), ctx.channel().remoteAddress(), version, status, Socks5CmdExecutionStatus.getSocks5CmdExecutionStatus(status));
             //处理鉴权结果
             if(AuthenticationStatus.SUCCESS.value == status) {
-                ByteBuf outputBuf = Socks5MessageUtil.buildConnectBuf(ctx.alloc(), ctx.channel().attr(NettyAttrConstants.CONNECT_TARGET_HOST).get(), ctx.channel().attr(NettyAttrConstants.CONNECT_TARGET_PORT).get());
+                TunnelSpecification tunnelSpecification = ctx.channel().attr(ClientAttrConstants.TUNNEL_SPECIFICATION).get();
+                ByteBuf outputBuf = Socks5MessageUtil.buildConnectBuf(ctx.alloc(), tunnelSpecification.getTargetHost(), tunnelSpecification.getTargetPort());
                 ctx.writeAndFlush(outputBuf);
                 state = Socks5ServerState.CMD;
             } else {
@@ -128,9 +132,9 @@ public class Socks5TunnelClientMessageHandler extends SimpleChannelInboundHandle
                     Socks5TunnelClientMessageHandler socks5TunnelClientMessageHandler = channelPipeline.remove(Socks5TunnelClientMessageHandler.class);
                     NettyComponentUtil.addLastHandler(channelPipeline, "socks5ProxyClientMessageHandler", socks5TunnelClientMessageHandler);
                 }
-                ctx.channel().attr(NettyAttrConstants.CONNECT_TUNNEL_BUILD_RESULT_LISTENER).get().handle(TunnelBuildResult.SUCCEEDED.value, ctx.channel());
+                ctx.channel().attr(ClientAttrConstants.TUNNEL_SPECIFICATION).get().getTunnelBuildResultListener().handle(TunnelBuildResult.SUCCEEDED.value, ctx.channel());
             } else {
-                ctx.channel().attr(NettyAttrConstants.CONNECT_TUNNEL_BUILD_RESULT_LISTENER).get().handle(TunnelBuildResult.FAILED.value, null);
+                ctx.channel().attr(ClientAttrConstants.TUNNEL_SPECIFICATION).get().getTunnelBuildResultListener().handle(TunnelBuildResult.FAILED.value, null);
                 StaticChannelProvider.closeTunnel(ctx.channel());
             }
         } else {
