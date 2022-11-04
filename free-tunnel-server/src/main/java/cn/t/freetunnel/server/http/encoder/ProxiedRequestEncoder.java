@@ -2,6 +2,8 @@ package cn.t.freetunnel.server.http.encoder;
 
 import cn.t.freetunnel.common.util.TunnelUtil;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.CompositeByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.channel.embedded.EmbeddedChannel;
@@ -18,6 +20,27 @@ public class ProxiedRequestEncoder extends MessageToByteEncoder<FullHttpRequest>
         TunnelUtil.prepareProxiedRequest(msg.retain());
         embeddedChannel.writeOutbound(msg.retain());
         ByteBuf byteBuf = embeddedChannel.readOutbound();
+        while (true) {
+            ByteBuf more = embeddedChannel.readOutbound();
+            if(more == null) {
+                break;
+            } else {
+                if(byteBuf instanceof CompositeByteBuf) {
+                    ((CompositeByteBuf)byteBuf).addComponent(true, more);
+                } else {
+                    byteBuf = Unpooled.wrappedBuffer(byteBuf, more);
+                }
+            }
+        }
+//        CompositeByteBuf compositeBuffer = ctx.alloc().compositeBuffer();
+//        while (true) {
+//            ByteBuf byteBuf = embeddedChannel.readOutbound();
+//            if(byteBuf != null) {
+//                compositeBuffer.addComponent(true, byteBuf);
+//            } else {
+//                break;
+//            }
+//        }
         out.writeBytes(byteBuf);
     }
 

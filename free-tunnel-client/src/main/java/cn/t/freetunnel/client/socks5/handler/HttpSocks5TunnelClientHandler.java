@@ -5,7 +5,6 @@ import cn.t.freetunnel.client.socks5.listener.HttpsSocks5TunnelClientReadyListen
 import cn.t.freetunnel.client.socks5.tunnelprovider.StaticChannelProvider;
 import cn.t.freetunnel.common.constants.TunnelBuildResult;
 import cn.t.freetunnel.common.listener.TunnelBuildResultListener;
-import cn.t.freetunnel.common.util.TunnelUtil;
 import cn.t.freetunnel.server.http.listener.HttpTunnelReadyListener;
 import cn.t.freetunnel.server.http.listener.HttpsTunnelReadyListener;
 import cn.t.freetunnel.server.tunnelprovider.UnPooledTunnelProvider;
@@ -103,7 +102,6 @@ public class HttpSocks5TunnelClientHandler extends SimpleChannelInboundHandler<F
         FullHttpRequest proxiedRequest = request.retainedDuplicate();
         TunnelBuildResultListener tunnelBuildResultListener = (status, remoteChannel) -> {
             if(TunnelBuildResult.SUCCEEDED.value == status) {
-                TunnelUtil.prepareProxiedRequest(proxiedRequest);
                 ChannelPromise promise = remoteChannel.newPromise();
                 promise.addListener(new HttpTunnelReadyListener(remoteChannel, ctx.channel(), targetHost, targetPort, this));
                 remoteChannel.writeAndFlush(proxiedRequest, promise);
