@@ -55,7 +55,7 @@ public class HttpSocks5TunnelClientHandler extends SimpleChannelInboundHandler<F
         }
         HttpVersion httpVersion = request.protocolVersion();
         try {
-            InetAddress inetAddress = InetAddress.getByName("targetHost");
+            InetAddress inetAddress = InetAddress.getByName(targetHost);
             if(inetAddress.isSiteLocalAddress()) {
                 if(httpMethod == HttpMethod.CONNECT) {
                     buildPlainHttpsProxy(ctx, targetHost, targetPort, httpVersion);
