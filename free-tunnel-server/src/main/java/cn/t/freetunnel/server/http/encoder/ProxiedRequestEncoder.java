@@ -10,6 +10,7 @@ import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.codec.MessageToByteEncoder;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpRequestEncoder;
+import io.netty.util.ReferenceCountUtil;
 
 public class ProxiedRequestEncoder extends MessageToByteEncoder<FullHttpRequest> {
 
@@ -42,6 +43,7 @@ public class ProxiedRequestEncoder extends MessageToByteEncoder<FullHttpRequest>
 //            }
 //        }
         out.writeBytes(byteBuf);
+        ReferenceCountUtil.release(byteBuf);
     }
 
     @Override

@@ -104,37 +104,37 @@ public class Socks5TunnelClientMessageHandler extends SimpleChannelInboundHandle
                 Socks5AddressType.getAddressType(addressType),
                 Arrays.toString(address),
                 port);
+            ChannelPipeline channelPipeline = ctx.channel().pipeline();
+            Socks5TunnelClientForwardingHandler forwardingMessageHandler = (Socks5TunnelClientForwardingHandler)channelPipeline.get(NettyHandlerName.SOCKS5_TUNNEL_CLIENT_FORWARDING_MESSAGE_HANDLER);
+            if(forwardingMessageHandler == null) {
+                //encrypt and decrypt
+                byte[] security = Socks5TunnelClientConfig.security;
+                NettyComponentUtil.addLastHandler(channelPipeline, NettyHandlerName.ENCRYPT_MESSAGE_DECODER, new EncryptMessageDecoder(security));
+                NettyComponentUtil.addLastHandler(channelPipeline, NettyHandlerName.ENCRYPT_MESSAGE_ENCODER, new EncryptMessageEncoder(security));
+                //layer
+                NettyComponentUtil.addLastHandler(channelPipeline, NettyHandlerName.LAYER_MESSAGE_DECODER, new LayerMessageDecoder());
+                NettyComponentUtil.addLastHandler(channelPipeline, NettyHandlerName.LAYER_MESSAGE_ENCODER, new LayerMessageEncoder());
+                //proxied request encoder
+                NettyComponentUtil.addLastHandler(channelPipeline, "proxiedRequestEncoder", new ProxiedRequestEncoder());
+                //forwarding
+                NettyComponentUtil.addLastHandler(channelPipeline, NettyHandlerName.SOCKS5_TUNNEL_CLIENT_FORWARDING_MESSAGE_HANDLER, new Socks5TunnelClientForwardingHandler(remoteChannel));
+                //command
+                NettyComponentUtil.addLastHandler(channelPipeline, NettyHandlerName.SOCKS5_TUNNEL_CLIENT_COMMAND_HANDLER, new Socks5TunnelClientCommandHandler(remoteChannel));
+                //备份Socks5ProxyClientMessageHandler
+                Socks5TunnelClientMessageHandler socks5TunnelClientMessageHandler = channelPipeline.remove(Socks5TunnelClientMessageHandler.class);
+                NettyComponentUtil.addLastHandler(channelPipeline, "socks5ProxyClientMessageHandler", socks5TunnelClientMessageHandler);
+            } else {
+                //forwardingHandler切换remoteContext
+                forwardingMessageHandler.setRemoteChannel(remoteChannel);
+                //commandHandler切换remoteContext
+                Socks5TunnelClientCommandHandler commandHandler = (Socks5TunnelClientCommandHandler)channelPipeline.get(NettyHandlerName.SOCKS5_TUNNEL_CLIENT_COMMAND_HANDLER);
+                commandHandler.setRemoteChannel(remoteChannel);
+                //备份Socks5ProxyClientMessageHandler
+                Socks5TunnelClientMessageHandler socks5TunnelClientMessageHandler = channelPipeline.remove(Socks5TunnelClientMessageHandler.class);
+                NettyComponentUtil.addLastHandler(channelPipeline, "socks5ProxyClientMessageHandler", socks5TunnelClientMessageHandler);
+            }
             //处理命令响应
             if(Socks5CmdExecutionStatus.SUCCEEDED.value == status) {
-                ChannelPipeline channelPipeline = ctx.channel().pipeline();
-                Socks5TunnelClientForwardingHandler forwardingMessageHandler = (Socks5TunnelClientForwardingHandler)channelPipeline.get(NettyHandlerName.SOCKS5_TUNNEL_CLIENT_FORWARDING_MESSAGE_HANDLER);
-                if(forwardingMessageHandler == null) {
-                    //encrypt and decrypt
-                    byte[] security = Socks5TunnelClientConfig.security;
-                    NettyComponentUtil.addLastHandler(channelPipeline, NettyHandlerName.ENCRYPT_MESSAGE_DECODER, new EncryptMessageDecoder(security));
-                    NettyComponentUtil.addLastHandler(channelPipeline, NettyHandlerName.ENCRYPT_MESSAGE_ENCODER, new EncryptMessageEncoder(security));
-                    //layer
-                    NettyComponentUtil.addLastHandler(channelPipeline, NettyHandlerName.LAYER_MESSAGE_DECODER, new LayerMessageDecoder());
-                    NettyComponentUtil.addLastHandler(channelPipeline, NettyHandlerName.LAYER_MESSAGE_ENCODER, new LayerMessageEncoder());
-                    //proxied request encoder
-                    NettyComponentUtil.addLastHandler(channelPipeline, "proxiedRequestEncoder", new ProxiedRequestEncoder());
-                    //forwarding
-                    NettyComponentUtil.addLastHandler(channelPipeline, NettyHandlerName.SOCKS5_TUNNEL_CLIENT_FORWARDING_MESSAGE_HANDLER, new Socks5TunnelClientForwardingHandler(remoteChannel));
-                    //command
-                    NettyComponentUtil.addLastHandler(channelPipeline, NettyHandlerName.SOCKS5_TUNNEL_CLIENT_COMMAND_HANDLER, new Socks5TunnelClientCommandHandler(remoteChannel));
-                    //备份Socks5ProxyClientMessageHandler
-                    Socks5TunnelClientMessageHandler socks5TunnelClientMessageHandler = channelPipeline.remove(Socks5TunnelClientMessageHandler.class);
-                    NettyComponentUtil.addLastHandler(channelPipeline, "socks5ProxyClientMessageHandler", socks5TunnelClientMessageHandler);
-                } else {
-                    //forwardingHandler切换remoteContext
-                    forwardingMessageHandler.setRemoteChannel(remoteChannel);
-                    //commandHandler切换remoteContext
-                    Socks5TunnelClientCommandHandler commandHandler = (Socks5TunnelClientCommandHandler)channelPipeline.get(NettyHandlerName.SOCKS5_TUNNEL_CLIENT_COMMAND_HANDLER);
-                    commandHandler.setRemoteChannel(remoteChannel);
-                    //备份Socks5ProxyClientMessageHandler
-                    Socks5TunnelClientMessageHandler socks5TunnelClientMessageHandler = channelPipeline.remove(Socks5TunnelClientMessageHandler.class);
-                    NettyComponentUtil.addLastHandler(channelPipeline, "socks5ProxyClientMessageHandler", socks5TunnelClientMessageHandler);
-                }
                 ctx.channel().attr(ClientAttrConstants.TUNNEL_SPECIFICATION).get().getTunnelBuildResultListener().handle(TunnelBuildResult.SUCCEEDED.value, ctx.channel());
             } else {
                 ctx.channel().attr(ClientAttrConstants.TUNNEL_SPECIFICATION).get().getTunnelBuildResultListener().handle(TunnelBuildResult.FAILED.value, null);
