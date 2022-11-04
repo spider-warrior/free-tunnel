@@ -26,6 +26,11 @@
                 <artifactId>free-tunnel-common</artifactId>
                 <version>1.0.0-SNAPSHOT</version>
             </dependency>
+            <dependency>
+                <groupId>cn.t</groupId>
+                <artifactId>free-tunnel-server</artifactId>
+                <version>1.0.0-SNAPSHOT</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 

@@ -15,7 +15,7 @@
     <dependencies>
         <dependency>
             <groupId>cn.t</groupId>
-            <artifactId>free-tunnel-common</artifactId>
+            <artifactId>free-tunnel-server</artifactId>
         </dependency>
         <dependency>
             <groupId>cn.t</groupId>
