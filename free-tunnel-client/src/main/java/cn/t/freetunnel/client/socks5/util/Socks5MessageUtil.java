@@ -65,6 +65,8 @@ public class Socks5MessageUtil {
             logger.info("发送复位通道请求, channel: {}", channel);
             channel.writeAndFlush(TunnelCommand.RESET_STATUS_TO_COMMAND_REQUEST);
             inUseAttr.set(Boolean.FALSE);
+        } else {
+            logger.warn("取消复位通道请求, channel: {}, inUse: {}", channel, inUse);
         }
     }
 }

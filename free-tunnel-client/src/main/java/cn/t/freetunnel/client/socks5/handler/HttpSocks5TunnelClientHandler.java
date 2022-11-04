@@ -54,31 +54,39 @@ public class HttpSocks5TunnelClientHandler extends SimpleChannelInboundHandler<F
             targetPort= Integer.parseInt(elements[1]);
         }
         HttpVersion httpVersion = request.protocolVersion();
+        buildProxy(ctx, httpMethod, targetHost, targetPort, httpVersion, request);
+    }
+
+    private void buildProxy(ChannelHandlerContext ctx, HttpMethod httpMethod, String targetHost, int targetPort, HttpVersion httpVersion, FullHttpRequest request) {
         try {
             InetAddress inetAddress = InetAddress.getByName(targetHost);
             if(inetAddress.isSiteLocalAddress()) {
-                if(httpMethod == HttpMethod.CONNECT) {
-                    buildPlainHttpsProxy(ctx, targetHost, targetPort, httpVersion);
-                } else {
-                    buildPlainHttpProxy(ctx, targetHost, targetPort, httpVersion, request);
-                }
+                buildDirectProxy(ctx, httpMethod, targetHost, targetPort, httpVersion, request);
             } else {
-                if(httpMethod == HttpMethod.CONNECT) {
-                    buildHttpsProxy(ctx, targetHost, targetPort, httpVersion);
-                } else {
-                    buildHttpProxy(ctx, targetHost, targetPort, httpVersion, request);
-                }
+                buildSocks5Proxy(ctx, httpMethod, targetHost, targetPort, httpVersion, request);
             }
         } catch (UnknownHostException e) {
-            if(httpMethod == HttpMethod.CONNECT) {
-                buildHttpsProxy(ctx, targetHost, targetPort, httpVersion);
-            } else {
-                buildHttpProxy(ctx, targetHost, targetPort, httpVersion, request);
-            }
+            buildSocks5Proxy(ctx, httpMethod, targetHost, targetPort, httpVersion, request);
         }
     }
 
-    private void buildPlainHttpsProxy(ChannelHandlerContext ctx, String targetHost, int targetPort, HttpVersion httpVersion) {
+    private void buildSocks5Proxy(ChannelHandlerContext ctx, HttpMethod httpMethod, String targetHost, int targetPort, HttpVersion httpVersion, FullHttpRequest request) {
+        if(httpMethod == HttpMethod.CONNECT) {
+            buildSocks5HttpsProxy(ctx, targetHost, targetPort, httpVersion);
+        } else {
+            buildSocks5HttpProxy(ctx, targetHost, targetPort, httpVersion, request);
+        }
+    }
+
+    private void buildDirectProxy(ChannelHandlerContext ctx, HttpMethod httpMethod, String targetHost, int targetPort, HttpVersion httpVersion, FullHttpRequest request) {
+        if(httpMethod == HttpMethod.CONNECT) {
+            buildDirectHttpsProxy(ctx, targetHost, targetPort, httpVersion);
+        } else {
+            buildDirectHttpProxy(ctx, targetHost, targetPort, httpVersion, request);
+        }
+    }
+
+    private void buildDirectHttpsProxy(ChannelHandlerContext ctx, String targetHost, int targetPort, HttpVersion httpVersion) {
         TunnelBuildResultListener tunnelBuildResultListener = (status, remoteChannel) -> {
             if(TunnelBuildResult.SUCCEEDED.value == status) {
                 ChannelPromise promise = ctx.newPromise();
@@ -92,7 +100,7 @@ public class HttpSocks5TunnelClientHandler extends SimpleChannelInboundHandler<F
         UnPooledTunnelProvider.acquireTcpTunnelForHttps(ctx.channel(), targetHost, targetPort, tunnelBuildResultListener);
     }
 
-    private void buildPlainHttpProxy(ChannelHandlerContext ctx, String targetHost, int targetPort, HttpVersion httpVersion, FullHttpRequest request) {
+    private void buildDirectHttpProxy(ChannelHandlerContext ctx, String targetHost, int targetPort, HttpVersion httpVersion, FullHttpRequest request) {
         FullHttpRequest proxiedRequest = request.retainedDuplicate();
         TunnelBuildResultListener tunnelBuildResultListener = (status, remoteChannel) -> {
             if(TunnelBuildResult.SUCCEEDED.value == status) {
@@ -109,7 +117,7 @@ public class HttpSocks5TunnelClientHandler extends SimpleChannelInboundHandler<F
         UnPooledTunnelProvider.acquireTcpTunnelForHttp(ctx.channel(), targetHost, targetPort, tunnelBuildResultListener);
     }
 
-    private void buildHttpsProxy(ChannelHandlerContext ctx, String targetHost, int targetPort, HttpVersion httpVersion) {
+    private void buildSocks5HttpsProxy(ChannelHandlerContext ctx, String targetHost, int targetPort, HttpVersion httpVersion) {
         SocketAddress remoteAddress = ctx.channel().remoteAddress();
         TunnelBuildResultListener tunnelBuildResultListener = (status, remoteChannel) -> {
             if(TunnelBuildResult.SUCCEEDED.value == status) {
@@ -125,7 +133,7 @@ public class HttpSocks5TunnelClientHandler extends SimpleChannelInboundHandler<F
         StaticChannelProvider.acquireSocks5Tunnel(ctx.channel(), targetHost, targetPort, tunnelBuildResultListener);
     }
 
-    private void buildHttpProxy(ChannelHandlerContext ctx, String targetHost, int targetPort, HttpVersion httpVersion, FullHttpRequest request) {
+    private void buildSocks5HttpProxy(ChannelHandlerContext ctx, String targetHost, int targetPort, HttpVersion httpVersion, FullHttpRequest request) {
         FullHttpRequest proxiedRequest = request.retainedDuplicate();
         SocketAddress remoteAddress = ctx.channel().remoteAddress();
         TunnelBuildResultListener tunnelBuildResultListener = (status, remoteChannel) -> {

@@ -9,7 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * 消息转发处理器(左 -> 右)
+ * 终端消息转发处理器
  *
  * @author <a href="mailto:jian.yang@liby.ltd">野生程序员-杨建</a>
  * @version V1.0
