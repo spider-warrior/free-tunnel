@@ -45,20 +45,19 @@ public class TunnelUtil {
     }
 
     public static void prepareProxiedRequest(FullHttpRequest proxiedRequest) {
-        String uri = proxiedRequest.uri();
-        if(uri.startsWith("http://")) {
-            uri = uri.replace("http://", "");
-            int slashIndex = uri.indexOf("/");
-            if(slashIndex > -1) {
-                uri = uri.substring(slashIndex);
-                proxiedRequest.setUri(uri);
-            }
-        }
         HttpHeaders headers = proxiedRequest.headers();
         String proxyConnection = headers.get("Proxy-Connection");
         if(proxyConnection != null) {
             headers.remove("Proxy-Connection");
             headers.set(HttpHeaderNames.CONNECTION, proxyConnection);
+            String uri = proxiedRequest.uri();
+            if(uri.startsWith("http://")) {
+                int slashIndex = uri.indexOf('/', 7);
+                if(slashIndex > -1) {
+                    uri = uri.substring(slashIndex);
+                    proxiedRequest.setUri(uri);
+                }
+            }
         }
     }
 
