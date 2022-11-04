@@ -17,7 +17,7 @@ public class ProxiedRequestEncoder extends MessageToByteEncoder<FullHttpRequest>
 
     @Override
     protected void encode(ChannelHandlerContext ctx, FullHttpRequest msg, ByteBuf out) {
-        TunnelUtil.prepareProxiedRequest(msg.retain());
+        TunnelUtil.prepareProxiedRequest(msg);
         embeddedChannel.writeOutbound(msg.retain());
         ByteBuf byteBuf = embeddedChannel.readOutbound();
         while (true) {

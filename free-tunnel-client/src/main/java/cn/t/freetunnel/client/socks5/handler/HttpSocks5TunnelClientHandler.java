@@ -99,7 +99,7 @@ public class HttpSocks5TunnelClientHandler extends SimpleChannelInboundHandler<F
     }
 
     private void buildDirectHttpProxy(ChannelHandlerContext ctx, String targetHost, int targetPort, HttpVersion httpVersion, FullHttpRequest request) {
-        FullHttpRequest proxiedRequest = request.retainedDuplicate();
+        FullHttpRequest proxiedRequest = request.retain();
         TunnelBuildResultListener tunnelBuildResultListener = (status, remoteChannel) -> {
             if(TunnelBuildResult.SUCCEEDED.value == status) {
                 ChannelPromise promise = remoteChannel.newPromise();
@@ -131,7 +131,7 @@ public class HttpSocks5TunnelClientHandler extends SimpleChannelInboundHandler<F
     }
 
     private void buildSocks5HttpProxy(ChannelHandlerContext ctx, String targetHost, int targetPort, HttpVersion httpVersion, FullHttpRequest request) {
-        FullHttpRequest proxiedRequest = request.retainedDuplicate();
+        FullHttpRequest proxiedRequest = request.retain();
         SocketAddress remoteAddress = ctx.channel().remoteAddress();
         TunnelBuildResultListener tunnelBuildResultListener = (status, remoteChannel) -> {
             if(TunnelBuildResult.SUCCEEDED.value == status) {

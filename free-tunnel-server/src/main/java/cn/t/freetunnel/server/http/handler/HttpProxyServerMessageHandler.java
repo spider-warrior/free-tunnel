@@ -63,7 +63,7 @@ public class HttpProxyServerMessageHandler extends SimpleChannelInboundHandler<F
     }
 
     private void buildHttpProxy(ChannelHandlerContext ctx, String targetHost, int targetPort, HttpVersion httpVersion, FullHttpRequest request) {
-        FullHttpRequest proxiedRequest = request.retainedDuplicate();
+        FullHttpRequest proxiedRequest = request.retain();
         TunnelBuildResultListener tunnelBuildResultListener = (status, remoteChannel) -> {
             if(TunnelBuildResult.SUCCEEDED.value == status) {
                 ChannelPromise promise = remoteChannel.newPromise();

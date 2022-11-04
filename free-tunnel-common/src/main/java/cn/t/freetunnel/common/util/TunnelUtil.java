@@ -44,18 +44,18 @@ public class TunnelUtil {
         return remoteChannel.remoteAddress() + " -> " + remoteChannel.localAddress() + " --> " + localChannel.localAddress() + " -> " + localChannel.remoteAddress();
     }
 
-    public static void prepareProxiedRequest(FullHttpRequest proxiedRequest) {
-        HttpHeaders headers = proxiedRequest.headers();
+    public static void prepareProxiedRequest(FullHttpRequest request) {
+        HttpHeaders headers = request.headers();
         String proxyConnection = headers.get("Proxy-Connection");
         if(proxyConnection != null) {
             headers.remove("Proxy-Connection");
             headers.set(HttpHeaderNames.CONNECTION, proxyConnection);
-            String uri = proxiedRequest.uri();
+            String uri = request.uri();
             if(uri.startsWith("http://")) {
                 int slashIndex = uri.indexOf('/', 7);
                 if(slashIndex > -1) {
                     uri = uri.substring(slashIndex);
-                    proxiedRequest.setUri(uri);
+                    request.setUri(uri);
                 }
             }
         }
