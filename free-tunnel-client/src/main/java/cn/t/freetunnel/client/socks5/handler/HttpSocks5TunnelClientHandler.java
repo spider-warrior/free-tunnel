@@ -9,7 +9,6 @@ import cn.t.freetunnel.common.util.TunnelUtil;
 import cn.t.freetunnel.server.http.listener.HttpTunnelReadyListener;
 import cn.t.freetunnel.server.http.listener.HttpsTunnelReadyListener;
 import cn.t.freetunnel.server.tunnelprovider.UnPooledTunnelProvider;
-import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
@@ -140,8 +139,7 @@ public class HttpSocks5TunnelClientHandler extends SimpleChannelInboundHandler<F
             if(TunnelBuildResult.SUCCEEDED.value == status) {
                 ChannelPromise promise = remoteChannel.newPromise();
                 promise.addListener(new HttpSocks5TunnelClientReadyListener(remoteChannel, ctx.channel(), targetHost, targetPort));
-                ByteBuf buf = TunnelUtil.httpRequestToByteBuf(ctx.alloc(), proxiedRequest);
-                remoteChannel.writeAndFlush(buf, promise);
+                remoteChannel.writeAndFlush(proxiedRequest, promise);
             } else {
                 ReferenceCountUtil.release(proxiedRequest);
                 logger.error("[{}]: 代理客户端失败, remote: {}:{}", remoteAddress, targetHost, targetPort);

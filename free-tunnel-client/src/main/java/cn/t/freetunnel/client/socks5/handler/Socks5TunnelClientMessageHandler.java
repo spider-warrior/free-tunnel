@@ -11,6 +11,7 @@ import cn.t.freetunnel.common.handler.EncryptMessageDecoder;
 import cn.t.freetunnel.common.handler.EncryptMessageEncoder;
 import cn.t.freetunnel.common.handler.LayerMessageDecoder;
 import cn.t.freetunnel.common.handler.LayerMessageEncoder;
+import cn.t.freetunnel.server.http.encoder.ProxiedRequestEncoder;
 import cn.t.tool.nettytool.util.NettyComponentUtil;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
@@ -115,6 +116,8 @@ public class Socks5TunnelClientMessageHandler extends SimpleChannelInboundHandle
                     //layer
                     NettyComponentUtil.addLastHandler(channelPipeline, NettyHandlerName.LAYER_MESSAGE_DECODER, new LayerMessageDecoder());
                     NettyComponentUtil.addLastHandler(channelPipeline, NettyHandlerName.LAYER_MESSAGE_ENCODER, new LayerMessageEncoder());
+                    //proxied request encoder
+                    NettyComponentUtil.addLastHandler(channelPipeline, "proxiedRequestEncoder", new ProxiedRequestEncoder());
                     //forwarding
                     NettyComponentUtil.addLastHandler(channelPipeline, NettyHandlerName.SOCKS5_TUNNEL_CLIENT_FORWARDING_MESSAGE_HANDLER, new Socks5TunnelClientForwardingHandler(remoteChannel));
                     //command
