@@ -35,7 +35,7 @@ public class InitializerBuilder {
         //http request decoder
         supplierList.add(HttpRequestDecoder::new);
         supplierList.add(() -> new HttpObjectAggregator(1024 * 1024 * 2));
-        supplierList.add(() -> new HttpSocks5TunnelClientHandler());
+        supplierList.add(HttpSocks5TunnelClientHandler::new);
         daemonConfigBuilder.configHandler(supplierList);
         DaemonConfig daemonConfig = daemonConfigBuilder.build();
         return new NettyTcpChannelInitializer(daemonConfig);

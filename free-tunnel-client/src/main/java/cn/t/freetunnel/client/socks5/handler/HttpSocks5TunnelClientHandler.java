@@ -98,7 +98,7 @@ public class HttpSocks5TunnelClientHandler extends SimpleChannelInboundHandler<F
             if(TunnelBuildResult.SUCCEEDED.value == status) {
                 TunnelUtil.prepareProxiedRequest(proxiedRequest);
                 ChannelPromise promise = remoteChannel.newPromise();
-                promise.addListener(new HttpTunnelReadyListener(remoteChannel, ctx.channel(), targetHost, targetPort));
+                promise.addListener(new HttpTunnelReadyListener(remoteChannel, ctx.channel(), targetHost, targetPort, this));
                 remoteChannel.writeAndFlush(proxiedRequest, promise);
             } else {
                 ReferenceCountUtil.release(proxiedRequest);

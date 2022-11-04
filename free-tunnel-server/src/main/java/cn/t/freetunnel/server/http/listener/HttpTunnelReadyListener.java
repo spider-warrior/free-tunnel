@@ -2,10 +2,10 @@ package cn.t.freetunnel.server.http.listener;
 
 import cn.t.freetunnel.common.handler.ForwardingMessageHandler;
 import cn.t.freetunnel.common.listener.TunnelReadyListener;
-import cn.t.freetunnel.server.http.handler.HttpProxyServerMessageHandler;
 import cn.t.tool.nettytool.util.NettyComponentUtil;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.http.HttpResponseEncoder;
 
@@ -17,16 +17,19 @@ import io.netty.handler.codec.http.HttpResponseEncoder;
  **/
 public class HttpTunnelReadyListener extends TunnelReadyListener {
 
+    private final ChannelHandler channelHandler;
+
     @Override
     protected void operationSuccess(ChannelFuture future) {
         //已经通知客户端代理成功, 切换handler
         ChannelPipeline pipeline = remoteChannel.pipeline();
         pipeline.remove(HttpResponseEncoder.class);
-        pipeline.remove(HttpProxyServerMessageHandler.class);
+        pipeline.remove(channelHandler);
         NettyComponentUtil.addLastHandler(pipeline, "proxy-forwarding-handler", new ForwardingMessageHandler(localChannel));
     }
 
-    public HttpTunnelReadyListener(Channel localChannel, Channel remoteChannel, String host, int port) {
+    public HttpTunnelReadyListener(Channel localChannel, Channel remoteChannel, String host, int port, ChannelHandler channelHandler) {
         super(localChannel, remoteChannel, host, port);
+        this.channelHandler = channelHandler;
     }
 }
