@@ -1,6 +1,5 @@
 package cn.t.freetunnel.common.handler;
 
-import cn.t.freetunnel.common.util.TunnelUtil;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
@@ -31,15 +30,9 @@ public class ForwardingMessageHandler extends ChannelDuplexHandler {
             logger.debug("[{}] -> [{}] -> [{}] -> [{}]: 转发byteBuf消息: {} B", ctx.channel().remoteAddress(), ctx.channel().localAddress(), remoteChannel.localAddress(), remoteChannel.remoteAddress(), ((ByteBuf)msg).readableBytes());
             remoteChannel.writeAndFlush(msg);
         } else if(msg instanceof FullHttpRequest) {
-            FullHttpRequest request = (FullHttpRequest)msg;
-            ByteBuf buf = TunnelUtil.httpRequestToByteBuf(ctx.alloc(), request);
-            logger.debug("[{}] -> [{}] -> [{}] -> [{}]: 转发request消息: {} B", ctx.channel().remoteAddress(), ctx.channel().localAddress(), remoteChannel.localAddress(), remoteChannel.remoteAddress(), buf.readableBytes());
-            remoteChannel.writeAndFlush(buf);
+            remoteChannel.writeAndFlush(msg);
         } else if(msg instanceof FullHttpResponse) {
-            FullHttpResponse response = (FullHttpResponse)msg;
-            ByteBuf buf = TunnelUtil.httpResponseToByteBuf(ctx.alloc(), response);
-            logger.debug("[{}] -> [{}] -> [{}] -> [{}]: 转发response消息: {} B", ctx.channel().remoteAddress(), ctx.channel().localAddress(), remoteChannel.localAddress(), remoteChannel.remoteAddress(), buf.readableBytes());
-            remoteChannel.writeAndFlush(buf);
+            remoteChannel.writeAndFlush(msg);
         } else {
             ctx.fireChannelRead(msg);
         }
