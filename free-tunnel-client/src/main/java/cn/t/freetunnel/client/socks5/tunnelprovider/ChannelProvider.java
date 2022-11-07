@@ -51,6 +51,7 @@ public class ChannelProvider {
             tunnelSpecification.setTunnelBuildResultListener(listener);
             ByteBuf outputBuf = Socks5MessageUtil.buildConnectBuf(channel.alloc(), targetHost, targetPort);
             channel.writeAndFlush(outputBuf);
+            logger.info("cmd request, channel: {}", channel);
         } else {
             logger.info("请求建立连接, localChannel: {}, target host: {}, target port: {}", localChannel, targetHost, targetPort);
             InetSocketAddress clientAddress = (InetSocketAddress)localChannel.remoteAddress();

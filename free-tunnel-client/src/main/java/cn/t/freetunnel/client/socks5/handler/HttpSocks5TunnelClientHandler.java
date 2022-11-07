@@ -56,6 +56,7 @@ public class HttpSocks5TunnelClientHandler extends SimpleChannelInboundHandler<F
     }
 
     private void buildProxy(ChannelHandlerContext ctx, HttpMethod httpMethod, String targetHost, int targetPort, HttpVersion httpVersion, FullHttpRequest request) {
+        logger.info("收到请求, 开始构建代理, 本地channel: {}, targetHost: {}, targetPort: {}", ctx.channel(), targetHost, targetPort);
         try {
             InetAddress inetAddress = InetAddress.getByName(targetHost);
             if(inetAddress.isSiteLocalAddress()) {
