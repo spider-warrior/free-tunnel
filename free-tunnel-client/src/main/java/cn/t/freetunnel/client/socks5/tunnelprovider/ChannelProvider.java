@@ -87,7 +87,7 @@ public class ChannelProvider {
                 }
             },
             5,
-            5,
+            10,
             TimeUnit.SECONDS
         );
     }
