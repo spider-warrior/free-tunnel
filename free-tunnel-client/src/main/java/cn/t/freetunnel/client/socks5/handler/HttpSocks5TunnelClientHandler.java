@@ -3,6 +3,7 @@ package cn.t.freetunnel.client.socks5.handler;
 import cn.t.freetunnel.client.socks5.listener.HttpSocks5TunnelClientReadyListener;
 import cn.t.freetunnel.client.socks5.listener.HttpsSocks5TunnelClientReadyListener;
 import cn.t.freetunnel.client.socks5.tunnelprovider.StaticChannelProvider;
+import cn.t.freetunnel.client.socks5.util.SocketUtil;
 import cn.t.freetunnel.common.constants.TunnelBuildResult;
 import cn.t.freetunnel.common.listener.TunnelBuildResultListener;
 import cn.t.freetunnel.server.http.listener.HttpTunnelReadyListener;
@@ -17,9 +18,7 @@ import io.netty.util.ReferenceCountUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.InetAddress;
 import java.net.SocketAddress;
-import java.net.UnknownHostException;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_GATEWAY;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
@@ -48,28 +47,11 @@ public class HttpSocks5TunnelClientHandler extends SimpleChannelInboundHandler<F
             targetPort= Integer.parseInt(elements[1]);
         }
         HttpVersion httpVersion = request.protocolVersion();
-        buildProxy(ctx, httpMethod, targetHost, targetPort, httpVersion, request);
-    }
-
-    private void buildProxy(ChannelHandlerContext ctx, HttpMethod httpMethod, String targetHost, int targetPort, HttpVersion httpVersion, FullHttpRequest request) {
         logger.info("收到请求, 开始构建代理, 本地channel: {}, targetHost: {}, targetPort: {}", ctx.channel(), targetHost, targetPort);
-        try {
-            InetAddress inetAddress = InetAddress.getByName(targetHost);
-            if(inetAddress.isSiteLocalAddress()) {
-                buildDirectProxy(ctx, httpMethod, targetHost, targetPort, httpVersion, request);
-            } else {
-                buildSocks5Proxy(ctx, httpMethod, targetHost, targetPort, httpVersion, request);
-            }
-        } catch (UnknownHostException e) {
-            buildSocks5Proxy(ctx, httpMethod, targetHost, targetPort, httpVersion, request);
-        }
-    }
-
-    private void buildSocks5Proxy(ChannelHandlerContext ctx, HttpMethod httpMethod, String targetHost, int targetPort, HttpVersion httpVersion, FullHttpRequest request) {
-        if(httpMethod == HttpMethod.CONNECT) {
-            buildSocks5HttpsProxy(ctx, targetHost, targetPort, httpVersion);
+        if(SocketUtil.isSiteLocalAddress(targetHost)) {
+            buildDirectProxy(ctx, httpMethod, targetHost, targetPort, httpVersion, request);
         } else {
-            buildSocks5HttpProxy(ctx, targetHost, targetPort, httpVersion, request);
+            buildSocks5Proxy(ctx, httpMethod, targetHost, targetPort, httpVersion, request);
         }
     }
 
@@ -109,6 +91,14 @@ public class HttpSocks5TunnelClientHandler extends SimpleChannelInboundHandler<F
             }
         };
         UnPooledTunnelProvider.acquireTcpTunnelForHttp(ctx.channel(), targetHost, targetPort, tunnelBuildResultListener);
+    }
+
+    private void buildSocks5Proxy(ChannelHandlerContext ctx, HttpMethod httpMethod, String targetHost, int targetPort, HttpVersion httpVersion, FullHttpRequest request) {
+        if(httpMethod == HttpMethod.CONNECT) {
+            buildSocks5HttpsProxy(ctx, targetHost, targetPort, httpVersion);
+        } else {
+            buildSocks5HttpProxy(ctx, targetHost, targetPort, httpVersion, request);
+        }
     }
 
     private void buildSocks5HttpsProxy(ChannelHandlerContext ctx, String targetHost, int targetPort, HttpVersion httpVersion) {
