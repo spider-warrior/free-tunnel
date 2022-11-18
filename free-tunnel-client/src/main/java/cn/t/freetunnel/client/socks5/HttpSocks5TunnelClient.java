@@ -47,7 +47,7 @@ public class HttpSocks5TunnelClient {
             analyseAndConfigSecurity(args[2]);
         }
         NettyTcpChannelInitializer nettyChannelInitializer = InitializerBuilder.httpSocks5TunnelClientInitializer();
-        NettyTcpServer proxyServer = new NettyTcpServer("http-socks5-tunnel-client", HttpSocks5TunnelClientConfig.SERVER_PORT, nettyChannelInitializer, TunnelConstants.WORKER_GROUP, false, true);
+        NettyTcpServer proxyServer = new NettyTcpServer("http-socks5-tunnel-client", new int[]{HttpSocks5TunnelClientConfig.SERVER_PORT}, nettyChannelInitializer, TunnelConstants.WORKER_GROUP, false, true);
         List<DaemonService> daemonServerList = new ArrayList<>();
         daemonServerList.add(proxyServer);
         DefaultLauncher defaultLauncher = new DefaultLauncher();
@@ -96,7 +96,7 @@ public class HttpSocks5TunnelClient {
                 System.exit(1);
             } else {
                 try (
-                    InputStream clientConfPathInputStream = Files.newInputStream(Paths.get(analysePath(clientConfPath)));
+                    InputStream clientConfPathInputStream = Files.newInputStream(Paths.get(analysePath(clientConfPath)))
                 ) {
                     byte[] data = new byte[clientConfPathInputStream.available()];
                     int length = clientConfPathInputStream.read(data);

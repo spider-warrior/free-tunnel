@@ -38,7 +38,7 @@ public class Socks5TunnelServer {
         loadServerConfig();
         List<DaemonService> daemonServerList = new ArrayList<>();
         NettyTcpChannelInitializer nettyChannelInitializer = InitializerBuilder.buildSocks5ProxyServerChannelInitializer();
-        NettyTcpServer proxyServer = new NettyTcpServer(String.format("socks5-proxy-server(%s:%s)", Socks5TunnelServerConfig.SERVER_HOST, Socks5TunnelServerConfig.SERVER_PORT), Socks5TunnelServerConfig.SERVER_PORT, nettyChannelInitializer, TunnelConstants.WORKER_GROUP, false, true);
+        NettyTcpServer proxyServer = new NettyTcpServer(String.format("socks5-proxy-server(%s:%s)", Socks5TunnelServerConfig.SERVER_HOST, Socks5TunnelServerConfig.SERVER_PORT), new int[]{Socks5TunnelServerConfig.SERVER_PORT}, nettyChannelInitializer, TunnelConstants.WORKER_GROUP, false, true);
         daemonServerList.add(proxyServer);
         DefaultLauncher defaultLauncher = new DefaultLauncher();
         defaultLauncher.setDaemonServiceList(daemonServerList);

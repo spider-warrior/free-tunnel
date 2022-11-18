@@ -7,6 +7,7 @@ import cn.t.tool.nettytool.daemon.DaemonConfig;
 import cn.t.tool.nettytool.initializer.DaemonConfigBuilder;
 import cn.t.tool.nettytool.initializer.NettyTcpChannelInitializer;
 import io.netty.channel.ChannelHandler;
+import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpRequestDecoder;
 import io.netty.handler.codec.http.HttpResponseEncoder;
@@ -14,30 +15,30 @@ import io.netty.handler.codec.http.HttpResponseEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Supplier;
+import java.util.function.Function;
 
 public class InitializerBuilder {
 
     public static NettyTcpChannelInitializer buildHttpProxyServerViaSocks5ClientChannelInitializer() {
-        DaemonConfigBuilder daemonConfigBuilder = DaemonConfigBuilder.newInstance();
-        daemonConfigBuilder.configHandler(Collections.singletonList(Socks5TunnelClientMessageHandler::new));
-        DaemonConfig daemonConfig = daemonConfigBuilder.build();
+        DaemonConfigBuilder<SocketChannel> daemonConfigBuilder = DaemonConfigBuilder.newInstance();
+        daemonConfigBuilder.configHandler(Collections.singletonList(ch -> new Socks5TunnelClientMessageHandler()));
+        DaemonConfig<SocketChannel> daemonConfig = daemonConfigBuilder.build();
         return new NettyTcpChannelInitializer(daemonConfig);
     }
 
     public static NettyTcpChannelInitializer httpSocks5TunnelClientInitializer() {
-        DaemonConfigBuilder daemonConfigBuilder = DaemonConfigBuilder.newInstance();
+        DaemonConfigBuilder<SocketChannel> daemonConfigBuilder = DaemonConfigBuilder.newInstance();
         //idle
         daemonConfigBuilder.configIdleHandler(HttpSocks5TunnelClientConfig.HTTP_PROXY_READ_TIME_OUT_IN_SECONDS, HttpSocks5TunnelClientConfig.HTTP_PROXY_WRITE_TIME_OUT_IN_SECONDS, HttpSocks5TunnelClientConfig.HTTP_PROXY_ALL_IDLE_TIME_OUT_IN_SECONDS);
-        List<Supplier<? extends ChannelHandler>> supplierList = new ArrayList<>();
+        List<Function<SocketChannel, ? extends ChannelHandler>> factoryList = new ArrayList<>();
         //http response encoder
-        supplierList.add(HttpResponseEncoder::new);
+        factoryList.add(ch -> new HttpResponseEncoder());
         //http request decoder
-        supplierList.add(HttpRequestDecoder::new);
-        supplierList.add(() -> new HttpObjectAggregator(1024 * 1024 * 2));
-        supplierList.add(HttpSocks5TunnelClientHandler::new);
-        daemonConfigBuilder.configHandler(supplierList);
-        DaemonConfig daemonConfig = daemonConfigBuilder.build();
+        factoryList.add(ch -> new HttpRequestDecoder());
+        factoryList.add(ch -> new HttpObjectAggregator(1024 * 1024 * 2));
+        factoryList.add(ch -> new HttpSocks5TunnelClientHandler());
+        daemonConfigBuilder.configHandler(factoryList);
+        DaemonConfig<SocketChannel> daemonConfig = daemonConfigBuilder.build();
         return new NettyTcpChannelInitializer(daemonConfig);
     }
 }
