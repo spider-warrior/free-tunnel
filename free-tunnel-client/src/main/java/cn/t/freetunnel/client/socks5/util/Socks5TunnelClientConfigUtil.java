@@ -1,6 +1,5 @@
 package cn.t.freetunnel.client.socks5.util;
 
-import cn.t.freetunnel.client.socks5.HttpSocks5TunnelClient;
 import cn.t.freetunnel.client.socks5.constants.Socks5TunnelClientConfig;
 import cn.t.freetunnel.client.socks5.exception.ClientInitFailed;
 import cn.t.util.common.FileUtil;
@@ -80,7 +79,7 @@ public class Socks5TunnelClientConfigUtil {
     private static void configSocks5ClientConfig() throws IOException {
         logger.info("init client by config file: classpath:{}", clientConfigFileName);
         try (
-            InputStream inputStream = FileUtil.getResourceInputStream(HttpSocks5TunnelClient.class.getClassLoader(), clientConfigFileName)
+            InputStream inputStream = FileUtil.getResourceInputStream(Socks5TunnelClientConfigUtil.class.getClassLoader(), clientConfigFileName)
         ) {
             Properties properties = new Properties();
             properties.load(inputStream);
