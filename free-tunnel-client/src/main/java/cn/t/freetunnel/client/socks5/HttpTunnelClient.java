@@ -1,6 +1,6 @@
 package cn.t.freetunnel.client.socks5;
 
-import cn.t.freetunnel.client.socks5.constants.HttpSocks5TunnelClientConfig;
+import cn.t.freetunnel.client.socks5.constants.HttpTunnelClientConfig;
 import cn.t.freetunnel.client.socks5.util.InitializerBuilder;
 import cn.t.freetunnel.client.socks5.util.Socks5TunnelClientConfigUtil;
 import cn.t.freetunnel.common.constants.TunnelConstants;
@@ -26,8 +26,9 @@ public class HttpTunnelClient {
         NettyTcpChannelInitializer nettyChannelInitializer = InitializerBuilder.httpSocks5TunnelClientInitializer();
         NettyTcpServer proxyServer = new NettyTcpServer(
             "http-tunnel-client",
-            new int[]{HttpSocks5TunnelClientConfig.SERVER_PORT},
+            new int[]{HttpTunnelClientConfig.SERVER_PORT},
             nettyChannelInitializer,
+            TunnelConstants.BOSS_GROUP,
             TunnelConstants.WORKER_GROUP,
             false,
             true);

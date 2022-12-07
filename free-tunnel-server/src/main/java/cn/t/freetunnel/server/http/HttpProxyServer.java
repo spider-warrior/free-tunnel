@@ -22,7 +22,14 @@ public class HttpProxyServer {
     public static void main(String[] args) {
         List<DaemonService> daemonServerList = new ArrayList<>();
         NettyTcpChannelInitializer nettyChannelInitializer = InitializerBuilder.buildHttpProxyServerChannelInitializer();
-        NettyTcpServer proxyServer = new NettyTcpServer("http-proxy-server", new int[]{HttpProxyServerConfig.SERVER_PORT}, nettyChannelInitializer, TunnelConstants.WORKER_GROUP, false, true);
+        NettyTcpServer proxyServer = new NettyTcpServer(
+            "http-proxy-server",
+            new int[]{HttpProxyServerConfig.SERVER_PORT},
+            nettyChannelInitializer,
+            TunnelConstants.BOSS_GROUP,
+            TunnelConstants.WORKER_GROUP,
+            false,
+            true);
         daemonServerList.add(proxyServer);
         DefaultLauncher defaultLauncher = new DefaultLauncher();
         defaultLauncher.setDaemonServiceList(daemonServerList);

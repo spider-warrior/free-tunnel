@@ -5,6 +5,8 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.nio.NioEventLoopGroup;
 
+import java.util.concurrent.ThreadFactory;
+
 public class TunnelNioEventLoopGroup extends NioEventLoopGroup {
 
     @Override
@@ -19,5 +21,9 @@ public class TunnelNioEventLoopGroup extends NioEventLoopGroup {
 
     public TunnelNioEventLoopGroup(int nThreads) {
         super(nThreads);
+    }
+
+    public TunnelNioEventLoopGroup(int nThreads, ThreadFactory threadFactory) {
+        super(nThreads, threadFactory);
     }
 }

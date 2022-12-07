@@ -1,6 +1,6 @@
 package cn.t.freetunnel.client.socks5.util;
 
-import cn.t.freetunnel.client.socks5.constants.HttpSocks5TunnelClientConfig;
+import cn.t.freetunnel.client.socks5.constants.HttpTunnelClientConfig;
 import cn.t.freetunnel.client.socks5.handler.HttpSocks5TunnelClientHandler;
 import cn.t.freetunnel.client.socks5.handler.Socks5TunnelClientMessageHandler;
 import cn.t.tool.nettytool.daemon.DaemonConfig;
@@ -29,7 +29,7 @@ public class InitializerBuilder {
     public static NettyTcpChannelInitializer httpSocks5TunnelClientInitializer() {
         DaemonConfigBuilder<SocketChannel> daemonConfigBuilder = DaemonConfigBuilder.newInstance();
         //idle
-        daemonConfigBuilder.configIdleHandler(HttpSocks5TunnelClientConfig.HTTP_PROXY_READ_TIME_OUT_IN_SECONDS, HttpSocks5TunnelClientConfig.HTTP_PROXY_WRITE_TIME_OUT_IN_SECONDS, HttpSocks5TunnelClientConfig.HTTP_PROXY_ALL_IDLE_TIME_OUT_IN_SECONDS);
+        daemonConfigBuilder.configIdleHandler(HttpTunnelClientConfig.HTTP_PROXY_READ_TIME_OUT_IN_SECONDS, HttpTunnelClientConfig.HTTP_PROXY_WRITE_TIME_OUT_IN_SECONDS, HttpTunnelClientConfig.HTTP_PROXY_ALL_IDLE_TIME_OUT_IN_SECONDS);
         List<Function<SocketChannel, ? extends ChannelHandler>> factoryList = new ArrayList<>();
         //http response encoder
         factoryList.add(ch -> new HttpResponseEncoder());

@@ -7,7 +7,7 @@ package cn.t.freetunnel.client.socks5.constants;
  * @version V1.0
  * @since 2020-02-22 23:00
  **/
-public class HttpSocks5TunnelClientConfig {
+public class HttpTunnelClientConfig {
     public static final int SERVER_PORT = 1087;
 
     public static final int HTTP_PROXY_READ_TIME_OUT_IN_SECONDS = 0;
