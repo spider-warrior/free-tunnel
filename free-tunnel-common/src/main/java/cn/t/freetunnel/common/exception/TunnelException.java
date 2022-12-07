@@ -11,7 +11,6 @@ public class TunnelException extends RuntimeException {
     public TunnelException(String message) {
         super(message);
     }
-
     public TunnelException(Throwable cause) {
         super(cause);
     }
