@@ -1,6 +1,6 @@
 {
-	"socks5ServerHost": "",
-	"socks5ServerPort": "",
+	"tunnelServerHost": "",
+	"tunnelServerPort": "",
 	"username": "",
 	"password": "",
 	"security": ""
