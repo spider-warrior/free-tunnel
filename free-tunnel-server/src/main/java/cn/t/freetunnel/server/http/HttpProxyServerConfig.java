@@ -1,4 +1,4 @@
-package cn.t.freetunnel.server.constants;
+package cn.t.freetunnel.server.http;
 
 /**
  * http代理服务配置

@@ -2,8 +2,8 @@ package cn.t.freetunnel.server.util;
 
 import cn.t.freetunnel.common.handler.FetchMessageHandler;
 import cn.t.freetunnel.common.listener.TunnelBuildResultListener;
-import cn.t.freetunnel.server.constants.HttpProxyServerConfig;
-import cn.t.freetunnel.server.constants.Socks5TunnelServerConfig;
+import cn.t.freetunnel.server.http.HttpProxyServerConfig;
+import cn.t.freetunnel.server.socks5.TunnelServerConfig;
 import cn.t.freetunnel.server.http.encoder.ProxiedRequestEncoder;
 import cn.t.freetunnel.server.http.handler.HttpProxyServerMessageHandler;
 import cn.t.freetunnel.server.socks5.handler.Socks5TunnelServerFetchHandler;
@@ -81,7 +81,7 @@ public class InitializerBuilder {
     public static NettyTcpChannelInitializer buildSocks5ProxyServerChannelInitializer() {
         DaemonConfigBuilder<SocketChannel> daemonConfigBuilder = DaemonConfigBuilder.newInstance();
         //idle
-        daemonConfigBuilder.configIdleHandler(Socks5TunnelServerConfig.SOCKS5_PROXY_READ_TIME_OUT_IN_SECONDS, Socks5TunnelServerConfig.SOCKS5_PROXY_WRITE_TIME_OUT_IN_SECONDS, Socks5TunnelServerConfig.SOCKS5_PROXY_ALL_IDLE_TIME_OUT_IN_SECONDS);
+        daemonConfigBuilder.configIdleHandler(TunnelServerConfig.SOCKS5_PROXY_READ_TIME_OUT_IN_SECONDS, TunnelServerConfig.SOCKS5_PROXY_WRITE_TIME_OUT_IN_SECONDS, TunnelServerConfig.SOCKS5_PROXY_ALL_IDLE_TIME_OUT_IN_SECONDS);
         daemonConfigBuilder.configHandler(Collections.singletonList(ch -> new Socks5TunnelServerMessageHandler()));
         DaemonConfig<SocketChannel> daemonConfig = daemonConfigBuilder.build();
         return new NettyTcpChannelInitializer(daemonConfig);

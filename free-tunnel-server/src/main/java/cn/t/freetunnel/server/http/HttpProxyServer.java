@@ -1,7 +1,6 @@
 package cn.t.freetunnel.server.http;
 
 import cn.t.freetunnel.common.constants.TunnelConstants;
-import cn.t.freetunnel.server.constants.HttpProxyServerConfig;
 import cn.t.freetunnel.server.util.InitializerBuilder;
 import cn.t.tool.nettytool.daemon.DaemonService;
 import cn.t.tool.nettytool.daemon.server.NettyTcpServer;

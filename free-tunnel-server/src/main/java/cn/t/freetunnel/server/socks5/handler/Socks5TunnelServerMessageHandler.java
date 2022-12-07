@@ -5,7 +5,7 @@ import cn.t.freetunnel.common.exception.TunnelException;
 import cn.t.freetunnel.common.listener.TunnelBuildResultListener;
 import cn.t.freetunnel.common.util.ByteBufUtil;
 import cn.t.freetunnel.common.util.TunnelUtil;
-import cn.t.freetunnel.server.constants.Socks5TunnelServerConfig;
+import cn.t.freetunnel.server.socks5.TunnelServerConfig;
 import cn.t.freetunnel.server.socks5.listener.Socks5TunnelServerFirstTimeReadyListener;
 import cn.t.freetunnel.server.socks5.listener.Socks5TunnelServerFirstTimeReadyListenerForFreeTunnelClient;
 import cn.t.freetunnel.server.socks5.listener.Socks5TunnelServerReuseReadyListener;
@@ -86,7 +86,7 @@ public class Socks5TunnelServerMessageHandler extends SimpleChannelInboundHandle
             String username = new String(usernameBytes);
             String password = new String(passwordBytes);
             //鉴权
-            Socks5TunnelServerConfig.UserConfig userConfig = Socks5TunnelServerConfig.ServerConfig.USER_CONFIG_MAP.get(username);
+            TunnelServerConfig.UserConfig userConfig = TunnelServerConfig.ServerConfig.USER_CONFIG_MAP.get(username);
             if(userConfig == null || userConfig.getPassword() == null || !userConfig.getPassword().equals(password)) {
                 logger.error("用户名密码验证失败, password: {}, 即将关闭连接", password);
                 ByteBuf outputBuf = ctx.alloc().buffer(2);
@@ -194,11 +194,11 @@ public class Socks5TunnelServerMessageHandler extends SimpleChannelInboundHandle
                                     ));
                                 }
                             }
-                            ByteBuf responseBuf = Socks5MessageUtil.buildConnectResponse(ctx.alloc(), version, Socks5CmdExecutionStatus.SUCCEEDED.value, Socks5AddressType.IPV4.value, Socks5TunnelServerConfig.SERVER_HOST_BYTES, Socks5TunnelServerConfig.SERVER_PORT);
+                            ByteBuf responseBuf = Socks5MessageUtil.buildConnectResponse(ctx.alloc(), version, Socks5CmdExecutionStatus.SUCCEEDED.value, Socks5AddressType.IPV4.value, TunnelServerConfig.SERVER_HOST_BYTES, TunnelServerConfig.SERVER_PORT);
                             ctx.writeAndFlush(responseBuf, promise);
                         } else {
                             logger.error("[{}]: 代理客户端失败, remote: {}:{}", ctx.channel().remoteAddress(), targetHost, targetPort);
-                            ByteBuf responseBuf = Socks5MessageUtil.buildConnectResponse(ctx.alloc(), version, Socks5CmdExecutionStatus.GENERAL_SOCKS_SERVER_FAILURE.value, Socks5AddressType.IPV4.value, Socks5TunnelServerConfig.SERVER_HOST_BYTES, Socks5TunnelServerConfig.SERVER_PORT);
+                            ByteBuf responseBuf = Socks5MessageUtil.buildConnectResponse(ctx.alloc(), version, Socks5CmdExecutionStatus.GENERAL_SOCKS_SERVER_FAILURE.value, Socks5AddressType.IPV4.value, TunnelServerConfig.SERVER_HOST_BYTES, TunnelServerConfig.SERVER_PORT);
                             ctx.writeAndFlush(responseBuf);
                         }
                     };

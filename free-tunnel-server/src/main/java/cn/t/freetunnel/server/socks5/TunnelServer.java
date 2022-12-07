@@ -1,7 +1,6 @@
 package cn.t.freetunnel.server.socks5;
 
 import cn.t.freetunnel.common.constants.TunnelConstants;
-import cn.t.freetunnel.server.constants.Socks5TunnelServerConfig;
 import cn.t.freetunnel.server.util.InitializerBuilder;
 import cn.t.tool.nettytool.daemon.DaemonService;
 import cn.t.tool.nettytool.daemon.server.NettyTcpServer;
@@ -30,9 +29,9 @@ import java.util.*;
  * @author yj
  * @since 2020-01-12 13:41
  **/
-public class Socks5TunnelServer {
+public class TunnelServer {
 
-    private static final Logger logger = LoggerFactory.getLogger(Socks5TunnelServer.class);
+    private static final Logger logger = LoggerFactory.getLogger(TunnelServer.class);
 
     public static void main(String[] args) {
         loadServerConfig();
@@ -40,9 +39,9 @@ public class Socks5TunnelServer {
         NettyTcpChannelInitializer nettyChannelInitializer = InitializerBuilder.buildSocks5ProxyServerChannelInitializer();
         NettyTcpServer proxyServer = new NettyTcpServer(
             String.format("socks5-proxy-server(%s:%s)",
-                Socks5TunnelServerConfig.SERVER_HOST,
-                Socks5TunnelServerConfig.SERVER_PORT),
-            new int[]{Socks5TunnelServerConfig.SERVER_PORT},
+                TunnelServerConfig.SERVER_HOST,
+                TunnelServerConfig.SERVER_PORT),
+            new int[]{TunnelServerConfig.SERVER_PORT},
             nettyChannelInitializer,
             TunnelConstants.BOSS_GROUP,
             TunnelConstants.WORKER_GROUP,
@@ -59,22 +58,22 @@ public class Socks5TunnelServer {
         if(!StringUtil.isEmpty(socks5Home)) {
             File home = new File(socks5Home);
             if(home.exists()) {
-                Map<String, Socks5TunnelServerConfig.UserConfig> userConfigMap = loadUserConfig(FileUtil.appendFilePath(socks5Home, Socks5TunnelServerConfig.SOCKS5_SERVER_USERS_CONFIG_FILE));
-                Socks5TunnelServerConfig.ServerConfig.USER_CONFIG_MAP.putAll(userConfigMap);
+                Map<String, TunnelServerConfig.UserConfig> userConfigMap = loadUserConfig(FileUtil.appendFilePath(socks5Home, TunnelServerConfig.SOCKS5_SERVER_USERS_CONFIG_FILE));
+                TunnelServerConfig.ServerConfig.USER_CONFIG_MAP.putAll(userConfigMap);
             } else {
-                logger.warn("{}未设置", Socks5TunnelServerConfig.SOCKS5_SERVER_HOME_KEY);
+                logger.warn("{}未设置", TunnelServerConfig.SOCKS5_SERVER_HOME_KEY);
             }
         } else {
-            logger.warn("{}未设置", Socks5TunnelServerConfig.SOCKS5_SERVER_HOME_KEY);
+            logger.warn("{}未设置", TunnelServerConfig.SOCKS5_SERVER_HOME_KEY);
         }
     }
 
     private static String getSocks5Home() {
-        return SystemUtil.getSysEnv(Socks5TunnelServerConfig.SOCKS5_SERVER_HOME_KEY);
+        return SystemUtil.getSysEnv(TunnelServerConfig.SOCKS5_SERVER_HOME_KEY);
     }
 
-    private static Map<String, Socks5TunnelServerConfig.UserConfig> loadUserConfig(String userConfigLocation) {
-        Map<String, Socks5TunnelServerConfig.UserConfig> userConfigMap = new HashMap<>();
+    private static Map<String, TunnelServerConfig.UserConfig> loadUserConfig(String userConfigLocation) {
+        Map<String, TunnelServerConfig.UserConfig> userConfigMap = new HashMap<>();
         File config = new File(userConfigLocation);
         if(config.exists()) {
             try (
@@ -87,7 +86,7 @@ public class Socks5TunnelServer {
                         String passwordAndSecurity = (String)v;
                         String[] elements = passwordAndSecurity.split(":");
                         logger.info("添加用户, username: {}, password: {}, security: {}", k, elements[0], elements.length > 1 ? elements[1] : "");
-                        Socks5TunnelServerConfig.UserConfig userConfig = new Socks5TunnelServerConfig.UserConfig();
+                        TunnelServerConfig.UserConfig userConfig = new TunnelServerConfig.UserConfig();
                         userConfig.setUsername((String)k);
                         userConfig.setPassword(elements[0]);
                         if(elements.length > 1) {

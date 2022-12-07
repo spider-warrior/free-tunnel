@@ -47,7 +47,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>cn.t.freetunnel.server.socks5.Socks5TunnelServer</mainClass>
+                            <mainClass>cn.t.freetunnel.server.socks5.TunnelServer</mainClass>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>libs/</classpathPrefix>
                             <!-- 如果不加这一句则依赖的SNAPSHOT的jar包就会表现为MANIFEST.MF中的

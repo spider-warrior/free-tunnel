@@ -1,4 +1,4 @@
-package cn.t.freetunnel.server.constants;
+package cn.t.freetunnel.server.socks5;
 
 import cn.t.util.common.StringUtil;
 import cn.t.util.common.SystemUtil;
@@ -15,7 +15,7 @@ import java.util.Map;
  * @version V1.0
  * @since 2020-02-22 23:00
  **/
-public class Socks5TunnelServerConfig {
+public class TunnelServerConfig {
 
     public static final String PUBLIC_HOSTNAME = SystemUtil.getLocalIpV4(false);
     public static final String SERVER_HOST = StringUtil.isEmpty(PUBLIC_HOSTNAME) ? SystemUtil.getLocalIpV4(true) : PUBLIC_HOSTNAME;
