@@ -154,7 +154,7 @@ public class Socks5TunnelClientMessageHandler extends SimpleChannelInboundHandle
         ByteBuf outputBuf = ctx.alloc().buffer(2);
         outputBuf.writeByte(Socks5Constants.VERSION);
         outputBuf.writeByte(1);
-        outputBuf.writeByte(Socks5Method.USERNAME_PASSWORD.rangeStart);
+        outputBuf.writeByte(Socks5Method.USERNAME_PASSWORD.value);
         ctx.writeAndFlush(outputBuf);
     }
 }
