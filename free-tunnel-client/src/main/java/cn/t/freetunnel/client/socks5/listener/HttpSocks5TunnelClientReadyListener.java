@@ -2,6 +2,7 @@ package cn.t.freetunnel.client.socks5.listener;
 
 import cn.t.freetunnel.client.socks5.handler.HttpSocks5TunnelClientForwardingHandler;
 import cn.t.freetunnel.client.socks5.handler.HttpSocks5TunnelClientHandler;
+import cn.t.freetunnel.common.listener.TunnelReadyListener;
 import cn.t.freetunnel.common.util.TunnelUtil;
 import cn.t.tool.nettytool.util.NettyComponentUtil;
 import io.netty.channel.Channel;
@@ -18,7 +19,7 @@ import org.slf4j.LoggerFactory;
  * @version V1.0
  * @since 2020-02-27 15:42
  **/
-public class HttpSocks5TunnelClientReadyListener extends Socks5TunnelClientReadyListener {
+public class HttpSocks5TunnelClientReadyListener extends TunnelReadyListener {
 
     private static final Logger logger = LoggerFactory.getLogger(HttpSocks5TunnelClientReadyListener.class);
 
