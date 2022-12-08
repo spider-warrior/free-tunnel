@@ -151,7 +151,7 @@ public class Socks5TunnelClientMessageHandler extends SimpleChannelInboundHandle
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
         //send negotiate msg
-        ByteBuf outputBuf = ctx.alloc().buffer(2);
+        ByteBuf outputBuf = ctx.alloc().buffer(3);
         outputBuf.writeByte(Socks5Constants.VERSION);
         outputBuf.writeByte(1);
         outputBuf.writeByte(Socks5Method.USERNAME_PASSWORD.value);
