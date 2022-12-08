@@ -19,9 +19,6 @@ import io.netty.channel.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.crypto.NoSuchPaddingException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
 /**
@@ -34,6 +31,7 @@ import java.util.Arrays;
 public class Socks5TunnelServerMessageHandler extends SimpleChannelInboundHandler<ByteBuf> {
 
     private static final Logger logger = LoggerFactory.getLogger(Socks5TunnelServerMessageHandler.class);
+    private static final byte[] EMPTY_IP_V4 = new byte[]{0, 0, 0, 0};
 
     private Socks5ServerState state = Socks5ServerState.NEGOTIATE;
     private byte[] security;
@@ -160,34 +158,37 @@ public class Socks5TunnelServerMessageHandler extends SimpleChannelInboundHandle
                     TunnelBuildResultListener tunnelBuildResultListener = (status, channel) -> {
                         ChannelPipeline channelPipeline = ctx.pipeline();
                         boolean firstTime = channelPipeline.get(NettyHandlerName.SOCKS5_TUNNEL_SERVER_FORWARDING_MESSAGE_HANDLER) == null;
+                        ChannelPromise promise = ctx.newPromise();
                         if(firstTime) {
-                            if(freeTunnelClient) {
-                                //layer
-                                NettyComponentUtil.addFirst(channelPipeline, NettyHandlerName.LAYER_MESSAGE_DECODER, new LayerMessageDecoder());
-                                NettyComponentUtil.addFirst(channelPipeline, NettyHandlerName.LAYER_MESSAGE_ENCODER, new LayerMessageEncoder());
-                                //encrypt and decrypt
-                                try {
-                                    NettyComponentUtil.addFirst(channelPipeline, NettyHandlerName.ENCRYPT_MESSAGE_DECODER, new EncryptMessageDecoder(security));
-                                    NettyComponentUtil.addFirst(channelPipeline, NettyHandlerName.ENCRYPT_MESSAGE_ENCODER, new EncryptMessageEncoder(security));
-                                } catch (Exception e) { throw new TunnelException(e);}
-                                //forwarding
-                                NettyComponentUtil.addLastHandler(channelPipeline, NettyHandlerName.SOCKS5_TUNNEL_SERVER_FORWARDING_MESSAGE_HANDLER, new Socks5TunnelServerForwardingHandler(channel));
-                                //command
-                                NettyComponentUtil.addLastHandler(channelPipeline, NettyHandlerName.SOCKS5_TUNNEL_SERVER_COMMAND_HANDLER, new Socks5TunnelServerCommandHandler(channel));
-                            } else {
-                                //forwarding
-                                NettyComponentUtil.addLastHandler(channelPipeline, NettyHandlerName.SOCKS5_TUNNEL_SERVER_FORWARDING_MESSAGE_HANDLER, new Socks5TunnelServerForwardingHandler(channel));
-                            }
-                        } else {
-                            Socks5TunnelServerForwardingHandler forwardingHandler = (Socks5TunnelServerForwardingHandler)channelPipeline.get(NettyHandlerName.SOCKS5_TUNNEL_SERVER_FORWARDING_MESSAGE_HANDLER);
-                            forwardingHandler.setRemoteChannel(channel);
-                            if(freeTunnelClient) {
-                                Socks5TunnelServerCommandHandler commandHandler = (Socks5TunnelServerCommandHandler)channelPipeline.get(NettyHandlerName.SOCKS5_TUNNEL_SERVER_COMMAND_HANDLER);
-                                commandHandler.setRemoteChannel(channel);
-                            }
+                            promise.addListener(future -> {
+                                if(freeTunnelClient) {
+                                    //layer
+                                    NettyComponentUtil.addFirst(channelPipeline, NettyHandlerName.LAYER_MESSAGE_DECODER, new LayerMessageDecoder());
+                                    NettyComponentUtil.addFirst(channelPipeline, NettyHandlerName.LAYER_MESSAGE_ENCODER, new LayerMessageEncoder());
+                                    //encrypt and decrypt
+                                    try {
+                                        NettyComponentUtil.addFirst(channelPipeline, NettyHandlerName.ENCRYPT_MESSAGE_DECODER, new EncryptMessageDecoder(security));
+                                        NettyComponentUtil.addFirst(channelPipeline, NettyHandlerName.ENCRYPT_MESSAGE_ENCODER, new EncryptMessageEncoder(security));
+                                    } catch (Exception e) { throw new TunnelException(e);}
+                                    //forwarding
+                                    NettyComponentUtil.addLastHandler(channelPipeline, NettyHandlerName.SOCKS5_TUNNEL_SERVER_FORWARDING_MESSAGE_HANDLER, new Socks5TunnelServerForwardingHandler(channel));
+                                    //command
+                                    NettyComponentUtil.addLastHandler(channelPipeline, NettyHandlerName.SOCKS5_TUNNEL_SERVER_COMMAND_HANDLER, new Socks5TunnelServerCommandHandler(channel));
+                                } else {
+                                    //forwarding
+                                    NettyComponentUtil.addLastHandler(channelPipeline, NettyHandlerName.SOCKS5_TUNNEL_SERVER_FORWARDING_MESSAGE_HANDLER, new Socks5TunnelServerForwardingHandler(channel));
+                                }
+                            });
                         }
                         if(TunnelBuildResult.SUCCEEDED.value == status) {
-                            ChannelPromise promise = ctx.newPromise();
+                            if(!firstTime) {
+                                Socks5TunnelServerForwardingHandler forwardingHandler = (Socks5TunnelServerForwardingHandler)channelPipeline.get(NettyHandlerName.SOCKS5_TUNNEL_SERVER_FORWARDING_MESSAGE_HANDLER);
+                                forwardingHandler.setRemoteChannel(channel);
+                                if(freeTunnelClient) {
+                                    Socks5TunnelServerCommandHandler commandHandler = (Socks5TunnelServerCommandHandler)channelPipeline.get(NettyHandlerName.SOCKS5_TUNNEL_SERVER_COMMAND_HANDLER);
+                                    commandHandler.setRemoteChannel(channel);
+                                }
+                            }
                             promise.addListener(future -> {
                                 if(future.isSuccess()) {
                                     //备份Socks5ProxyServerMessageHandler
@@ -199,8 +200,8 @@ public class Socks5TunnelServerMessageHandler extends SimpleChannelInboundHandle
                             ctx.writeAndFlush(responseBuf, promise);
                         } else {
                             logger.error("[{}]: 代理客户端失败, remote: {}:{}", ctx.channel().remoteAddress(), targetHost, targetPort);
-                            ByteBuf responseBuf = Socks5MessageUtil.buildConnectResponse(ctx.alloc(), version, Socks5CmdExecutionStatus.GENERAL_SOCKS_SERVER_FAILURE.value, Socks5AddressType.IPV4.value, TunnelServerConfig.SERVER_HOST_BYTES, TunnelServerConfig.SERVER_PORT);
-                            ctx.writeAndFlush(responseBuf);
+                            ByteBuf responseBuf = Socks5MessageUtil.buildConnectResponse(ctx.alloc(), version, Socks5CmdExecutionStatus.GENERAL_SOCKS_SERVER_FAILURE.value, Socks5AddressType.IPV4.value, EMPTY_IP_V4, 0);
+                            ctx.writeAndFlush(responseBuf, promise);
                         }
                     };
                     if(freeTunnelClient) {
