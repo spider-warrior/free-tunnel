@@ -8,7 +8,7 @@ package cn.t.freetunnel.common.constants;
  **/
 public enum TunnelMessageType {
     DATA((byte)0),
-    COMMAND((byte)1),
+    COMMAND((byte)1)
     ;
     public final byte value;
 

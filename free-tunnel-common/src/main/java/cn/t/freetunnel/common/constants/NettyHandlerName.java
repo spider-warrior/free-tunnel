@@ -6,6 +6,8 @@ package cn.t.freetunnel.common.constants;
  * @since 2022-03-10 17:36
  **/
 public class NettyHandlerName {
+    public static final String SOCKS5_TUNNEL_CLIENT_MESSAGE_HANDLER = "socks5-tunnel-client-message-handler";
+    public static final String SOCKS5_TUNNEL_SERVER_MESSAGE_HANDLER = "socks5-tunnel-server-message-handler";
     public static final String SOCKS5_TUNNEL_CLIENT_FORWARDING_MESSAGE_HANDLER = "socks5-tunnel-client-forwarding-message-handler";
     public static final String SOCKS5_TUNNEL_SERVER_FORWARDING_MESSAGE_HANDLER = "socks5-tunnel-server-forwarding-message-handler";
     public static final String SOCKS5_TUNNEL_SERVER_COMMAND_HANDLER = "socks5-tunnel-server-command-handler";

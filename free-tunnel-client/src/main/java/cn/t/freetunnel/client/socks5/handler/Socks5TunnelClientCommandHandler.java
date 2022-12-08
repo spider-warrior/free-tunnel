@@ -66,7 +66,7 @@ public class Socks5TunnelClientCommandHandler extends SimpleChannelInboundHandle
     private void resetToCommandStatus(ChannelHandlerContext ctx) {
         ChannelPipeline pipeline = ctx.pipeline();
         Socks5TunnelClientMessageHandler socks5TunnelClientMessageHandler = pipeline.remove(Socks5TunnelClientMessageHandler.class);
-        pipeline.addBefore(NettyHandlerName.SOCKS5_TUNNEL_CLIENT_FORWARDING_MESSAGE_HANDLER, "socks5ProxyClientMessageHandler", socks5TunnelClientMessageHandler);
+        pipeline.addBefore(NettyHandlerName.SOCKS5_TUNNEL_CLIENT_FORWARDING_MESSAGE_HANDLER, NettyHandlerName.SOCKS5_TUNNEL_CLIENT_MESSAGE_HANDLER, socks5TunnelClientMessageHandler);
     }
 
     public Channel getRemoteChannel() {

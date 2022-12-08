@@ -37,7 +37,7 @@ public class Socks5TunnelServerFirstTimeReadyListenerForFreeTunnelClient extends
         NettyComponentUtil.addLastHandler(channelPipeline, NettyHandlerName.SOCKS5_TUNNEL_SERVER_COMMAND_HANDLER, new Socks5TunnelServerCommandHandler(remoteChannel));
         //备份Socks5ProxyServerMessageHandler
         Socks5TunnelServerMessageHandler socks5TunnelServerMessageHandler = channelPipeline.remove(Socks5TunnelServerMessageHandler.class);
-        NettyComponentUtil.addLastHandler(channelPipeline, "socks5ProxyServerMessageHandler", socks5TunnelServerMessageHandler);
+        NettyComponentUtil.addLastHandler(channelPipeline, NettyHandlerName.SOCKS5_TUNNEL_SERVER_MESSAGE_HANDLER, socks5TunnelServerMessageHandler);
     }
 
     public Socks5TunnelServerFirstTimeReadyListenerForFreeTunnelClient(Channel localChannel, Channel remoteChannel, String host, int port, byte[] security) {

@@ -19,7 +19,7 @@ public class Socks5TunnelServerReuseReadyListener extends TunnelReadyListener {
         forwardingMessageHandler.setRemoteChannel(remoteChannel);
         //备份Socks5ProxyServerMessageHandler
         Socks5TunnelServerMessageHandler socks5TunnelServerMessageHandler = channelPipeline.remove(Socks5TunnelServerMessageHandler.class);
-        NettyComponentUtil.addLastHandler(channelPipeline, "socks5ProxyServerMessageHandler", socks5TunnelServerMessageHandler);
+        NettyComponentUtil.addLastHandler(channelPipeline, NettyHandlerName.SOCKS5_TUNNEL_SERVER_MESSAGE_HANDLER, socks5TunnelServerMessageHandler);
     }
 
     public Socks5TunnelServerReuseReadyListener(Channel localChannel, Channel remoteChannel, String host, int port) {

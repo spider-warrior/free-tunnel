@@ -125,7 +125,7 @@ public class Socks5TunnelClientMessageHandler extends SimpleChannelInboundHandle
                 NettyComponentUtil.addLastHandler(channelPipeline, NettyHandlerName.SOCKS5_TUNNEL_CLIENT_COMMAND_HANDLER, new Socks5TunnelClientCommandHandler(remoteChannel));
                 //备份Socks5ProxyClientMessageHandler
                 Socks5TunnelClientMessageHandler socks5TunnelClientMessageHandler = channelPipeline.remove(Socks5TunnelClientMessageHandler.class);
-                NettyComponentUtil.addLastHandler(channelPipeline, "socks5ProxyClientMessageHandler", socks5TunnelClientMessageHandler);
+                NettyComponentUtil.addLastHandler(channelPipeline, "socks5TunnelClientMessageHandler", socks5TunnelClientMessageHandler);
             } else {
                 //forwardingHandler切换remoteContext
                 forwardingMessageHandler.setRemoteChannel(remoteChannel);
