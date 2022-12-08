@@ -39,7 +39,7 @@ public class Socks5TunnelClientCommandHandler extends SimpleChannelInboundHandle
                 resetToCommandStatus(ctx);
                 inUseAttr.set(null);
                 ctx.writeAndFlush(TunnelCommand.RESET_STATUS_TO_COMMAND_RESPONSE);
-                StaticChannelProvider.closeTunnel(ctx.channel());
+                StaticChannelProvider.returnTunnel(ctx.channel());
             } else if(Boolean.FALSE == inUse) {
                 logger.warn("客户端已发送复位请求, 忽略来自服务端的复位请求, channel: {}", ctx.channel());
             } else {
@@ -54,7 +54,7 @@ public class Socks5TunnelClientCommandHandler extends SimpleChannelInboundHandle
                 logger.info("来自服务端复位响应, 即将归还连接: {}", ctx.channel());
                 resetToCommandStatus(ctx);
                 inUseAttr.set(null);
-                StaticChannelProvider.closeTunnel(ctx.channel());
+                StaticChannelProvider.returnTunnel(ctx.channel());
             } else {
                 logger.warn("通道不在使用中, 忽略自服务端的复位响应, channel: {}", ctx.channel());
             }

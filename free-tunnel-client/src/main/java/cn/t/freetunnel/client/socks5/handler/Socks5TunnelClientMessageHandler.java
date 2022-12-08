@@ -141,7 +141,7 @@ public class Socks5TunnelClientMessageHandler extends SimpleChannelInboundHandle
                 ctx.channel().attr(ClientAttrConstants.TUNNEL_SPECIFICATION).get().getTunnelBuildResultListener().handle(TunnelBuildResult.SUCCEEDED.value, ctx.channel());
             } else {
                 ctx.channel().attr(ClientAttrConstants.TUNNEL_SPECIFICATION).get().getTunnelBuildResultListener().handle(TunnelBuildResult.FAILED.value, null);
-                StaticChannelProvider.closeTunnel(ctx.channel());
+                StaticChannelProvider.returnTunnel(ctx.channel());
             }
         } else {
             throw new TunnelException("未实现的状态处理: " + state);

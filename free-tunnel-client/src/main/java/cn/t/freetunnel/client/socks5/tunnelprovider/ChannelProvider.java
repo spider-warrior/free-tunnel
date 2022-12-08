@@ -77,11 +77,8 @@ public class ChannelProvider {
                     if(channel.isOpen()) {
                         Attribute<Long> attr = channel.attr(channelUpTime);
                         if(now - attr.get() > 10000) {
-                            channel.writeAndFlush(TunnelCommand.HEART_BEAT).addListener(future -> {
-                                if(future.isSuccess()) {
-                                    attr.set(now);
-                                }
-                            });
+                            attr.set(now);
+                            channel.writeAndFlush(TunnelCommand.HEART_BEAT);
                         }
                     }
                 }
@@ -92,7 +89,7 @@ public class ChannelProvider {
         );
     }
 
-    public void closeTunnel(Channel remoteChannel) {
+    public void returnTunnel(Channel remoteChannel) {
         if(remoteChannel.isOpen()) {
             inUseTunnelPool.remove(remoteChannel);
             idledTunnelPool.add(remoteChannel);

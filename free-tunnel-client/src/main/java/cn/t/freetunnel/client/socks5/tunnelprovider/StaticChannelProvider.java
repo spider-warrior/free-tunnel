@@ -27,10 +27,10 @@ public class StaticChannelProvider {
         channelProvider.acquireSocks5Tunnel(localChannel, targetHost, targetPort, listener);
     }
 
-    public static void closeTunnel(Channel remoteChannel) {
+    public static void returnTunnel(Channel remoteChannel) {
         ChannelProvider channelProvider = threadChannelProvider.get();
         if(channelProvider != null) {
-            channelProvider.closeTunnel(remoteChannel);
+            channelProvider.returnTunnel(remoteChannel);
         } else {
             logger.error("连接异常, 当前连接关联的线程没有关联任何ChannelProvider, channel: {}, eventLoop: {}", remoteChannel, remoteChannel.eventLoop());
         }
