@@ -11,7 +11,7 @@ import cn.t.freetunnel.server.socks5.listener.Socks5TunnelServerFirstTimeReadyLi
 import cn.t.freetunnel.server.socks5.listener.Socks5TunnelServerReuseReadyListener;
 import cn.t.freetunnel.server.socks5.listener.Socks5TunnelServerReuseReadyListenerForFreeTunnelClient;
 import cn.t.freetunnel.server.tunnelprovider.UnPooledTunnelProvider;
-import cn.t.freetunnel.server.util.Socks5MessageUtil;
+import cn.t.freetunnel.server.socks5.util.Socks5MessageUtil;
 import cn.t.util.common.ArrayUtil;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
@@ -86,7 +86,7 @@ public class Socks5TunnelServerMessageHandler extends SimpleChannelInboundHandle
             String username = new String(usernameBytes);
             String password = new String(passwordBytes);
             //鉴权
-            TunnelServerConfig.UserConfig userConfig = TunnelServerConfig.ServerConfig.USER_CONFIG_MAP.get(username);
+            TunnelServerConfig.UserConfig userConfig = TunnelServerConfig.USER_CONFIG_MAP.get(username);
             if(userConfig == null || userConfig.getPassword() == null || !userConfig.getPassword().equals(password)) {
                 logger.error("用户名密码验证失败, password: {}, 即将关闭连接", password);
                 ByteBuf outputBuf = ctx.alloc().buffer(2);

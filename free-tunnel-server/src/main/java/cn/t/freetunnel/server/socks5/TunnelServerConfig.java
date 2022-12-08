@@ -26,16 +26,13 @@ public class TunnelServerConfig {
     public static final int SOCKS5_PROXY_WRITE_TIME_OUT_IN_SECONDS = 0;
     public static final int SOCKS5_PROXY_ALL_IDLE_TIME_OUT_IN_SECONDS = 300;
 
-    public static final String SOCKS5_SERVER_HOME_KEY = "SOCKS5_HOME";
-    public static final String SOCKS5_SERVER_USERS_CONFIG_FILE = "users";
+    public static final String TUNNEL_SERVER_HOME_KEY = "TUNNEL_SERVER_HOME";
+    public static final String TUNNEL_SERVER_USERS_CONFIG_FILE = "users";
 
-    public static class ServerConfig {
-
-        /**
-         * 用户配置
-         */
-        public static Map<String, UserConfig> USER_CONFIG_MAP = new HashMap<>();
-    }
+    /**
+     * 用户配置
+     */
+    public static Map<String, UserConfig> USER_CONFIG_MAP = new HashMap<>();
 
     public static class UserConfig {
         private String username;

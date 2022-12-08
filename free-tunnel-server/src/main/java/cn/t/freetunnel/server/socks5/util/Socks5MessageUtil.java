@@ -1,4 +1,4 @@
-package cn.t.freetunnel.server.util;
+package cn.t.freetunnel.server.socks5.util;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;

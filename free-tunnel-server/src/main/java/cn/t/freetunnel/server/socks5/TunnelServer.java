@@ -1,22 +1,15 @@
 package cn.t.freetunnel.server.socks5;
 
 import cn.t.freetunnel.common.constants.TunnelConstants;
+import cn.t.freetunnel.server.socks5.util.TunnelServerConfigUtil;
 import cn.t.freetunnel.server.util.InitializerBuilder;
 import cn.t.tool.nettytool.daemon.DaemonService;
 import cn.t.tool.nettytool.daemon.server.NettyTcpServer;
 import cn.t.tool.nettytool.initializer.NettyTcpChannelInitializer;
 import cn.t.tool.nettytool.launcher.DefaultLauncher;
-import cn.t.util.common.FileUtil;
-import cn.t.util.common.StringUtil;
-import cn.t.util.common.SystemUtil;
-import cn.t.util.security.message.base64.Base64Util;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 代理服务器
@@ -31,10 +24,8 @@ import java.util.*;
  **/
 public class TunnelServer {
 
-    private static final Logger logger = LoggerFactory.getLogger(TunnelServer.class);
-
     public static void main(String[] args) {
-        loadServerConfig();
+        TunnelServerConfigUtil.initServerConfig();
         List<DaemonService> daemonServerList = new ArrayList<>();
         NettyTcpChannelInitializer nettyChannelInitializer = InitializerBuilder.buildSocks5ProxyServerChannelInitializer();
         NettyTcpServer proxyServer = new NettyTcpServer(
@@ -52,56 +43,4 @@ public class TunnelServer {
         defaultLauncher.setDaemonServiceList(daemonServerList);
         defaultLauncher.startup();
     }
-
-    public static void loadServerConfig() {
-        String socks5Home = getSocks5Home();
-        if(!StringUtil.isEmpty(socks5Home)) {
-            File home = new File(socks5Home);
-            if(home.exists()) {
-                Map<String, TunnelServerConfig.UserConfig> userConfigMap = loadUserConfig(FileUtil.appendFilePath(socks5Home, TunnelServerConfig.SOCKS5_SERVER_USERS_CONFIG_FILE));
-                TunnelServerConfig.ServerConfig.USER_CONFIG_MAP.putAll(userConfigMap);
-            } else {
-                logger.warn("{}未设置", TunnelServerConfig.SOCKS5_SERVER_HOME_KEY);
-            }
-        } else {
-            logger.warn("{}未设置", TunnelServerConfig.SOCKS5_SERVER_HOME_KEY);
-        }
-    }
-
-    private static String getSocks5Home() {
-        return SystemUtil.getSysEnv(TunnelServerConfig.SOCKS5_SERVER_HOME_KEY);
-    }
-
-    private static Map<String, TunnelServerConfig.UserConfig> loadUserConfig(String userConfigLocation) {
-        Map<String, TunnelServerConfig.UserConfig> userConfigMap = new HashMap<>();
-        File config = new File(userConfigLocation);
-        if(config.exists()) {
-            try (
-                FileInputStream fileInputStream = new FileInputStream(config)
-            ) {
-                Properties properties = new Properties();
-                properties.load(fileInputStream);
-                if(!properties.isEmpty()) {
-                    properties.forEach((k, v) -> {
-                        String passwordAndSecurity = (String)v;
-                        String[] elements = passwordAndSecurity.split(":");
-                        logger.info("添加用户, username: {}, password: {}, security: {}", k, elements[0], elements.length > 1 ? elements[1] : "");
-                        TunnelServerConfig.UserConfig userConfig = new TunnelServerConfig.UserConfig();
-                        userConfig.setUsername((String)k);
-                        userConfig.setPassword(elements[0]);
-                        if(elements.length > 1) {
-                            userConfig.setSecurity(Base64Util.decode(elements[1].getBytes()));
-                        }
-                        userConfigMap.put(userConfig.getUsername(), userConfig);
-                    });
-                }
-            } catch (IOException e) {
-                logger.error("加载用户配置文件失败", e);
-            }
-        } else {
-            logger.warn("用户配置文件不存在: {}", userConfigLocation);
-        }
-        return userConfigMap;
-    }
-
 }
