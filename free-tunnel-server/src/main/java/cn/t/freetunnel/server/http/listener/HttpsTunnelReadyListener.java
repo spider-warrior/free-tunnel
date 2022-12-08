@@ -22,7 +22,7 @@ public class HttpsTunnelReadyListener extends TunnelReadyListener {
     @Override
     protected void operationSuccess(ChannelFuture future) {
         //已经通知客户端代理成功, 切换handler
-        ChannelPipeline pipeline = localChannel.pipeline();
+        ChannelPipeline pipeline = future.channel().pipeline();
         pipeline.remove(HttpResponseEncoder.class);
         pipeline.remove(HttpRequestDecoder.class);
         pipeline.remove(HttpObjectAggregator.class);
@@ -30,7 +30,7 @@ public class HttpsTunnelReadyListener extends TunnelReadyListener {
         NettyComponentUtil.addLastHandler(pipeline, "proxy-forwarding-handler", new ForwardingMessageHandler(remoteChannel));
     }
 
-    public HttpsTunnelReadyListener(Channel localChannel, Channel remoteChannel, String host, int port) {
-        super(localChannel, remoteChannel, host, port);
+    public HttpsTunnelReadyListener(Channel remoteChannel, String host, int port) {
+        super(remoteChannel, host, port);
     }
 }

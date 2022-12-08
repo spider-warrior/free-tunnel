@@ -11,7 +11,6 @@ public abstract class TunnelReadyListener implements ChannelFutureListener {
 
     private static final Logger logger = LoggerFactory.getLogger(TunnelReadyListener.class);
 
-    protected final Channel localChannel;
     protected final Channel remoteChannel;
     protected final String host;
     protected final int port;
@@ -19,10 +18,10 @@ public abstract class TunnelReadyListener implements ChannelFutureListener {
     @Override
     public void operationComplete(ChannelFuture future) {
         if(future.isSuccess() && remoteChannel.isOpen()) {
-            logger.info("[{}]: 代理就位", TunnelUtil.buildProxyTunnelName(localChannel, remoteChannel));
+            logger.info("[{}]: 代理就位", TunnelUtil.buildProxyTunnelName(future.channel(), remoteChannel));
             operationSuccess(future);
         } else {
-            logger.error("[{}]: 代理失败, 地址: {}:{}, 本地连接状态: {}, 远端连接状态: {}, 失败原因: {}", TunnelUtil.buildProxyTunnelName(localChannel, remoteChannel), host, port, localChannel.isOpen(), remoteChannel.isOpen(), future.cause());
+            logger.error("[{}]: 代理失败, 地址: {}:{}, 本地连接状态: {}, 远端连接状态: {}, 失败原因: {}", TunnelUtil.buildProxyTunnelName(future.channel(), remoteChannel), host, port, future.channel().isOpen(), remoteChannel.isOpen(), future.cause());
             operationFailed(future);
         }
     }
@@ -30,12 +29,11 @@ public abstract class TunnelReadyListener implements ChannelFutureListener {
     protected abstract void operationSuccess(ChannelFuture future);
 
     protected void operationFailed(ChannelFuture future) {
-        logger.error("[{}]: 即将关闭连接: {}", TunnelUtil.buildProxyTunnelName(localChannel, remoteChannel), remoteChannel);
+        logger.error("[{}]: 即将关闭连接: {}", TunnelUtil.buildProxyTunnelName(future.channel(), remoteChannel), remoteChannel);
         TunnelUtil.closeImmediately(remoteChannel);
     }
 
-    public TunnelReadyListener(Channel localChannel, Channel remoteChannel, String host, int port) {
-        this.localChannel = localChannel;
+    public TunnelReadyListener(Channel remoteChannel, String host, int port) {
         this.remoteChannel = remoteChannel;
         this.host = host;
         this.port = port;

@@ -25,11 +25,11 @@ public class HttpTunnelReadyListener extends TunnelReadyListener {
         ChannelPipeline pipeline = remoteChannel.pipeline();
         pipeline.remove(HttpResponseEncoder.class);
         pipeline.remove(channelHandler);
-        NettyComponentUtil.addLastHandler(pipeline, "proxy-forwarding-handler", new ForwardingMessageHandler(localChannel));
+        NettyComponentUtil.addLastHandler(pipeline, "proxy-forwarding-handler", new ForwardingMessageHandler(future.channel()));
     }
 
-    public HttpTunnelReadyListener(Channel localChannel, Channel remoteChannel, String host, int port, ChannelHandler channelHandler) {
-        super(localChannel, remoteChannel, host, port);
+    public HttpTunnelReadyListener(Channel remoteChannel, String host, int port, ChannelHandler channelHandler) {
+        super(remoteChannel, host, port);
         this.channelHandler = channelHandler;
     }
 }

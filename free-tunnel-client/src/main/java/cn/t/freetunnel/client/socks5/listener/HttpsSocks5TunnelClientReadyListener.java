@@ -29,7 +29,7 @@ public class HttpsSocks5TunnelClientReadyListener extends TunnelReadyListener {
     @Override
     protected void operationSuccess(ChannelFuture future) {
         //已经通知客户端代理成功, 切换handler
-        ChannelPipeline channelPipeline = localChannel.pipeline();
+        ChannelPipeline channelPipeline = future.channel().pipeline();
         channelPipeline.remove(HttpSocks5TunnelClientHandler.class);
         channelPipeline.remove(HttpRequestDecoder.class);
         channelPipeline.remove(HttpResponseEncoder.class);
@@ -40,14 +40,14 @@ public class HttpsSocks5TunnelClientReadyListener extends TunnelReadyListener {
     @Override
     protected void operationFailed(ChannelFuture future) {
         if(remoteChannel.isOpen()) {
-            logger.error("[{}]代理结果通知失败: {}:{}, 即将复位远程连接, 失败原因: {}", TunnelUtil.buildProxyTunnelName(localChannel, remoteChannel), host, port, future.cause());
+            logger.error("[{}]代理结果通知失败: {}:{}, 即将复位远程连接, 失败原因: {}", TunnelUtil.buildProxyTunnelName(future.channel(), remoteChannel), host, port, future.cause());
             Socks5MessageUtil.sendResetChannelRequest(remoteChannel);
         } else {
-            logger.error("[{}]代理结果通知失败: {}:{}, 远程连接已关闭, 失败原因: {}", TunnelUtil.buildProxyTunnelName(localChannel, remoteChannel), host, port, future.cause());
+            logger.error("[{}]代理结果通知失败: {}:{}, 远程连接已关闭, 失败原因: {}", TunnelUtil.buildProxyTunnelName(future.channel(), remoteChannel), host, port, future.cause());
         }
     }
 
-    public HttpsSocks5TunnelClientReadyListener(Channel localChannel, Channel remoteChannel, String host, int port) {
-        super(localChannel, remoteChannel, host, port);
+    public HttpsSocks5TunnelClientReadyListener(Channel remoteChannel, String host, int port) {
+        super(remoteChannel, host, port);
     }
 }

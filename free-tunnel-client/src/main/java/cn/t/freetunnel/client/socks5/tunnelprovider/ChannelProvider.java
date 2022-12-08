@@ -36,6 +36,7 @@ public class ChannelProvider {
 
     private final Queue<Channel> idledTunnelPool = new LinkedList<>();
     private final Set<Channel> inUseTunnelPool = new HashSet<>();
+    private final ClientLifeCycleListener clientLifeCycleListener = new ClientLifeCycleListener();
 
     public void acquireSocks5Tunnel(Channel localChannel, String targetHost, int targetPort, TunnelBuildResultListener listener) {
         Channel channel;
@@ -61,7 +62,7 @@ public class ChannelProvider {
             nettyTcpClient.childAttr(NettyAttrConstants.CONNECT_TUNNEL_REMOTE_CHANNEL, localChannel);
             nettyTcpClient.childAttr(ClientAttrConstants.TUNNEL_IN_USE, Boolean.TRUE);
             nettyTcpClient.childAttr(ClientAttrConstants.TUNNEL_SPECIFICATION, new TunnelSpecification(targetHost, targetPort, listener));
-            nettyTcpClient.addListener(new ClientLifeCycleListener());
+            nettyTcpClient.addListener(clientLifeCycleListener);
             nettyTcpClient.start();
         }
     }
@@ -91,10 +92,10 @@ public class ChannelProvider {
 
     public void returnTunnel(Channel remoteChannel) {
         if(remoteChannel.isOpen()) {
+            remoteChannel.attr(channelUpTime).set(System.currentTimeMillis());
             inUseTunnelPool.remove(remoteChannel);
             idledTunnelPool.add(remoteChannel);
             logger.info("返还连接,channel: {}, 使用中: {}, 可复用: {}", remoteChannel, inUseTunnelPool.size(), idledTunnelPool.size());
-            remoteChannel.attr(channelUpTime).set(System.currentTimeMillis());
         } else {
             logger.error("返还连接不可用,channel: {}", remoteChannel);
         }

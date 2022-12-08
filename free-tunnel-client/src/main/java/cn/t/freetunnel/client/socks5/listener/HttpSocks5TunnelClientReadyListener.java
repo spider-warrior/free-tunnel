@@ -30,20 +30,20 @@ public class HttpSocks5TunnelClientReadyListener extends TunnelReadyListener {
         pipeline.remove(HttpSocks5TunnelClientHandler.class);
         //http请求每次都需要修改header(connection), uri路径，所以不移除HttpRequestDecoder, HttpObjectAggregator
         pipeline.remove(HttpResponseEncoder.class);
-        NettyComponentUtil.addLastHandler(pipeline, "http-socks5-client-forwarding-handler", new HttpSocks5TunnelClientForwardingHandler(localChannel));
+        NettyComponentUtil.addLastHandler(pipeline, "http-socks5-client-forwarding-handler", new HttpSocks5TunnelClientForwardingHandler(future.channel()));
     }
 
     @Override
     protected void operationFailed(ChannelFuture future) {
         if(remoteChannel.isOpen()) {
-            logger.error("[{}]: 消息转发失败, 即将关闭本地连接, 失败原因: {}", TunnelUtil.buildProxyTunnelName(remoteChannel, localChannel), future.cause());
+            logger.error("[{}]: 消息转发失败, 即将关闭本地连接, 失败原因: {}", TunnelUtil.buildProxyTunnelName(remoteChannel, future.channel()), future.cause());
             TunnelUtil.closeImmediately(remoteChannel);
         } else {
-            logger.error("[{}]: 消息转发失败, 本地连接已关闭, 失败原因: {}", TunnelUtil.buildProxyTunnelName(remoteChannel, localChannel), future.cause());
+            logger.error("[{}]: 消息转发失败, 本地连接已关闭, 失败原因: {}", TunnelUtil.buildProxyTunnelName(remoteChannel, future.channel()), future.cause());
         }
     }
 
-    public HttpSocks5TunnelClientReadyListener(Channel localChannel, Channel remoteChannel, String host, int port) {
-        super(localChannel, remoteChannel, host, port);
+    public HttpSocks5TunnelClientReadyListener(Channel remoteChannel, String host, int port) {
+        super(remoteChannel, host, port);
     }
 }

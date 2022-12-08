@@ -7,7 +7,7 @@ public enum TunnelBuildResult {
     SUCCEEDED((byte) 0X00),
     FAILED((byte) 0X01);
 
-    public static TunnelBuildResult getCmdExecutionStatus(byte value) {
+    public static TunnelBuildResult getTunnelBuildResult(byte value) {
         for(TunnelBuildResult status: values()) {
             if(status.value == value) {
                 return status;
