@@ -2,22 +2,26 @@ package cn.t.freetunnel.server.socks5.handler;
 
 import cn.t.freetunnel.common.constants.*;
 import cn.t.freetunnel.common.exception.TunnelException;
+import cn.t.freetunnel.common.handler.EncryptMessageDecoder;
+import cn.t.freetunnel.common.handler.EncryptMessageEncoder;
+import cn.t.freetunnel.common.handler.LayerMessageDecoder;
+import cn.t.freetunnel.common.handler.LayerMessageEncoder;
 import cn.t.freetunnel.common.listener.TunnelBuildResultListener;
 import cn.t.freetunnel.common.util.ByteBufUtil;
 import cn.t.freetunnel.common.util.TunnelUtil;
 import cn.t.freetunnel.server.socks5.TunnelServerConfig;
-import cn.t.freetunnel.server.socks5.listener.Socks5TunnelServerFirstTimeReadyListener;
-import cn.t.freetunnel.server.socks5.listener.Socks5TunnelServerFirstTimeReadyListenerForFreeTunnelClient;
-import cn.t.freetunnel.server.socks5.listener.Socks5TunnelServerReuseReadyListener;
-import cn.t.freetunnel.server.socks5.listener.Socks5TunnelServerReuseReadyListenerForFreeTunnelClient;
-import cn.t.freetunnel.server.tunnelprovider.UnPooledTunnelProvider;
 import cn.t.freetunnel.server.socks5.util.Socks5MessageUtil;
+import cn.t.freetunnel.server.tunnelprovider.UnPooledTunnelProvider;
+import cn.t.tool.nettytool.util.NettyComponentUtil;
 import cn.t.util.common.ArrayUtil;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.crypto.NoSuchPaddingException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
 /**
@@ -154,46 +158,43 @@ public class Socks5TunnelServerMessageHandler extends SimpleChannelInboundHandle
                 //2.处理CMD消息
                 if(Socks5Cmd.CONNECT == socks5Cmd) {
                     TunnelBuildResultListener tunnelBuildResultListener = (status, channel) -> {
+                        ChannelPipeline channelPipeline = ctx.pipeline();
+                        boolean firstTime = channelPipeline.get(NettyHandlerName.SOCKS5_TUNNEL_SERVER_FORWARDING_MESSAGE_HANDLER) == null;
+                        if(firstTime) {
+                            if(freeTunnelClient) {
+                                //layer
+                                NettyComponentUtil.addFirst(channelPipeline, NettyHandlerName.LAYER_MESSAGE_DECODER, new LayerMessageDecoder());
+                                NettyComponentUtil.addFirst(channelPipeline, NettyHandlerName.LAYER_MESSAGE_ENCODER, new LayerMessageEncoder());
+                                //encrypt and decrypt
+                                try {
+                                    NettyComponentUtil.addFirst(channelPipeline, NettyHandlerName.ENCRYPT_MESSAGE_DECODER, new EncryptMessageDecoder(security));
+                                    NettyComponentUtil.addFirst(channelPipeline, NettyHandlerName.ENCRYPT_MESSAGE_ENCODER, new EncryptMessageEncoder(security));
+                                } catch (Exception e) { throw new TunnelException(e);}
+                                //forwarding
+                                NettyComponentUtil.addLastHandler(channelPipeline, NettyHandlerName.SOCKS5_TUNNEL_SERVER_FORWARDING_MESSAGE_HANDLER, new Socks5TunnelServerForwardingHandler(channel));
+                                //command
+                                NettyComponentUtil.addLastHandler(channelPipeline, NettyHandlerName.SOCKS5_TUNNEL_SERVER_COMMAND_HANDLER, new Socks5TunnelServerCommandHandler(channel));
+                            } else {
+                                //forwarding
+                                NettyComponentUtil.addLastHandler(channelPipeline, NettyHandlerName.SOCKS5_TUNNEL_SERVER_FORWARDING_MESSAGE_HANDLER, new Socks5TunnelServerForwardingHandler(channel));
+                            }
+                        } else {
+                            Socks5TunnelServerForwardingHandler forwardingHandler = (Socks5TunnelServerForwardingHandler)channelPipeline.get(NettyHandlerName.SOCKS5_TUNNEL_SERVER_FORWARDING_MESSAGE_HANDLER);
+                            forwardingHandler.setRemoteChannel(channel);
+                            if(freeTunnelClient) {
+                                Socks5TunnelServerCommandHandler commandHandler = (Socks5TunnelServerCommandHandler)channelPipeline.get(NettyHandlerName.SOCKS5_TUNNEL_SERVER_COMMAND_HANDLER);
+                                commandHandler.setRemoteChannel(channel);
+                            }
+                        }
                         if(TunnelBuildResult.SUCCEEDED.value == status) {
                             ChannelPromise promise = ctx.newPromise();
-                            boolean firstTime = ctx.pipeline().get(NettyHandlerName.SOCKS5_TUNNEL_SERVER_FORWARDING_MESSAGE_HANDLER) == null;
-                            //首次建立连接
-                            if(firstTime) {
-                                if(freeTunnelClient) {
-                                    promise.addListener(new Socks5TunnelServerFirstTimeReadyListenerForFreeTunnelClient(
-                                        ctx.channel(),
-                                        channel,
-                                        targetHost,
-                                        targetPort,
-                                        security
-                                    ));
-
-                                } else {
-                                    promise.addListener(new Socks5TunnelServerFirstTimeReadyListener(
-                                        ctx.channel(),
-                                        channel,
-                                        targetHost,
-                                        targetPort
-                                    ));
+                            promise.addListener(future -> {
+                                if(future.isSuccess()) {
+                                    //备份Socks5ProxyServerMessageHandler
+                                    Socks5TunnelServerMessageHandler socks5TunnelServerMessageHandler = channelPipeline.remove(Socks5TunnelServerMessageHandler.class);
+                                    NettyComponentUtil.addLastHandler(channelPipeline, NettyHandlerName.SOCKS5_TUNNEL_SERVER_MESSAGE_HANDLER, socks5TunnelServerMessageHandler);
                                 }
-                            } else {
-                                //复用连接
-                                if(freeTunnelClient) {
-                                    promise.addListener(new Socks5TunnelServerReuseReadyListenerForFreeTunnelClient(
-                                        ctx.channel(),
-                                        channel,
-                                        targetHost,
-                                        targetPort
-                                    ));
-                                } else {
-                                    promise.addListener(new Socks5TunnelServerReuseReadyListener(
-                                        ctx.channel(),
-                                        channel,
-                                        targetHost,
-                                        targetPort
-                                    ));
-                                }
-                            }
+                            });
                             ByteBuf responseBuf = Socks5MessageUtil.buildConnectResponse(ctx.alloc(), version, Socks5CmdExecutionStatus.SUCCEEDED.value, Socks5AddressType.IPV4.value, TunnelServerConfig.SERVER_HOST_BYTES, TunnelServerConfig.SERVER_PORT);
                             ctx.writeAndFlush(responseBuf, promise);
                         } else {
