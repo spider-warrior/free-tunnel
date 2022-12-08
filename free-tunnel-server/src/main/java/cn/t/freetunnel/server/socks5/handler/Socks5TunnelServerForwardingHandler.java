@@ -18,8 +18,7 @@ public class Socks5TunnelServerForwardingHandler extends ForwardingMessageHandle
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
-        boolean remoteOpen = remoteChannel.isOpen();
-        if(remoteOpen) {
+        if(remoteChannel.isOpen()) {
             logger.info("[{} -> {}]: 客户端通道断开, 释放代理资源: [{} -> {}]", ctx.channel().remoteAddress(), ctx.channel().localAddress(), remoteChannel.localAddress(), remoteChannel.remoteAddress());
             TunnelUtil.closeImmediately(remoteChannel);
         } else {

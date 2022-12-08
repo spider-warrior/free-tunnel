@@ -65,10 +65,10 @@ public class Socks5TunnelServerMessageHandler extends SimpleChannelInboundHandle
                 }
             }
             //切换状态
-            if(Socks5Method.NO_AUTHENTICATION_REQUIRED == methodSelected) {
-                state = Socks5ServerState.CMD;
-            } else if(Socks5Method.USERNAME_PASSWORD == methodSelected) {
+            if(Socks5Method.USERNAME_PASSWORD == methodSelected) {
                 state = Socks5ServerState.AUTHENTICATE;
+            } else if(Socks5Method.NO_AUTHENTICATION_REQUIRED == methodSelected) {
+                state = Socks5ServerState.CMD;
             } else {
                 throw new TunnelException(String.format("未协商到合适的认证方法, 客户端支持的内容为: %s", Arrays.toString(methods)));
             }
@@ -97,9 +97,7 @@ public class Socks5TunnelServerMessageHandler extends SimpleChannelInboundHandle
                 ctx.writeAndFlush(outputBuf).addListener(ChannelFutureListener.CLOSE);
             } else {
                 logger.info("用户名密码验证通过, username: {}", username);
-                if(userConfig.getSecurity() != null) {
-                    security = userConfig.getSecurity();
-                }
+                security = userConfig.getSecurity();
                 state = Socks5ServerState.CMD;
                 ByteBuf outputBuf = ctx.alloc().buffer(2);
                 outputBuf.writeByte(version);
@@ -107,7 +105,7 @@ public class Socks5TunnelServerMessageHandler extends SimpleChannelInboundHandle
                 ctx.writeAndFlush(outputBuf);
             }
         } else if(Socks5ServerState.CMD == state) {
-            if(byteBuf.readableBytes() > 6) {
+            if(byteBuf.readableBytes() > 4) {
                 int readerIndexBackup = byteBuf.readerIndex();
                 //1.解析CMD要素
                 //version
@@ -169,7 +167,7 @@ public class Socks5TunnelServerMessageHandler extends SimpleChannelInboundHandle
                                     try {
                                         NettyComponentUtil.addFirst(channelPipeline, NettyHandlerName.ENCRYPT_MESSAGE_DECODER, new EncryptMessageDecoder(security));
                                         NettyComponentUtil.addFirst(channelPipeline, NettyHandlerName.ENCRYPT_MESSAGE_ENCODER, new EncryptMessageEncoder(security));
-                                    } catch (Exception e) { throw new TunnelException(e);}
+                                    } catch (Exception e) { throw new TunnelException(e); }
                                     //forwarding
                                     NettyComponentUtil.addLastHandler(channelPipeline, NettyHandlerName.SOCKS5_TUNNEL_SERVER_FORWARDING_MESSAGE_HANDLER, new Socks5TunnelServerForwardingHandler(channel));
                                     //command
