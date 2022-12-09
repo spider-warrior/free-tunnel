@@ -3,10 +3,10 @@
 ### 功能简介
  - 透明http代理
  - 透明socks5代理
- - socks5加密隧道代理
+ - http加密隧道代理
 
 
-## socks5加密隧道模式
+## http加密隧道模式
 
 ### server
 
@@ -14,10 +14,10 @@
 
 >2.环境配置
     
-    jdk11
-    设置环境变量SOCKS5_HOME,并创建users文件
-    export SOCKS5_HOME=/home/{username}/.socks5(export SOCKS5_HOME=~/.socks5)
-    users内容格式: {username}={password}:gEIZCLU+48tkSknFfuE9kBCuKyhOrwnt54mJ3KX+uWE=(username=password:key)
+    install jdk11 or later
+    设置环境变量TUNNEL_SERVER_HOME,并创建users文件
+    export TUNNEL_SERVER_HOME=/home/{username}/.tunnelServerHome(or export TUNNEL_SERVER_HOME=~/.tunnelServerHome)
+    users内容格式: {username}={password}:gEIZCLU+48tkSknFfuE9kBCuKyhOrwnt54mJ3KX+uWE=(格式:username=password:key)
     
 >3.上传jar和lib包
     
@@ -32,12 +32,12 @@
 
 >2.进入target目录
 
->3.启动服务java -jar free-tunnel-client.jar {proxy-server-ip}:10086 {username}:{password} gEIZCLU+48tkSknFfuE9kBCuKyhOrwnt54mJ3KX+uWE=
+>3.启动服务java -jar free-tunnel-client.jar {server-ip}:10086 {username}:{password} gEIZCLU+48tkSknFfuE9kBCuKyhOrwnt54mJ3KX+uWE=
 
 >4.修改浏览器代理地址为127.0.0.1:1087
     
 
-#### 注意
+#### 声明
 
     本项目纯做学习研究使用，不得用作其他不正当或违法乱纪行为
 
