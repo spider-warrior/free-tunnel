@@ -9,16 +9,15 @@ import cn.t.freetunnel.common.listener.TunnelBuildResultListener;
 import cn.t.freetunnel.server.http.listener.HttpTunnelReadyListener;
 import cn.t.freetunnel.server.http.listener.HttpsTunnelReadyListener;
 import cn.t.freetunnel.server.tunnelprovider.UnPooledTunnelProvider;
-import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelPromise;
-import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.channel.*;
 import io.netty.handler.codec.http.*;
 import io.netty.util.ReferenceCountUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.SocketAddress;
+import java.util.LinkedList;
+import java.util.Queue;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_GATEWAY;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
@@ -30,28 +29,34 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
  * @version V1.0
  * @since 2020-02-24 11:54
  **/
-public class HttpSocks5TunnelClientHandler extends SimpleChannelInboundHandler<HttpRequest> {
+public class HttpSocks5TunnelClientHandler extends SimpleChannelInboundHandler<HttpObject> {
 
     private static final Logger logger = LoggerFactory.getLogger(HttpSocks5TunnelClientHandler.class);
+    private final Queue<HttpObject> cachedHttpObjectList = new LinkedList<>();
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, HttpRequest request) {
-        HttpMethod httpMethod = request.method();
-        String host = request.headers().get(HttpHeaderNames.HOST);
-        String[] elements = host.split(":");
-        String targetHost = elements[0];
-        int targetPort;
-        if(elements.length == 1) {
-            targetPort = request.uri().startsWith("https") ? 443 : 80;
+    protected void channelRead0(ChannelHandlerContext ctx, HttpObject httpObject) {
+        if(httpObject instanceof HttpRequest) {
+            HttpRequest request = (HttpRequest)httpObject;
+            HttpMethod httpMethod = request.method();
+            String host = request.headers().get(HttpHeaderNames.HOST);
+            String[] elements = host.split(":");
+            String targetHost = elements[0];
+            int targetPort;
+            if(elements.length == 1) {
+                targetPort = request.uri().startsWith("https") ? 443 : 80;
+            } else {
+                targetPort= Integer.parseInt(elements[1]);
+            }
+            HttpVersion httpVersion = request.protocolVersion();
+            logger.info("收到请求, 开始构建代理, 本地channel: {}, targetHost: {}, targetPort: {}", ctx.channel(), targetHost, targetPort);
+            if(SocketUtil.isSiteLocalAddress(targetHost)) {
+                buildDirectProxy(ctx, httpMethod, targetHost, targetPort, httpVersion, request);
+            } else {
+                buildSocks5Proxy(ctx, httpMethod, targetHost, targetPort, httpVersion, request);
+            }
         } else {
-            targetPort= Integer.parseInt(elements[1]);
-        }
-        HttpVersion httpVersion = request.protocolVersion();
-        logger.info("收到请求, 开始构建代理, 本地channel: {}, targetHost: {}, targetPort: {}", ctx.channel(), targetHost, targetPort);
-        if(SocketUtil.isSiteLocalAddress(targetHost)) {
-            buildDirectProxy(ctx, httpMethod, targetHost, targetPort, httpVersion, request);
-        } else {
-            buildSocks5Proxy(ctx, httpMethod, targetHost, targetPort, httpVersion, request);
+            cachedHttpObjectList.add(httpObject);
         }
     }
 
@@ -77,12 +82,29 @@ public class HttpSocks5TunnelClientHandler extends SimpleChannelInboundHandler<H
         UnPooledTunnelProvider.acquireTcpTunnelForHttps(ctx.channel(), targetHost, targetPort, tunnelBuildResultListener);
     }
 
+    private void writeAndFlushCachedMessage(Channel channel) {
+        if(cachedHttpObjectList.size() == 1) {
+            channel.write(cachedHttpObjectList.poll());
+        } else {
+            while (true) {
+                HttpObject httpObject = cachedHttpObjectList.poll();
+                if(httpObject == null) {
+                    break;
+                } else {
+                    channel.write(httpObject);
+                }
+            }
+        }
+        channel.flush();
+    }
+
     private void buildDirectHttpProxy(ChannelHandlerContext ctx, String targetHost, int targetPort, HttpVersion httpVersion, HttpRequest request) {
         TunnelBuildResultListener tunnelBuildResultListener = (status, remoteChannel) -> {
             if(TunnelBuildResult.SUCCEEDED.value == status) {
                 ChannelPromise promise = remoteChannel.newPromise();
                 promise.addListener(new HttpTunnelReadyListener(ctx.channel(), targetHost, targetPort, this));
                 remoteChannel.writeAndFlush(request, promise);
+                writeAndFlushCachedMessage(remoteChannel);
             } else {
                 ReferenceCountUtil.release(request);
                 logger.error("[{}]: 代理客户端失败, remote: {}:{}", ctx.channel().remoteAddress(), targetHost, targetPort);
@@ -123,6 +145,7 @@ public class HttpSocks5TunnelClientHandler extends SimpleChannelInboundHandler<H
                 ChannelPromise promise = remoteChannel.newPromise();
                 promise.addListener(new HttpSocks5TunnelClientReadyListener(ctx.channel(), targetHost, targetPort));
                 remoteChannel.writeAndFlush(request, promise);
+                writeAndFlushCachedMessage(remoteChannel);
             } else {
                 ReferenceCountUtil.release(request);
                 logger.error("[{}]: 代理客户端失败, remote: {}:{}", remoteAddress, targetHost, targetPort);
