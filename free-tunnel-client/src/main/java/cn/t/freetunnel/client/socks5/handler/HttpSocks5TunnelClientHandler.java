@@ -30,12 +30,12 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
  * @version V1.0
  * @since 2020-02-24 11:54
  **/
-public class HttpSocks5TunnelClientHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
+public class HttpSocks5TunnelClientHandler extends SimpleChannelInboundHandler<HttpRequest> {
 
     private static final Logger logger = LoggerFactory.getLogger(HttpSocks5TunnelClientHandler.class);
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest request) {
+    protected void channelRead0(ChannelHandlerContext ctx, HttpRequest request) {
         HttpMethod httpMethod = request.method();
         String host = request.headers().get(HttpHeaderNames.HOST);
         String[] elements = host.split(":");
@@ -55,7 +55,7 @@ public class HttpSocks5TunnelClientHandler extends SimpleChannelInboundHandler<F
         }
     }
 
-    private void buildDirectProxy(ChannelHandlerContext ctx, HttpMethod httpMethod, String targetHost, int targetPort, HttpVersion httpVersion, FullHttpRequest request) {
+    private void buildDirectProxy(ChannelHandlerContext ctx, HttpMethod httpMethod, String targetHost, int targetPort, HttpVersion httpVersion, HttpRequest request) {
         if(httpMethod == HttpMethod.CONNECT) {
             buildDirectHttpsProxy(ctx, targetHost, targetPort, httpVersion);
         } else {
@@ -77,15 +77,14 @@ public class HttpSocks5TunnelClientHandler extends SimpleChannelInboundHandler<F
         UnPooledTunnelProvider.acquireTcpTunnelForHttps(ctx.channel(), targetHost, targetPort, tunnelBuildResultListener);
     }
 
-    private void buildDirectHttpProxy(ChannelHandlerContext ctx, String targetHost, int targetPort, HttpVersion httpVersion, FullHttpRequest request) {
-        FullHttpRequest proxiedRequest = request.retain();
+    private void buildDirectHttpProxy(ChannelHandlerContext ctx, String targetHost, int targetPort, HttpVersion httpVersion, HttpRequest request) {
         TunnelBuildResultListener tunnelBuildResultListener = (status, remoteChannel) -> {
             if(TunnelBuildResult.SUCCEEDED.value == status) {
                 ChannelPromise promise = remoteChannel.newPromise();
                 promise.addListener(new HttpTunnelReadyListener(ctx.channel(), targetHost, targetPort, this));
-                remoteChannel.writeAndFlush(proxiedRequest, promise);
+                remoteChannel.writeAndFlush(request, promise);
             } else {
-                ReferenceCountUtil.release(proxiedRequest);
+                ReferenceCountUtil.release(request);
                 logger.error("[{}]: 代理客户端失败, remote: {}:{}", ctx.channel().remoteAddress(), targetHost, targetPort);
                 ctx.writeAndFlush(new DefaultFullHttpResponse(httpVersion, BAD_GATEWAY)).addListener(ChannelFutureListener.CLOSE);
             }
@@ -93,7 +92,7 @@ public class HttpSocks5TunnelClientHandler extends SimpleChannelInboundHandler<F
         UnPooledTunnelProvider.acquireTcpTunnelForHttp(ctx.channel(), targetHost, targetPort, tunnelBuildResultListener);
     }
 
-    private void buildSocks5Proxy(ChannelHandlerContext ctx, HttpMethod httpMethod, String targetHost, int targetPort, HttpVersion httpVersion, FullHttpRequest request) {
+    private void buildSocks5Proxy(ChannelHandlerContext ctx, HttpMethod httpMethod, String targetHost, int targetPort, HttpVersion httpVersion, HttpRequest request) {
         if(httpMethod == HttpMethod.CONNECT) {
             buildSocks5HttpsProxy(ctx, targetHost, targetPort, httpVersion);
         } else {
@@ -117,16 +116,15 @@ public class HttpSocks5TunnelClientHandler extends SimpleChannelInboundHandler<F
         StaticChannelProvider.acquireSocks5Tunnel(ctx.channel(), targetHost, targetPort, tunnelBuildResultListener);
     }
 
-    private void buildSocks5HttpProxy(ChannelHandlerContext ctx, String targetHost, int targetPort, HttpVersion httpVersion, FullHttpRequest request) {
-        FullHttpRequest proxiedRequest = request.retain();
+    private void buildSocks5HttpProxy(ChannelHandlerContext ctx, String targetHost, int targetPort, HttpVersion httpVersion, HttpRequest request) {
         SocketAddress remoteAddress = ctx.channel().remoteAddress();
         TunnelBuildResultListener tunnelBuildResultListener = (status, remoteChannel) -> {
             if(TunnelBuildResult.SUCCEEDED.value == status) {
                 ChannelPromise promise = remoteChannel.newPromise();
                 promise.addListener(new HttpSocks5TunnelClientReadyListener(ctx.channel(), targetHost, targetPort));
-                remoteChannel.writeAndFlush(proxiedRequest, promise);
+                remoteChannel.writeAndFlush(request, promise);
             } else {
-                ReferenceCountUtil.release(proxiedRequest);
+                ReferenceCountUtil.release(request);
                 logger.error("[{}]: 代理客户端失败, remote: {}:{}", remoteAddress, targetHost, targetPort);
                 ctx.writeAndFlush(new DefaultFullHttpResponse(httpVersion, BAD_GATEWAY)).addListener(ChannelFutureListener.CLOSE);
             }

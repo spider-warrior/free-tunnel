@@ -44,7 +44,7 @@ public class TunnelUtil {
         return remoteChannel.remoteAddress() + " -> " + remoteChannel.localAddress() + " --> " + localChannel.localAddress() + " -> " + localChannel.remoteAddress();
     }
 
-    public static void prepareProxiedRequest(FullHttpRequest request) {
+    public static void prepareProxiedRequest(HttpRequest request) {
         HttpHeaders headers = request.headers();
         String proxyConnection = headers.get("Proxy-Connection");
         if(proxyConnection != null) {
