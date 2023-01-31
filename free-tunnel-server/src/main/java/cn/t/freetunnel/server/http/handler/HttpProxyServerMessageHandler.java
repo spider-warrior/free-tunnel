@@ -24,27 +24,34 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
  * @version V1.0
  * @since 2020-02-24 11:54
  **/
-public class HttpProxyServerMessageHandler extends SimpleChannelInboundHandler<HttpRequest> {
+public class HttpProxyServerMessageHandler extends SimpleChannelInboundHandler<HttpObject> {
 
     private static final Logger logger = LoggerFactory.getLogger(HttpProxyServerMessageHandler.class);
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, HttpRequest request) {
-        HttpMethod httpMethod = request.method();
-        String host = request.headers().get(HttpHeaderNames.HOST);
-        String[] elements = host.split(":");
-        String targetHost = elements[0];
-        int targetPort;
-        if(elements.length == 1) {
-            targetPort = 80;
+    protected void channelRead0(ChannelHandlerContext ctx, HttpObject httpObject) {
+        if(httpObject instanceof HttpRequest) {
+            HttpRequest request = (HttpRequest)httpObject;
+            HttpMethod httpMethod = request.method();
+            String host = request.headers().get(HttpHeaderNames.HOST);
+            String[] elements = host.split(":");
+            String targetHost = elements[0];
+            int targetPort;
+            if(elements.length == 1) {
+                targetPort = 80;
+            } else {
+                targetPort= Integer.parseInt(elements[1]);
+            }
+            HttpVersion httpVersion = request.protocolVersion();
+            if(httpMethod == HttpMethod.CONNECT) {
+                buildHttpsProxy(ctx, targetHost, targetPort, httpVersion);
+            } else {
+                buildHttpProxy(ctx, targetHost, targetPort, httpVersion, request);
+            }
         } else {
-            targetPort= Integer.parseInt(elements[1]);
-        }
-        HttpVersion httpVersion = request.protocolVersion();
-        if(httpMethod == HttpMethod.CONNECT) {
-            buildHttpsProxy(ctx, targetHost, targetPort, httpVersion);
-        } else {
-            buildHttpProxy(ctx, targetHost, targetPort, httpVersion, request);
+            if(httpObject != LastHttpContent.EMPTY_LAST_CONTENT) {
+                logger.warn("未知消息: {}", httpObject);
+            }
         }
     }
 
