@@ -31,7 +31,7 @@ public class ForwardingMessageHandler extends ChannelDuplexHandler {
             remoteChannel.writeAndFlush(msg);
         } else if(msg instanceof ByteBufHolder) {
             logger.debug("[{}] -> [{}] -> [{}] -> [{}]: 转发ByteBufHolder消息: {} B", ctx.channel().remoteAddress(), ctx.channel().localAddress(), remoteChannel.localAddress(), remoteChannel.remoteAddress(), ((ByteBufHolder)msg).content().readableBytes());
-            remoteChannel.writeAndFlush(((ByteBufHolder)msg).content());
+            remoteChannel.writeAndFlush(msg);
         } else if(msg instanceof HttpRequest) {
             logger.debug("[{}] -> [{}] -> [{}] -> [{}]: 转发ByteBufHolder消息: {}", ctx.channel().remoteAddress(), ctx.channel().localAddress(), remoteChannel.localAddress(), remoteChannel.remoteAddress(), msg);
             remoteChannel.writeAndFlush(msg);

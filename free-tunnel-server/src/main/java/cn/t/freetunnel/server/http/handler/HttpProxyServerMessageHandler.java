@@ -14,6 +14,9 @@ import io.netty.util.ReferenceCountUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.LinkedList;
+import java.util.Queue;
+
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_GATEWAY;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
@@ -27,6 +30,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 public class HttpProxyServerMessageHandler extends SimpleChannelInboundHandler<HttpObject> {
 
     private static final Logger logger = LoggerFactory.getLogger(HttpProxyServerMessageHandler.class);
+    private final Queue<HttpObject> cachedHttpObjectList = new LinkedList<>();
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, HttpObject httpObject) {
@@ -49,9 +53,7 @@ public class HttpProxyServerMessageHandler extends SimpleChannelInboundHandler<H
                 buildHttpProxy(ctx, targetHost, targetPort, httpVersion, request);
             }
         } else {
-            if(httpObject != LastHttpContent.EMPTY_LAST_CONTENT) {
-                logger.warn("未知消息: {}", httpObject);
-            }
+            cachedHttpObjectList.add(httpObject);
         }
     }
 
@@ -74,7 +76,20 @@ public class HttpProxyServerMessageHandler extends SimpleChannelInboundHandler<H
             if(TunnelBuildResult.SUCCEEDED.value == status) {
                 ChannelPromise promise = remoteChannel.newPromise();
                 promise.addListener(new HttpTunnelReadyListener(ctx.channel(), targetHost, targetPort, this));
-                remoteChannel.writeAndFlush(request, promise);
+                remoteChannel.write(request, promise);
+                if(cachedHttpObjectList.size() == 1) {
+                    remoteChannel.write(cachedHttpObjectList.poll());
+                } else {
+                    while (true) {
+                        HttpObject httpObject = cachedHttpObjectList.poll();
+                        if(httpObject == null) {
+                            break;
+                        } else {
+                            remoteChannel.write(httpObject);
+                        }
+                    }
+                }
+                remoteChannel.flush();
             } else {
                 ReferenceCountUtil.release(request);
                 logger.error("[{}]: 代理客户端失败, remote: {}:{}", ctx.channel().remoteAddress(), targetHost, targetPort);

@@ -6,17 +6,21 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.codec.MessageToByteEncoder;
+import io.netty.handler.codec.http.HttpObject;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpRequestEncoder;
 import io.netty.util.ReferenceCountUtil;
 
-public class ProxiedRequestEncoder extends MessageToByteEncoder<HttpRequest> {
+public class ProxiedRequestEncoder extends MessageToByteEncoder<HttpObject> {
 
-    private final EmbeddedChannel embeddedChannel = new EmbeddedChannel(new HttpRequestEncoder());
+    private final HttpRequestEncoder httpRequestEncoder = new HttpRequestEncoder();
+    private final EmbeddedChannel embeddedChannel = new EmbeddedChannel(httpRequestEncoder);
 
     @Override
-    protected void encode(ChannelHandlerContext ctx, HttpRequest msg, ByteBuf out) {
-        TunnelUtil.prepareProxiedRequest(msg);
+    protected void encode(ChannelHandlerContext ctx, HttpObject msg, ByteBuf out) {
+        if(msg instanceof HttpRequest) {
+            TunnelUtil.prepareProxiedRequest((HttpRequest)msg);
+        }
         embeddedChannel.writeOutbound(msg);
         ByteBuf byteBuf = embeddedChannel.readOutbound();
         //方案1
@@ -42,7 +46,9 @@ public class ProxiedRequestEncoder extends MessageToByteEncoder<HttpRequest> {
 //                break;
 //            }
 //        }
-        out.writeBytes(byteBuf);
+        if(byteBuf.readableBytes() > 0) {
+            out.writeBytes(byteBuf);
+        }
         ReferenceCountUtil.release(byteBuf);
     }
 
