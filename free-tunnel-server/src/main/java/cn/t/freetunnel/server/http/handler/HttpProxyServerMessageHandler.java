@@ -24,12 +24,12 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
  * @version V1.0
  * @since 2020-02-24 11:54
  **/
-public class HttpProxyServerMessageHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
+public class HttpProxyServerMessageHandler extends SimpleChannelInboundHandler<HttpRequest> {
 
     private static final Logger logger = LoggerFactory.getLogger(HttpProxyServerMessageHandler.class);
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest request) {
+    protected void channelRead0(ChannelHandlerContext ctx, HttpRequest request) {
         HttpMethod httpMethod = request.method();
         String host = request.headers().get(HttpHeaderNames.HOST);
         String[] elements = host.split(":");
@@ -62,15 +62,14 @@ public class HttpProxyServerMessageHandler extends SimpleChannelInboundHandler<F
         UnPooledTunnelProvider.acquireTcpTunnelForHttps(ctx.channel(), targetHost, targetPort, tunnelBuildResultListener);
     }
 
-    private void buildHttpProxy(ChannelHandlerContext ctx, String targetHost, int targetPort, HttpVersion httpVersion, FullHttpRequest request) {
-        FullHttpRequest proxiedRequest = request.retain();
+    private void buildHttpProxy(ChannelHandlerContext ctx, String targetHost, int targetPort, HttpVersion httpVersion, HttpRequest request) {
         TunnelBuildResultListener tunnelBuildResultListener = (status, remoteChannel) -> {
             if(TunnelBuildResult.SUCCEEDED.value == status) {
                 ChannelPromise promise = remoteChannel.newPromise();
                 promise.addListener(new HttpTunnelReadyListener(ctx.channel(), targetHost, targetPort, this));
-                remoteChannel.writeAndFlush(proxiedRequest, promise);
+                remoteChannel.writeAndFlush(request, promise);
             } else {
-                ReferenceCountUtil.release(proxiedRequest);
+                ReferenceCountUtil.release(request);
                 logger.error("[{}]: 代理客户端失败, remote: {}:{}", ctx.channel().remoteAddress(), targetHost, targetPort);
                 ctx.writeAndFlush(new DefaultFullHttpResponse(httpVersion, BAD_GATEWAY)).addListener(ChannelFutureListener.CLOSE);
             }

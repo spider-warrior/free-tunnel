@@ -7,6 +7,7 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.HttpRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,6 +32,9 @@ public class ForwardingMessageHandler extends ChannelDuplexHandler {
         } else if(msg instanceof ByteBufHolder) {
             logger.debug("[{}] -> [{}] -> [{}] -> [{}]: 转发ByteBufHolder消息: {} B", ctx.channel().remoteAddress(), ctx.channel().localAddress(), remoteChannel.localAddress(), remoteChannel.remoteAddress(), ((ByteBufHolder)msg).content().readableBytes());
             remoteChannel.writeAndFlush(((ByteBufHolder)msg).content());
+        } else if(msg instanceof HttpRequest) {
+            logger.debug("[{}] -> [{}] -> [{}] -> [{}]: 转发ByteBufHolder消息: {}", ctx.channel().remoteAddress(), ctx.channel().localAddress(), remoteChannel.localAddress(), remoteChannel.remoteAddress(), msg);
+            remoteChannel.writeAndFlush(msg);
         } else {
             ctx.fireChannelRead(msg);
         }

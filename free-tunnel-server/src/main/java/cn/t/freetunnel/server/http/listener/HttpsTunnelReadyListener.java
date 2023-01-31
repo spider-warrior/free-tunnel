@@ -7,7 +7,6 @@ import cn.t.tool.nettytool.util.NettyComponentUtil;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelPipeline;
-import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpRequestDecoder;
 import io.netty.handler.codec.http.HttpResponseEncoder;
 
@@ -25,7 +24,6 @@ public class HttpsTunnelReadyListener extends TunnelReadyListener {
         ChannelPipeline pipeline = future.channel().pipeline();
         pipeline.remove(HttpResponseEncoder.class);
         pipeline.remove(HttpRequestDecoder.class);
-        pipeline.remove(HttpObjectAggregator.class);
         pipeline.remove(HttpProxyServerMessageHandler.class);
         NettyComponentUtil.addLastHandler(pipeline, "proxy-forwarding-handler", new ForwardingMessageHandler(remoteChannel));
     }

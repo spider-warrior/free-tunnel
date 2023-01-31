@@ -3,9 +3,9 @@ package cn.t.freetunnel.server.util;
 import cn.t.freetunnel.common.handler.FetchMessageHandler;
 import cn.t.freetunnel.common.listener.TunnelBuildResultListener;
 import cn.t.freetunnel.server.http.HttpProxyServerConfig;
-import cn.t.freetunnel.server.socks5.TunnelServerConfig;
 import cn.t.freetunnel.server.http.encoder.ProxiedRequestEncoder;
 import cn.t.freetunnel.server.http.handler.HttpProxyServerMessageHandler;
+import cn.t.freetunnel.server.socks5.TunnelServerConfig;
 import cn.t.freetunnel.server.socks5.handler.Socks5TunnelServerFetchHandler;
 import cn.t.freetunnel.server.socks5.handler.Socks5TunnelServerFetchHandlerForFreeTunnelClient;
 import cn.t.freetunnel.server.socks5.handler.Socks5TunnelServerMessageHandler;
@@ -15,7 +15,6 @@ import cn.t.tool.nettytool.initializer.NettyTcpChannelInitializer;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.socket.SocketChannel;
-import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpRequestDecoder;
 import io.netty.handler.codec.http.HttpResponseEncoder;
 
@@ -35,8 +34,6 @@ public class InitializerBuilder {
         factoryList.add(ch -> new HttpRequestDecoder());
         //http response encoder
         factoryList.add(ch -> new HttpResponseEncoder());
-        //http message aggregate
-        factoryList.add(ch -> new HttpObjectAggregator(1024 * 1024 * 4));
         //http proxy handler
         factoryList.add(ch -> new HttpProxyServerMessageHandler());
         daemonConfigBuilder.configHandler(factoryList);
