@@ -27,9 +27,9 @@ public class HttpSocks5TunnelClientReadyListener extends TunnelReadyListener {
     protected void operationSuccess(ChannelFuture future) {
         //已经通知客户端代理成功, 切换handler
         ChannelPipeline pipeline = remoteChannel.pipeline();
-        pipeline.remove(HttpSocks5TunnelClientHandler.class);
-        //http请求每次都需要修改header(connection), uri路径，所以不移除HttpRequestDecoder, HttpObjectAggregator
+        //http请求每次都需要修改header(connection), uri路径，所以不移除HttpRequestDecoder
         pipeline.remove(HttpResponseEncoder.class);
+        pipeline.remove(HttpSocks5TunnelClientHandler.class);
         NettyComponentUtil.addLastHandler(pipeline, "http-socks5-client-forwarding-handler", new HttpSocks5TunnelClientForwardingHandler(future.channel()));
     }
 

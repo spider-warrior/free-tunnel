@@ -9,7 +9,6 @@ import cn.t.tool.nettytool.util.NettyComponentUtil;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelPipeline;
-import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpRequestDecoder;
 import io.netty.handler.codec.http.HttpResponseEncoder;
 import org.slf4j.Logger;
@@ -30,10 +29,9 @@ public class HttpsSocks5TunnelClientReadyListener extends TunnelReadyListener {
     protected void operationSuccess(ChannelFuture future) {
         //已经通知客户端代理成功, 切换handler
         ChannelPipeline channelPipeline = future.channel().pipeline();
-        channelPipeline.remove(HttpSocks5TunnelClientHandler.class);
         channelPipeline.remove(HttpRequestDecoder.class);
         channelPipeline.remove(HttpResponseEncoder.class);
-        channelPipeline.remove(HttpObjectAggregator.class);
+        channelPipeline.remove(HttpSocks5TunnelClientHandler.class);
         NettyComponentUtil.addLastHandler(channelPipeline, "https-socks5-client-forwarding-handler", new HttpSocks5TunnelClientForwardingHandler(remoteChannel));
     }
 
