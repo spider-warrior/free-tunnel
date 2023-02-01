@@ -47,9 +47,12 @@ public class ProxiedRequestEncoder extends MessageToByteEncoder<HttpObject> {
 //            }
 //        }
         if(byteBuf.readableBytes() > 0) {
-            out.writeBytes(byteBuf);
+            try {
+                out.writeBytes(byteBuf);
+            } finally {
+                ReferenceCountUtil.release(byteBuf);
+            }
         }
-        ReferenceCountUtil.release(byteBuf);
     }
 
     @Override
