@@ -3,10 +3,7 @@ package cn.t.freetunnel.common.handler;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufHolder;
 import io.netty.buffer.Unpooled;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelDuplexHandler;
-import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.*;
 import io.netty.handler.codec.http.HttpRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +34,21 @@ public class ForwardingMessageHandler extends ChannelDuplexHandler {
             remoteChannel.writeAndFlush(msg);
         } else {
             ctx.fireChannelRead(msg);
+        }
+        if(!remoteChannel.isWritable() && remoteChannel.isActive()) {
+            Channel channel = ctx.channel();
+            ChannelConfig config = channel.config();
+            config.setAutoRead(false);
+        }
+    }
+
+    @Override
+    public void channelWritabilityChanged(ChannelHandlerContext ctx) {
+        if(ctx.channel().isWritable() && remoteChannel.isActive()) {
+            ChannelConfig remoteConfig = remoteChannel.config();
+            if(!remoteConfig.isAutoRead()) {
+                remoteConfig.setAutoRead(true);
+            }
         }
     }
 
