@@ -21,10 +21,30 @@
     
 >3.上传jar和lib包
     
->4.本地主机启动端口监听
-     
-     java -jar free-tunnel-server.jar
-     logs 文件在/home/{user.home}/logs
+>4.本地主机启动端口监听(logs文件在/home/{user.home}/logs)
+```shell
+#!/bin/bash
+nohup java \
+-Duser.timezone=Asia/Shanghai \
+-Dfile.encoding=UTF-8 \
+-Djava.net.preferIPv4Stack=true \
+-server \
+-Xms64m \
+-Xmx64m \
+-XX:MetaspaceSize=32M \
+-XX:MaxMetaspaceSize=32M \
+-XX:CompressedClassSpaceSize=6m \
+-XX:InitialCodeCacheSize=16m \
+-XX:ReservedCodeCacheSize=16m \
+-XX:MaxDirectMemorySize=64m \
+-XX:+HeapDumpOnOutOfMemoryError \
+-Xlog:gc:gc.log \
+-XX:+UnlockDiagnosticVMOptions \
+-XX:+LogVMOutput \
+-XX:LogFile=vm.log \
+-jar free-tunnel-server.jar >proxy-server.log 2>&1 &
+tail -f proxy-server.log
+```
 
 #### client
 
@@ -32,7 +52,30 @@
 
 >2.进入target目录
 
->3.启动服务java -jar free-tunnel-client.jar {server-ip}:10086 {username}:{password} gEIZCLU+48tkSknFfuE9kBCuKyhOrwnt54mJ3KX+uWE=
+>3.启动服务
+```shell
+#!/bin/bash
+nohup java \
+-Duser.timezone=Asia/Shanghai \
+-Dfile.encoding=UTF-8 \
+-Djava.net.preferIPv4Stack=true \
+-server \
+-Xms64m \
+-Xmx64m \
+-XX:MetaspaceSize=32M \
+-XX:MaxMetaspaceSize=32M \
+-XX:CompressedClassSpaceSize=6m \
+-XX:InitialCodeCacheSize=16m \
+-XX:ReservedCodeCacheSize=16m \
+-XX:MaxDirectMemorySize=64m \
+-XX:+HeapDumpOnOutOfMemoryError \
+-Xlog:gc:gc.log \
+-XX:+UnlockDiagnosticVMOptions \
+-XX:+LogVMOutput \
+-XX:LogFile=vm.log \
+-jar free-tunnel-client.jar 45.131.66.191:10086 admin:123456 gEIZCLU+48tkSknFfuE9kBCuKyhOrwnt54mJ3KX+uWE= >proxy-client.log 2>&1 &
+tail -f proxy-client.log
+```
 
 >4.修改浏览器代理地址为127.0.0.1:1087
     
