@@ -36,10 +36,10 @@ public class HttpSocks5TunnelClientReadyListener extends TunnelReadyListener {
     @Override
     protected void operationFailed(ChannelFuture future) {
         if(remoteChannel.isOpen()) {
-            logger.error("[{}]: 消息转发失败, 即将关闭本地连接, 失败原因: {}", TunnelUtil.buildProxyTunnelName(remoteChannel, future.channel()), future.cause());
+            logger.error("[{}]: 消息转发失败, 即将关闭远端连接, 失败原因: {}", TunnelUtil.buildProxyTunnelName(remoteChannel, future.channel()), future.cause());
             TunnelUtil.closeImmediately(remoteChannel);
         } else {
-            logger.error("[{}]: 消息转发失败, 本地连接已关闭, 失败原因: {}", TunnelUtil.buildProxyTunnelName(remoteChannel, future.channel()), future.cause());
+            logger.error("[{}]: 消息转发失败, 远端连接已关闭, 失败原因: {}", TunnelUtil.buildProxyTunnelName(remoteChannel, future.channel()), future.cause());
         }
     }
 
