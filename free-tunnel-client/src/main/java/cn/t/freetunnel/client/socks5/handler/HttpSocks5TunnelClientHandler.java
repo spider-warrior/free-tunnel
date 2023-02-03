@@ -9,6 +9,7 @@ import cn.t.freetunnel.common.listener.TunnelBuildResultListener;
 import cn.t.freetunnel.server.http.listener.HttpTunnelReadyListener;
 import cn.t.freetunnel.server.http.listener.HttpsTunnelReadyListener;
 import cn.t.freetunnel.server.tunnelprovider.UnPooledTunnelProvider;
+import io.netty.buffer.ByteBufHolder;
 import io.netty.channel.*;
 import io.netty.handler.codec.http.*;
 import io.netty.util.ReferenceCountUtil;
@@ -32,7 +33,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 public class HttpSocks5TunnelClientHandler extends SimpleChannelInboundHandler<HttpObject> {
 
     private static final Logger logger = LoggerFactory.getLogger(HttpSocks5TunnelClientHandler.class);
-    private final Queue<HttpObject> cachedHttpObjectList = new LinkedList<>();
+    private final Queue<Object> cachedHttpObjectList = new LinkedList<>();
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, HttpObject httpObject) {
@@ -56,7 +57,11 @@ public class HttpSocks5TunnelClientHandler extends SimpleChannelInboundHandler<H
                 buildSocks5Proxy(ctx, httpMethod, targetHost, targetPort, httpVersion, request);
             }
         } else {
-            cachedHttpObjectList.add(httpObject);
+            if(httpObject instanceof ByteBufHolder) {
+                cachedHttpObjectList.add(((ByteBufHolder)httpObject).retain());
+            } else {
+                cachedHttpObjectList.add(httpObject);
+            }
         }
     }
 
@@ -87,11 +92,11 @@ public class HttpSocks5TunnelClientHandler extends SimpleChannelInboundHandler<H
             channel.write(cachedHttpObjectList.poll());
         } else {
             while (true) {
-                HttpObject httpObject = cachedHttpObjectList.poll();
-                if(httpObject == null) {
+                Object cachedMsg = cachedHttpObjectList.poll();
+                if(cachedMsg == null) {
                     break;
                 } else {
-                    channel.write(httpObject);
+                    channel.write(cachedMsg);
                 }
             }
         }
