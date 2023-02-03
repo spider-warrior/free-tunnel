@@ -2,6 +2,7 @@ package cn.t.freetunnel.server.http.encoder;
 
 import cn.t.freetunnel.common.util.TunnelUtil;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufHolder;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.channel.embedded.EmbeddedChannel;
@@ -20,6 +21,8 @@ public class ProxiedRequestEncoder extends MessageToByteEncoder<HttpObject> {
     protected void encode(ChannelHandlerContext ctx, HttpObject msg, ByteBuf out) {
         if(msg instanceof HttpRequest) {
             TunnelUtil.prepareProxiedRequest((HttpRequest)msg);
+        } else if(msg instanceof ByteBufHolder) {
+            ((ByteBufHolder)msg).retain();
         }
         embeddedChannel.writeOutbound(msg);
         ByteBuf byteBuf = embeddedChannel.readOutbound();

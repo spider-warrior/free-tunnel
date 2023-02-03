@@ -43,7 +43,7 @@ nohup java \
 -XX:+LogVMOutput \
 -XX:LogFile=vm.log \
 -jar free-tunnel-server.jar >proxy-server.log 2>&1 &
-tail -f proxy-server.log
+tail -f proxy-server.log | grep -E 'WARN|ERROR'
 ```
 
 #### client
@@ -74,7 +74,7 @@ nohup java \
 -XX:+LogVMOutput \
 -XX:LogFile=vm.log \
 -jar free-tunnel-client.jar 45.131.66.191:10086 admin:123456 gEIZCLU+48tkSknFfuE9kBCuKyhOrwnt54mJ3KX+uWE= >proxy-client.log 2>&1 &
-tail -f proxy-client.log
+tail -f proxy-client.log | grep -E 'WARN|ERROR'
 ```
 
 >4.修改浏览器代理地址为127.0.0.1:1087
