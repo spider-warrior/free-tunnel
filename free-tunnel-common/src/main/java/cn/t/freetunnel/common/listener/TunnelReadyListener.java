@@ -18,10 +18,10 @@ public abstract class TunnelReadyListener implements ChannelFutureListener {
     @Override
     public void operationComplete(ChannelFuture future) {
         if(future.isSuccess() && remoteChannel.isOpen()) {
-            logger.info("[{}]: 代理就位", TunnelUtil.buildProxyTunnelName(future.channel(), remoteChannel));
+            logger.info("[{}]: 通道消息发送成功", TunnelUtil.buildProxyTunnelName(future.channel(), remoteChannel));
             operationSuccess(future);
         } else {
-            logger.error("[{}]: 代理失败, 地址: {}:{}, 本地连接状态: {}, 远端连接状态: {}, 失败原因: {}", TunnelUtil.buildProxyTunnelName(future.channel(), remoteChannel), host, port, future.channel().isOpen(), remoteChannel.isOpen(), future.cause());
+            logger.error("[{}]: 通道消息发送失败, 地址: {}:{}, 本地连接状态: {}, 远端连接状态: {}, 失败原因: {}", TunnelUtil.buildProxyTunnelName(future.channel(), remoteChannel), host, port, future.channel().isOpen(), remoteChannel.isOpen(), future.cause());
             operationFailed(future);
         }
     }
