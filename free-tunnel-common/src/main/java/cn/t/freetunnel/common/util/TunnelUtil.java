@@ -50,13 +50,13 @@ public class TunnelUtil {
         if(proxyConnection != null) {
             headers.remove("Proxy-Connection");
             headers.set(HttpHeaderNames.CONNECTION, proxyConnection);
-            String uri = request.uri();
-            if(uri.startsWith("http://")) {
-                int slashIndex = uri.indexOf('/', 7);
-                if(slashIndex > -1) {
-                    uri = uri.substring(slashIndex);
-                    request.setUri(uri);
-                }
+        }
+        String uri = request.uri();
+        if(uri.startsWith("http://")) {
+            int slashIndex = uri.indexOf('/', 7);
+            if(slashIndex > -1) {
+                uri = uri.substring(slashIndex);
+                request.setUri(uri);
             }
         }
     }
