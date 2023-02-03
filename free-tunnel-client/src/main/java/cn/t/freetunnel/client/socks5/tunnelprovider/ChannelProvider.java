@@ -77,7 +77,7 @@ public class ChannelProvider {
                     Channel channel = iterator.next();
                     if(channel.isOpen()) {
                         Attribute<Long> attr = channel.attr(channelUpTime);
-                        if(now - attr.get() > 10000) {
+                        if(now - attr.get() > 30000) {
                             attr.set(now);
                             channel.writeAndFlush(TunnelCommand.HEART_BEAT);
                         }
