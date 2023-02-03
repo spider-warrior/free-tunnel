@@ -10,6 +10,7 @@ import cn.t.freetunnel.server.http.listener.HttpTunnelReadyListener;
 import cn.t.freetunnel.server.http.listener.HttpsTunnelReadyListener;
 import cn.t.freetunnel.server.tunnelprovider.UnPooledTunnelProvider;
 import io.netty.buffer.ByteBufHolder;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
 import io.netty.handler.codec.http.*;
 import io.netty.util.ReferenceCountUtil;
@@ -87,9 +88,9 @@ public class HttpSocks5TunnelClientHandler extends SimpleChannelInboundHandler<H
         UnPooledTunnelProvider.acquireTcpTunnelForHttps(ctx.channel(), targetHost, targetPort, tunnelBuildResultListener);
     }
 
-    private void writeAndFlushCachedMessage(Channel channel) {
+    private void writeAndFlushCachedMessage(Channel channel, ChannelPromise promise) {
         if(cachedHttpObjectList.size() == 1) {
-            channel.write(cachedHttpObjectList.poll());
+            channel.writeAndFlush(cachedHttpObjectList.poll(), promise);
         } else {
             while (true) {
                 Object cachedMsg = cachedHttpObjectList.poll();
@@ -99,8 +100,8 @@ public class HttpSocks5TunnelClientHandler extends SimpleChannelInboundHandler<H
                     channel.write(cachedMsg);
                 }
             }
+            channel.writeAndFlush(Unpooled.EMPTY_BUFFER, promise);
         }
-        channel.flush();
     }
 
     private void buildDirectHttpProxy(ChannelHandlerContext ctx, String targetHost, int targetPort, HttpVersion httpVersion, HttpRequest request) {
@@ -108,8 +109,8 @@ public class HttpSocks5TunnelClientHandler extends SimpleChannelInboundHandler<H
             if(TunnelBuildResult.SUCCEEDED.value == status) {
                 ChannelPromise promise = remoteChannel.newPromise();
                 promise.addListener(new HttpTunnelReadyListener(ctx.channel(), targetHost, targetPort, this));
-                remoteChannel.writeAndFlush(request, promise);
-                writeAndFlushCachedMessage(remoteChannel);
+                remoteChannel.write(request);
+                writeAndFlushCachedMessage(remoteChannel, promise);
             } else {
                 ReferenceCountUtil.release(request);
                 logger.error("[{}]: 代理客户端失败, remote: {}:{}", ctx.channel().remoteAddress(), targetHost, targetPort);
@@ -149,8 +150,8 @@ public class HttpSocks5TunnelClientHandler extends SimpleChannelInboundHandler<H
             if(TunnelBuildResult.SUCCEEDED.value == status) {
                 ChannelPromise promise = remoteChannel.newPromise();
                 promise.addListener(new HttpSocks5TunnelClientReadyListener(ctx.channel(), targetHost, targetPort));
-                remoteChannel.writeAndFlush(request, promise);
-                writeAndFlushCachedMessage(remoteChannel);
+                remoteChannel.write(request);
+                writeAndFlushCachedMessage(remoteChannel, promise);
             } else {
                 ReferenceCountUtil.release(request);
                 logger.error("[{}]: 代理客户端失败, remote: {}:{}", remoteAddress, targetHost, targetPort);
