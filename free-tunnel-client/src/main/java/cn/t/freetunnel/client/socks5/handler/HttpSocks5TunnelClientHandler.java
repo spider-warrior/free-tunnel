@@ -78,7 +78,7 @@ public class HttpSocks5TunnelClientHandler extends SimpleChannelInboundHandler<H
         TunnelBuildResultListener tunnelBuildResultListener = (status, remoteChannel) -> {
             if(TunnelBuildResult.SUCCEEDED.value == status) {
                 ChannelPromise promise = ctx.newPromise();
-                promise.addListener(new HttpsTunnelReadyListener(remoteChannel, targetHost, targetPort));
+                promise.addListener(new HttpsTunnelReadyListener(remoteChannel, targetHost, targetPort, this));
                 ctx.writeAndFlush(new DefaultFullHttpResponse(httpVersion, OK), promise);
             } else {
                 logger.error("[{}]: 代理客户端失败, remote: {}:{}", ctx.channel().remoteAddress(), targetHost, targetPort);
