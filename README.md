@@ -28,6 +28,7 @@ nohup java \
 -Duser.timezone=Asia/Shanghai \
 -Dfile.encoding=UTF-8 \
 -Djava.net.preferIPv4Stack=true \
+-Dlogback.configurationFile=defaultServerConfig/logback.xml \
 -server \
 -Xms64m \
 -Xmx64m \
@@ -59,6 +60,7 @@ nohup java \
 -Duser.timezone=Asia/Shanghai \
 -Dfile.encoding=UTF-8 \
 -Djava.net.preferIPv4Stack=true \
+-Dlogback.configurationFile=defaultClientConfig/logback.xml \
 -server \
 -Xms64m \
 -Xmx64m \
