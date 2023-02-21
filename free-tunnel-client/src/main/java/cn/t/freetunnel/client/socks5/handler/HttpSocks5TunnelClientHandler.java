@@ -42,6 +42,15 @@ public class HttpSocks5TunnelClientHandler extends SimpleChannelInboundHandler<H
             HttpRequest request = (HttpRequest)httpObject;
             HttpMethod httpMethod = request.method();
             String host = request.headers().get(HttpHeaderNames.HOST);
+            if(host == null) {
+                if(request.uri().contains(":")) {
+                    host = request.uri();
+                } else {
+                    logger.warn("目标地址为空, uri: {}, headers: {}", request.uri(), request.headers());
+                    ctx.writeAndFlush(new DefaultFullHttpResponse(request.protocolVersion(), BAD_GATEWAY)).addListener(ChannelFutureListener.CLOSE);
+                    return;
+                }
+            }
             String[] elements = host.split(":");
             String targetHost = elements[0];
             int targetPort;
