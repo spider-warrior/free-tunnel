@@ -42,7 +42,6 @@ public class ChannelProvider {
         Channel channel;
         while ((channel = idledTunnelPool.poll()) != null && !channel.isOpen());
         if(channel != null && channel.isOpen()) {
-            logger.info("复用连接,channel: {}, target host: {}, target port: {}", channel, targetHost, targetPort);
             inUseTunnelPool.add(channel);
             channel.attr(NettyAttrConstants.CONNECT_TUNNEL_REMOTE_CHANNEL).set(localChannel);
             channel.attr(ClientAttrConstants.TUNNEL_IN_USE).set(Boolean.TRUE);
@@ -52,7 +51,7 @@ public class ChannelProvider {
             tunnelSpecification.setTunnelBuildResultListener(listener);
             ByteBuf outputBuf = Socks5MessageUtil.buildConnectBuf(channel.alloc(), targetHost, targetPort);
             channel.writeAndFlush(outputBuf);
-            logger.info("cmd request, channel: {}", channel);
+            logger.info("复用连接,channel: {}, target host: {}, target port: {}, cmd request, channel: {}", channel, targetHost, targetPort, channel);
         } else {
             logger.info("请求建立连接, localChannel: {}, target host: {}, target port: {}", localChannel, targetHost, targetPort);
             InetSocketAddress clientAddress = (InetSocketAddress)localChannel.remoteAddress();

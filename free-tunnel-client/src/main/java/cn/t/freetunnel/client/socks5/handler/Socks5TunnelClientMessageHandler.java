@@ -49,7 +49,7 @@ public class Socks5TunnelClientMessageHandler extends SimpleChannelInboundHandle
                 TunnelSpecification tunnelSpecification = ctx.channel().attr(ClientAttrConstants.TUNNEL_SPECIFICATION).get();
                 ByteBuf outputBuf = Socks5MessageUtil.buildConnectBuf(ctx.alloc(), tunnelSpecification.getTargetHost(), tunnelSpecification.getTargetPort());
                 ctx.writeAndFlush(outputBuf);
-                logger.info("cmd request, channel: {}", ctx.channel());
+                logger.info("no authentication, cmd request, channel: {}", ctx.channel());
                 state = Socks5ServerState.CMD;
                 //用户名密码认证
             } else if(Socks5Method.USERNAME_PASSWORD == socks5Method) {
@@ -75,7 +75,7 @@ public class Socks5TunnelClientMessageHandler extends SimpleChannelInboundHandle
                 TunnelSpecification tunnelSpecification = ctx.channel().attr(ClientAttrConstants.TUNNEL_SPECIFICATION).get();
                 ByteBuf outputBuf = Socks5MessageUtil.buildConnectBuf(ctx.alloc(), tunnelSpecification.getTargetHost(), tunnelSpecification.getTargetPort());
                 ctx.writeAndFlush(outputBuf);
-                logger.info("cmd request, channel: {}", ctx.channel());
+                logger.info("authenticate success, cmd request, channel: {}", ctx.channel());
                 state = Socks5ServerState.CMD;
             } else {
                 throw new TunnelException("鉴权失败: " + status);
