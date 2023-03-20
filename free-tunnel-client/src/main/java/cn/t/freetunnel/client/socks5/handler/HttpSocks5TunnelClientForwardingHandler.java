@@ -31,6 +31,15 @@ public class HttpSocks5TunnelClientForwardingHandler extends ForwardingMessageHa
         }
     }
 
+    @Override
+    public void channelRead(ChannelHandlerContext ctx, Object msg) {
+        if(!TunnelUtil.isClosedByCallMethod(ctx)) {
+            super.channelRead(ctx, msg);
+        } else {
+            logger.warn("local channel has been closed, ignore forwarding message: {}", msg);
+        }
+    }
+
     public HttpSocks5TunnelClientForwardingHandler(Channel remoteChannel) {
         super(remoteChannel);
     }
