@@ -178,6 +178,9 @@ public class Socks5TunnelServerMessageHandler extends SimpleChannelInboundHandle
                                         //forwarding
                                         NettyComponentUtil.addLastHandler(channelPipeline, NettyHandlerName.SOCKS5_TUNNEL_SERVER_FORWARDING_MESSAGE_HANDLER, new Socks5TunnelServerForwardingHandler(channel));
                                     }
+                                } else {
+                                    //通知失败，关闭远端连接
+                                    TunnelUtil.closeImmediately(channel);
                                 }
                             });
                         }
