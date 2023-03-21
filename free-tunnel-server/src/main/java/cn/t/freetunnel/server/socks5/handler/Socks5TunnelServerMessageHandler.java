@@ -159,22 +159,25 @@ public class Socks5TunnelServerMessageHandler extends SimpleChannelInboundHandle
                         ChannelPromise promise = ctx.newPromise();
                         if(firstTime) {
                             promise.addListener(future -> {
-                                if(freeTunnelClient) {
-                                    //layer
-                                    NettyComponentUtil.addFirst(channelPipeline, NettyHandlerName.LAYER_MESSAGE_DECODER, new LayerMessageDecoder());
-                                    NettyComponentUtil.addFirst(channelPipeline, NettyHandlerName.LAYER_MESSAGE_ENCODER, new LayerMessageEncoder());
-                                    //encrypt and decrypt
-                                    try {
-                                        NettyComponentUtil.addFirst(channelPipeline, NettyHandlerName.ENCRYPT_MESSAGE_DECODER, new EncryptMessageDecoder(security));
-                                        NettyComponentUtil.addFirst(channelPipeline, NettyHandlerName.ENCRYPT_MESSAGE_ENCODER, new EncryptMessageEncoder(security));
-                                    } catch (Exception e) { throw new TunnelException(e); }
-                                    //forwarding
-                                    NettyComponentUtil.addLastHandler(channelPipeline, NettyHandlerName.SOCKS5_TUNNEL_SERVER_FORWARDING_MESSAGE_HANDLER, new Socks5TunnelServerForwardingHandler(channel));
-                                    //command
-                                    NettyComponentUtil.addLastHandler(channelPipeline, NettyHandlerName.SOCKS5_TUNNEL_SERVER_COMMAND_HANDLER, new Socks5TunnelServerCommandHandler(channel));
-                                } else {
-                                    //forwarding
-                                    NettyComponentUtil.addLastHandler(channelPipeline, NettyHandlerName.SOCKS5_TUNNEL_SERVER_FORWARDING_MESSAGE_HANDLER, new Socks5TunnelServerForwardingHandler(channel));
+                                //通知成功后切换模式
+                                if(future.isSuccess()) {
+                                    if(freeTunnelClient) {
+                                        //layer
+                                        NettyComponentUtil.addFirst(channelPipeline, NettyHandlerName.LAYER_MESSAGE_DECODER, new LayerMessageDecoder());
+                                        NettyComponentUtil.addFirst(channelPipeline, NettyHandlerName.LAYER_MESSAGE_ENCODER, new LayerMessageEncoder());
+                                        //encrypt and decrypt
+                                        try {
+                                            NettyComponentUtil.addFirst(channelPipeline, NettyHandlerName.ENCRYPT_MESSAGE_DECODER, new EncryptMessageDecoder(security));
+                                            NettyComponentUtil.addFirst(channelPipeline, NettyHandlerName.ENCRYPT_MESSAGE_ENCODER, new EncryptMessageEncoder(security));
+                                        } catch (Exception e) { throw new TunnelException(e); }
+                                        //forwarding
+                                        NettyComponentUtil.addLastHandler(channelPipeline, NettyHandlerName.SOCKS5_TUNNEL_SERVER_FORWARDING_MESSAGE_HANDLER, new Socks5TunnelServerForwardingHandler(channel));
+                                        //command
+                                        NettyComponentUtil.addLastHandler(channelPipeline, NettyHandlerName.SOCKS5_TUNNEL_SERVER_COMMAND_HANDLER, new Socks5TunnelServerCommandHandler(channel));
+                                    } else {
+                                        //forwarding
+                                        NettyComponentUtil.addLastHandler(channelPipeline, NettyHandlerName.SOCKS5_TUNNEL_SERVER_FORWARDING_MESSAGE_HANDLER, new Socks5TunnelServerForwardingHandler(channel));
+                                    }
                                 }
                             });
                         }
@@ -189,7 +192,7 @@ public class Socks5TunnelServerMessageHandler extends SimpleChannelInboundHandle
                             }
                             promise.addListener(future -> {
                                 if(future.isSuccess()) {
-                                    //备份Socks5ProxyServerMessageHandler
+                                    //切换到Socks5TunnelServerForwardingHandler
                                     Socks5TunnelServerMessageHandler socks5TunnelServerMessageHandler = channelPipeline.remove(Socks5TunnelServerMessageHandler.class);
                                     NettyComponentUtil.addLastHandler(channelPipeline, NettyHandlerName.SOCKS5_TUNNEL_SERVER_MESSAGE_HANDLER, socks5TunnelServerMessageHandler);
                                 }
