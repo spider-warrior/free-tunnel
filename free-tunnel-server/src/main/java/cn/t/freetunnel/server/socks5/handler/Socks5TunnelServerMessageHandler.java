@@ -159,7 +159,7 @@ public class Socks5TunnelServerMessageHandler extends SimpleChannelInboundHandle
                         ChannelPromise promise = ctx.newPromise();
                         if(firstTime) {
                             promise.addListener(future -> {
-                                //通知成功后切换模式
+                                //通知成功后切换模式,不管本次远端连接建立是否成功
                                 if(future.isSuccess()) {
                                     if(freeTunnelClient) {
                                         //layer
@@ -179,8 +179,10 @@ public class Socks5TunnelServerMessageHandler extends SimpleChannelInboundHandle
                                         NettyComponentUtil.addLastHandler(channelPipeline, NettyHandlerName.SOCKS5_TUNNEL_SERVER_FORWARDING_MESSAGE_HANDLER, new Socks5TunnelServerForwardingHandler(channel));
                                     }
                                 } else {
-                                    //通知失败，关闭远端连接
-                                    TunnelUtil.closeImmediately(channel);
+                                    if(TunnelBuildResult.SUCCEEDED.value == status) {
+                                        //通知失败，关闭远端连接
+                                        TunnelUtil.closeImmediately(channel);
+                                    }
                                 }
                             });
                         }

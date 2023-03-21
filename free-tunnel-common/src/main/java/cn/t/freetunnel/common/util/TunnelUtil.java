@@ -28,8 +28,10 @@ public class TunnelUtil {
     }
 
     public static void closeImmediately(Channel channel) {
-        channel.attr(NettyAttrConstants.CLOSE_BY_CALL_METHOD).set(true);
-        channel.close();
+        if(channel.isOpen()) {
+            channel.attr(NettyAttrConstants.CLOSE_BY_CALL_METHOD).set(true);
+            channel.close();
+        }
     }
 
     public static boolean isClosedByCallMethod(ChannelHandlerContext ctx) {
