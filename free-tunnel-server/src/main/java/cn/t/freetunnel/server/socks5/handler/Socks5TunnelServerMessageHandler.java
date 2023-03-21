@@ -155,9 +155,9 @@ public class Socks5TunnelServerMessageHandler extends SimpleChannelInboundHandle
                 if(Socks5Cmd.CONNECT == socks5Cmd) {
                     TunnelBuildResultListener tunnelBuildResultListener = (status, channel) -> {
                         ChannelPipeline channelPipeline = ctx.pipeline();
-                        boolean firstTime = channelPipeline.get(NettyHandlerName.SOCKS5_TUNNEL_SERVER_FORWARDING_MESSAGE_HANDLER) == null;
+                        Socks5TunnelServerForwardingHandler forwardingHandler = (Socks5TunnelServerForwardingHandler)channelPipeline.get(NettyHandlerName.SOCKS5_TUNNEL_SERVER_FORWARDING_MESSAGE_HANDLER);
                         ChannelPromise promise = ctx.newPromise();
-                        if(firstTime) {
+                        if(forwardingHandler == null) {
                             promise.addListener(future -> {
                                 //通知成功后切换模式,不管本次远端连接建立是否成功
                                 if(future.isSuccess()) {
@@ -187,8 +187,8 @@ public class Socks5TunnelServerMessageHandler extends SimpleChannelInboundHandle
                             });
                         }
                         if(TunnelBuildResult.SUCCEEDED.value == status) {
-                            if(!firstTime) {
-                                ((Socks5TunnelServerForwardingHandler)channelPipeline.get(NettyHandlerName.SOCKS5_TUNNEL_SERVER_FORWARDING_MESSAGE_HANDLER)).setRemoteChannel(channel);
+                            if(forwardingHandler != null) {
+                                forwardingHandler.setRemoteChannel(channel);
                                 if(freeTunnelClient) {
                                     ((Socks5TunnelServerCommandHandler)channelPipeline.get(NettyHandlerName.SOCKS5_TUNNEL_SERVER_COMMAND_HANDLER)).setRemoteChannel(channel);
                                 }
