@@ -188,11 +188,9 @@ public class Socks5TunnelServerMessageHandler extends SimpleChannelInboundHandle
                         }
                         if(TunnelBuildResult.SUCCEEDED.value == status) {
                             if(!firstTime) {
-                                Socks5TunnelServerForwardingHandler forwardingHandler = (Socks5TunnelServerForwardingHandler)channelPipeline.get(NettyHandlerName.SOCKS5_TUNNEL_SERVER_FORWARDING_MESSAGE_HANDLER);
-                                forwardingHandler.setRemoteChannel(channel);
+                                ((Socks5TunnelServerForwardingHandler)channelPipeline.get(NettyHandlerName.SOCKS5_TUNNEL_SERVER_FORWARDING_MESSAGE_HANDLER)).setRemoteChannel(channel);
                                 if(freeTunnelClient) {
-                                    Socks5TunnelServerCommandHandler commandHandler = (Socks5TunnelServerCommandHandler)channelPipeline.get(NettyHandlerName.SOCKS5_TUNNEL_SERVER_COMMAND_HANDLER);
-                                    commandHandler.setRemoteChannel(channel);
+                                    ((Socks5TunnelServerCommandHandler)channelPipeline.get(NettyHandlerName.SOCKS5_TUNNEL_SERVER_COMMAND_HANDLER)).setRemoteChannel(channel);
                                 }
                             }
                             promise.addListener(future -> {
@@ -202,12 +200,10 @@ public class Socks5TunnelServerMessageHandler extends SimpleChannelInboundHandle
                                     NettyComponentUtil.addLastHandler(channelPipeline, NettyHandlerName.SOCKS5_TUNNEL_SERVER_MESSAGE_HANDLER, socks5TunnelServerMessageHandler);
                                 }
                             });
-                            ByteBuf responseBuf = Socks5MessageUtil.buildConnectResponse(ctx.alloc(), version, Socks5CmdExecutionStatus.SUCCEEDED.value, Socks5AddressType.IPV4.value, TunnelServerConfig.SERVER_HOST_BYTES, TunnelServerConfig.SERVER_PORT);
-                            ctx.writeAndFlush(responseBuf, promise);
+                            ctx.writeAndFlush(Socks5MessageUtil.buildConnectResponse(ctx.alloc(), version, Socks5CmdExecutionStatus.SUCCEEDED.value, Socks5AddressType.IPV4.value, TunnelServerConfig.SERVER_HOST_BYTES, TunnelServerConfig.SERVER_PORT), promise);
                         } else {
                             logger.error("[{}]: 代理客户端失败, remote: {}:{}", ctx.channel().remoteAddress(), targetHost, targetPort);
-                            ByteBuf responseBuf = Socks5MessageUtil.buildConnectResponse(ctx.alloc(), version, Socks5CmdExecutionStatus.GENERAL_SOCKS_SERVER_FAILURE.value, Socks5AddressType.IPV4.value, EMPTY_IP_V4, 0);
-                            ctx.writeAndFlush(responseBuf, promise);
+                            ctx.writeAndFlush(Socks5MessageUtil.buildConnectResponse(ctx.alloc(), version, Socks5CmdExecutionStatus.GENERAL_SOCKS_SERVER_FAILURE.value, Socks5AddressType.IPV4.value, EMPTY_IP_V4, 0), promise);
                         }
                     };
                     if(freeTunnelClient) {
