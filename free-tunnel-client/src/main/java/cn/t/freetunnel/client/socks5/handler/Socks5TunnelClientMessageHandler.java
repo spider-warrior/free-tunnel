@@ -15,6 +15,7 @@ import cn.t.freetunnel.server.http.encoder.ProxiedRequestEncoder;
 import cn.t.tool.nettytool.util.NettyComponentUtil;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
+import io.netty.util.Attribute;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -147,9 +148,19 @@ public class Socks5TunnelClientMessageHandler extends SimpleChannelInboundHandle
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        //socks5通信过程中连接关闭惊醒进行listener回调(在与tunnel-server进行socks5协议交互时尚未切换到forwardingHandler时需要做额外的连接中断处理)
-        logger.warn("[socks5协议交互]与服务端连接断开，通知客户端代理失败, tunnelChannel: {}", ctx.channel());
-        ctx.channel().attr(ClientAttrConstants.TUNNEL_SPECIFICATION).get().getTunnelBuildResultListener().handle(TunnelBuildResult.FAILED.value, null);
+        Attribute<Boolean> inUseAttr = ctx.channel().attr(ClientAttrConstants.TUNNEL_IN_USE);
+        if(Boolean.TRUE.equals(inUseAttr.get())) {
+            Channel remoteChannel = ctx.channel().attr(NettyAttrConstants.CONNECT_TUNNEL_REMOTE_CHANNEL).get();
+            if(remoteChannel.isOpen()) {
+                //socks5通信过程中连接关闭惊醒进行listener回调(在与tunnel-server进行socks5协议交互时尚未切换到forwardingHandler时需要做额外的连接中断处理)
+                logger.warn("[socks5-tunnel-client]与服务端连接断开，通知客户端代理失败，tunnelChannel: {}", ctx.channel());
+                ctx.channel().attr(ClientAttrConstants.TUNNEL_SPECIFICATION).get().getTunnelBuildResultListener().handle(TunnelBuildResult.FAILED.value, null);
+            } else {
+                logger.warn("[socks5-tunnel-client]与服务端连接断开，客户端连接已关闭，不再进行通知，tunnelChannel: {}", ctx.channel());
+            }
+        } else {
+            logger.warn("[socks5-tunnel-client]连接池连接与服务端断开，tunnelChannel: {}", ctx.channel());
+        }
     }
 
     @Override
