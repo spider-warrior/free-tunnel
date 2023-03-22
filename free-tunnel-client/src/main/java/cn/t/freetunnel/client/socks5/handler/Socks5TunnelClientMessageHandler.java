@@ -147,7 +147,7 @@ public class Socks5TunnelClientMessageHandler extends SimpleChannelInboundHandle
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        //todo socks会话过程中IO异常处理逻辑
+        //socks5通信过程中连接关闭惊醒进行listener回调(在与tunnel-server进行socks5协议交互时尚未切换到forwardingHandler时需要做额外的连接中断处理)
         ctx.channel().attr(ClientAttrConstants.TUNNEL_SPECIFICATION).get().getTunnelBuildResultListener().handle(TunnelBuildResult.FAILED.value, null);
     }
 
