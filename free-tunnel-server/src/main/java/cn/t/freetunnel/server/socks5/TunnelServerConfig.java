@@ -20,7 +20,7 @@ public class TunnelServerConfig {
     public static final String PUBLIC_HOSTNAME = SystemUtil.getLocalIpV4(false);
     public static final String SERVER_HOST = StringUtil.isEmpty(PUBLIC_HOSTNAME) ? SystemUtil.getLocalIpV4(true) : PUBLIC_HOSTNAME;
     public static final byte[] SERVER_HOST_BYTES = ByteUtil.stringsToBytes(SERVER_HOST, "\\.");
-    public static final int SERVER_PORT = 10086;
+    public static final int SERVER_PORT = 11186;
 
     public static final int SOCKS5_PROXY_READ_TIME_OUT_IN_SECONDS = 0;
     public static final int SOCKS5_PROXY_WRITE_TIME_OUT_IN_SECONDS = 0;

@@ -67,8 +67,6 @@ public class Socks5TunnelServerMessageHandler extends SimpleChannelInboundHandle
             //切换状态
             if(Socks5Method.USERNAME_PASSWORD == methodSelected) {
                 state = Socks5ServerState.AUTHENTICATE;
-            } else if(Socks5Method.NO_AUTHENTICATION_REQUIRED == methodSelected) {
-                state = Socks5ServerState.CMD;
             } else {
                 throw new TunnelException(String.format("未协商到合适的认证方法, 客户端支持的内容为: %s", Arrays.toString(methods)));
             }
