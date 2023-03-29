@@ -147,7 +147,7 @@ public class Socks5TunnelClientMessageHandler extends SimpleChannelInboundHandle
     }
 
     @Override
-    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+    public void channelInactive(ChannelHandlerContext ctx) {
         Attribute<Boolean> inUseAttr = ctx.channel().attr(ClientAttrConstants.TUNNEL_IN_USE);
         if(Boolean.TRUE.equals(inUseAttr.get())) {
             Channel remoteChannel = ctx.channel().attr(NettyAttrConstants.CONNECT_TUNNEL_REMOTE_CHANNEL).get();
