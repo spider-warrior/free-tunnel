@@ -35,7 +35,6 @@ public class Socks5TunnelClientCommandHandler extends SimpleChannelInboundHandle
             Boolean inUse = inUseAttr.get();
             if(Boolean.TRUE == inUse) {
                 logger.info("服务端请求复位, channel: {}， 即将断开客户端连接: {}", ctx.channel(), remoteChannel);
-                inUseAttr.set(null);
                 TunnelUtil.closeGracefully(remoteChannel);
                 ctx.writeAndFlush(TunnelCommand.RESET_STATUS_TO_COMMAND_RESPONSE);
                 resetToCommandStatus(ctx);
@@ -52,7 +51,6 @@ public class Socks5TunnelClientCommandHandler extends SimpleChannelInboundHandle
                 logger.warn("客户端未发送复位请求, 忽略来自服务端的复位响应, channel: {}", ctx.channel());
             } else if(Boolean.FALSE == inUse) {
                 logger.info("来自服务端复位响应, 即将归还连接: {}", ctx.channel());
-                inUseAttr.set(null);
                 resetToCommandStatus(ctx);
                 StaticChannelProvider.returnTunnel(ctx.channel());
             } else {

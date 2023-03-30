@@ -92,6 +92,7 @@ public class ChannelProvider {
     public void returnTunnel(Channel remoteChannel) {
         if(remoteChannel.isOpen()) {
             remoteChannel.attr(channelUpTime).set(System.currentTimeMillis());
+            remoteChannel.attr(ClientAttrConstants.TUNNEL_IN_USE).set(null);
             inUseTunnelPool.remove(remoteChannel);
             idledTunnelPool.add(remoteChannel);
             logger.info("返还连接,channel: {}, 使用中: {}, 可复用: {}", remoteChannel, inUseTunnelPool.size(), idledTunnelPool.size());
