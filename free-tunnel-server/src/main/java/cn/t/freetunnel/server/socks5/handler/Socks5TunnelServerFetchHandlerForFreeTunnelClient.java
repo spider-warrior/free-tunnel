@@ -20,6 +20,9 @@ public class Socks5TunnelServerFetchHandlerForFreeTunnelClient extends Socks5Tun
 
     @Override
     protected void closeRemote(ChannelHandlerContext ctx) {
+        if(!remoteChannel.config().isAutoRead()) {
+            remoteChannel.config().setAutoRead(true);
+        }
         logger.info("[{} -> {}]: 断开连接, 复位通道连接: [{} -> {}]", ctx.channel().localAddress(), ctx.channel().remoteAddress(), remoteChannel.remoteAddress(), remoteChannel.localAddress());
         remoteChannel.writeAndFlush(TunnelCommand.RESET_STATUS_TO_COMMAND_REQUEST);
     }
