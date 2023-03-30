@@ -74,7 +74,7 @@ public class ChannelProvider {
                 Iterator<Channel> iterator = idledTunnelPool.iterator();
                 while (iterator.hasNext()) {
                     Channel channel = iterator.next();
-                    if(channel.isOpen() && channel.attr(ClientAttrConstants.TUNNEL_IN_USE) == null) {
+                    if(channel.isOpen() && channel.attr(ClientAttrConstants.TUNNEL_IN_USE).get() == null) {
                         Attribute<Long> attr = channel.attr(channelUpTime);
                         if(now - attr.get() > 30000) {
                             attr.set(now);
