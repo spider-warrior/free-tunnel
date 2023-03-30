@@ -36,9 +36,7 @@ public class ForwardingMessageHandler extends ChannelDuplexHandler {
             ctx.fireChannelRead(msg);
         }
         if(!remoteChannel.isWritable() && remoteChannel.isActive()) {
-            Channel channel = ctx.channel();
-            ChannelConfig config = channel.config();
-            config.setAutoRead(false);
+            ctx.channel().config().setAutoRead(false);
         }
     }
 
