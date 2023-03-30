@@ -1,5 +1,6 @@
 package cn.t.freetunnel.common.handler;
 
+import cn.t.freetunnel.common.constants.TunnelCommand;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufHolder;
 import io.netty.buffer.Unpooled;
@@ -23,20 +24,28 @@ public class ForwardingMessageHandler extends ChannelDuplexHandler {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
-        if(msg instanceof ByteBuf) {
-            logger.debug("[{}] -> [{}] -> [{}] -> [{}]: 转发byteBuf消息: {} B", ctx.channel().remoteAddress(), ctx.channel().localAddress(), remoteChannel.localAddress(), remoteChannel.remoteAddress(), ((ByteBuf)msg).readableBytes());
-            remoteChannel.writeAndFlush(msg);
-        } else if(msg instanceof ByteBufHolder) {
-            logger.debug("[{}] -> [{}] -> [{}] -> [{}]: 转发ByteBufHolder消息: {} B", ctx.channel().remoteAddress(), ctx.channel().localAddress(), remoteChannel.localAddress(), remoteChannel.remoteAddress(), ((ByteBufHolder)msg).content().readableBytes());
-            remoteChannel.writeAndFlush(msg);
-        } else if(msg instanceof HttpRequest) {
-            logger.debug("[{}] -> [{}] -> [{}] -> [{}]: 转发HttpRequest消息", ctx.channel().remoteAddress(), ctx.channel().localAddress(), remoteChannel.localAddress(), remoteChannel.remoteAddress());
-            remoteChannel.writeAndFlush(msg);
+        if(remoteChannel.isOpen()) {
+            if(msg instanceof ByteBuf) {
+                logger.debug("[{}] -> [{}] -> [{}] -> [{}]: 转发byteBuf消息: {} B", ctx.channel().remoteAddress(), ctx.channel().localAddress(), remoteChannel.localAddress(), remoteChannel.remoteAddress(), ((ByteBuf)msg).readableBytes());
+                remoteChannel.writeAndFlush(msg);
+            } else if(msg instanceof ByteBufHolder) {
+                logger.debug("[{}] -> [{}] -> [{}] -> [{}]: 转发ByteBufHolder消息: {} B", ctx.channel().remoteAddress(), ctx.channel().localAddress(), remoteChannel.localAddress(), remoteChannel.remoteAddress(), ((ByteBufHolder)msg).content().readableBytes());
+                remoteChannel.writeAndFlush(msg);
+            } else if(msg instanceof HttpRequest) {
+                logger.debug("[{}] -> [{}] -> [{}] -> [{}]: 转发HttpRequest消息", ctx.channel().remoteAddress(), ctx.channel().localAddress(), remoteChannel.localAddress(), remoteChannel.remoteAddress());
+                remoteChannel.writeAndFlush(msg);
+            } else {
+                ctx.fireChannelRead(msg);
+            }
+            if(!remoteChannel.isWritable() && remoteChannel.isActive()) {
+                ctx.channel().config().setAutoRead(false);
+            }
         } else {
-            ctx.fireChannelRead(msg);
-        }
-        if(!remoteChannel.isWritable() && remoteChannel.isActive()) {
-            ctx.channel().config().setAutoRead(false);
+            if(msg instanceof TunnelCommand) {
+                ctx.fireChannelRead(msg);
+            } else {
+                logger.info("[{}] -> [{}] -> [{}] -> [{}]: 远程连接断开,忽略消息: {}", ctx.channel().remoteAddress(), ctx.channel().localAddress(), remoteChannel.localAddress(), remoteChannel.remoteAddress(), msg);
+            }
         }
     }
 

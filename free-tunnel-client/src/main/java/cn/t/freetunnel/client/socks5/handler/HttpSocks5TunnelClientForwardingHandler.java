@@ -25,6 +25,9 @@ public class HttpSocks5TunnelClientForwardingHandler extends ForwardingMessageHa
             log.info("[{} -> {}]: 断开连接", ctx.channel().remoteAddress(), ctx.channel().localAddress());
         } else {
             if(remoteChannel.isOpen()) {
+                if(!remoteChannel.config().isAutoRead()) {
+                    remoteChannel.config().setAutoRead(true);
+                }
                 log.info("[{} -> {}]: 断开连接, 复位通道: [{} -> {}]", ctx.channel().remoteAddress(), ctx.channel().localAddress(), remoteChannel.localAddress(), remoteChannel.remoteAddress());
                 Socks5MessageUtil.sendResetChannelRequest(remoteChannel);
             }
