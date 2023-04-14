@@ -15,8 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * https代理结果监听器
- * 触发时机: 成功通知浏览器代理结果
+ * 通知终端https代理成功监听器
  * @author <a href="mailto:jian.yang@liby.ltd">野生程序员-杨建</a>
  * @version V1.0
  * @since 2020-02-27 15:42
@@ -41,7 +40,7 @@ public class HttpsSocks5TunnelClientReadyListener extends TunnelReadyListener {
             logger.error("[{}]代理结果通知失败: {}:{}, 即将复位远程连接, 失败原因: {}", TunnelUtil.buildProxyTunnelName(future.channel(), remoteChannel), host, port, future.cause());
             Socks5MessageUtil.sendResetChannelRequest(remoteChannel);
         } else {
-            logger.error("[{}]代理结果通知失败: {}:{}, 远程连接已关闭, 失败原因: {}", TunnelUtil.buildProxyTunnelName(future.channel(), remoteChannel), host, port, future.cause());
+            logger.error("[{}]代理结果通知失败: {}:{}, 通道已关闭, 失败原因: {}", TunnelUtil.buildProxyTunnelName(future.channel(), remoteChannel), host, port, future.cause());
         }
     }
 
