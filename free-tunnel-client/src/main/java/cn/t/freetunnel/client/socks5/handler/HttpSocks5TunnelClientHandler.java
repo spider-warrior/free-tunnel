@@ -65,12 +65,11 @@ public class HttpSocks5TunnelClientHandler extends SimpleChannelInboundHandler<H
             } else {
                 targetPort= Integer.parseInt(elements[1]);
             }
-            HttpVersion httpVersion = request.protocolVersion();
             logger.info("收到请求, 开始构建代理, 本地channel: {}, targetHost: {}, targetPort: {}", ctx.channel(), targetHost, targetPort);
             if(SocketUtil.isSiteLocalAddress(targetHost)) {
-                buildDirectProxy(ctx, httpMethod, targetHost, targetPort, httpVersion, request);
+                buildDirectProxy(ctx, httpMethod, targetHost, targetPort, request.protocolVersion(), request);
             } else {
-                buildSocks5Proxy(ctx, httpMethod, targetHost, targetPort, httpVersion, request);
+                buildSocks5Proxy(ctx, httpMethod, targetHost, targetPort, request.protocolVersion(), request);
             }
         } else {
             if(httpObject instanceof ByteBufHolder) {
