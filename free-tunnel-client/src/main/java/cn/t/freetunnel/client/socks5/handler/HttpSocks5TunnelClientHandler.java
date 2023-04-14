@@ -61,7 +61,7 @@ public class HttpSocks5TunnelClientHandler extends SimpleChannelInboundHandler<H
             String targetHost = elements[0];
             int targetPort;
             if(elements.length == 1) {
-                targetPort = request.uri().startsWith("https") ? 443 : 80;
+                targetPort = (httpMethod == HttpMethod.CONNECT) ? 443 : 80;
             } else {
                 targetPort= Integer.parseInt(elements[1]);
             }
