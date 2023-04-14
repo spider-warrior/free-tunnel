@@ -25,7 +25,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_GATEWAY;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 /**
- * http请求处理器
+ * http代理请求处理器
  *
  * @author <a href="mailto:jian.yang@liby.ltd">野生程序员-杨建</a>
  * @version V1.0
@@ -43,12 +43,18 @@ public class HttpSocks5TunnelClientHandler extends SimpleChannelInboundHandler<H
             HttpMethod httpMethod = request.method();
             String host = request.headers().get(HttpHeaderNames.HOST);
             if(host == null) {
-                if(request.uri().contains(":")) {
+                if(httpMethod == HttpMethod.CONNECT) {
                     host = request.uri();
                 } else {
-                    logger.warn("目标地址为空, uri: {}, headers: {}", request.uri(), request.headers());
-                    ctx.writeAndFlush(new DefaultFullHttpResponse(request.protocolVersion(), BAD_GATEWAY)).addListener(ChannelFutureListener.CLOSE);
-                    return;
+                    if(request.uri().contains("://")) {
+                        host = request.uri().substring(request.uri().indexOf("://") + 3);
+                        int slashIndex = host.indexOf("/");
+                        if(slashIndex > -1) {
+                            host = host.substring(0, slashIndex);
+                        }
+                    } else {
+                        throw new RuntimeException("无法解析host,uri: " + request.uri());
+                    }
                 }
             }
             String[] elements = host.split(":");
