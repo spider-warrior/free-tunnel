@@ -41,7 +41,7 @@ public class ChannelProvider {
     public void acquireSocks5Tunnel(Channel localChannel, String targetHost, int targetPort, TunnelBuildResultListener listener) {
         Channel channel;
         while ((channel = idledTunnelPool.poll()) != null && !channel.isOpen());
-        if(channel != null && channel.isOpen()) {
+        if(channel != null) {
             inUseTunnelPool.add(channel);
             channel.attr(NettyAttrConstants.CONNECT_TUNNEL_REMOTE_CHANNEL).set(localChannel);
             channel.attr(ClientAttrConstants.TUNNEL_IN_USE).set(Boolean.TRUE);
