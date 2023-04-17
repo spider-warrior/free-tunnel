@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import java.net.InetSocketAddress;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.LockSupport;
 
 public class ChannelProvider {
 
@@ -74,12 +75,24 @@ public class ChannelProvider {
                 Iterator<Channel> iterator = idledTunnelPool.iterator();
                 while (iterator.hasNext()) {
                     Channel channel = iterator.next();
-                    if(channel.isOpen() && channel.attr(ClientAttrConstants.TUNNEL_IN_USE).get() == null) {
-                        Attribute<Long> attr = channel.attr(channelUpTime);
-                        if(now - attr.get() > 30000) {
-                            attr.set(now);
-                            channel.writeAndFlush(TunnelCommand.HEART_BEAT);
+                    if(channel.isOpen()) {
+                        Boolean inUse = channel.attr(ClientAttrConstants.TUNNEL_IN_USE).get();
+                        if(inUse == null) {
+                            Attribute<Long> attr = channel.attr(channelUpTime);
+                            if(now - attr.get() > 30000) {
+                                attr.set(now);
+                                channel.writeAndFlush(TunnelCommand.HEART_BEAT);
+                            }
+                        } else {
+                            logger.error("channel异常, inUsage: {} channel: {}", inUse, channel);
+                            new Thread(() -> {
+                                System.out.println("系统异常");
+                                LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(1));
+                                System.exit(1);
+                            }).start();
                         }
+                    } else {
+                        logger.warn("channel已关闭: {}", channel);
                     }
                 }
             },
