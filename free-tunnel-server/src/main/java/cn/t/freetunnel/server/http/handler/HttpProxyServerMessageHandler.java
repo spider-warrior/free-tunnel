@@ -37,20 +37,24 @@ public class HttpProxyServerMessageHandler extends SimpleChannelInboundHandler<H
         if(httpObject instanceof HttpRequest) {
             HttpRequest request = (HttpRequest)httpObject;
             HttpMethod httpMethod = request.method();
-            String host = request.headers().get(HttpHeaderNames.HOST);
-            String[] elements = host.split(":");
-            String targetHost = elements[0];
-            int targetPort;
-            if(elements.length == 1) {
-                targetPort = 80;
-            } else {
-                targetPort= Integer.parseInt(elements[1]);
-            }
             HttpVersion httpVersion = request.protocolVersion();
             if(httpMethod == HttpMethod.CONNECT) {
-                buildHttpsProxy(ctx, targetHost, targetPort, httpVersion);
+                String uri = request.uri();
+                String[] elements = uri.split(":");
+                if(elements.length == 1) {
+                    buildHttpsProxy(ctx, elements[0], 80, httpVersion);
+                } else {
+
+                    buildHttpsProxy(ctx, elements[0], Integer.parseInt(elements[1]), httpVersion);
+                }
             } else {
-                buildHttpProxy(ctx, targetHost, targetPort, httpVersion, request);
+                String host = request.headers().get(HttpHeaderNames.HOST);
+                String[] elements = host.split(":");
+                if(elements.length == 1) {
+                    buildHttpProxy(ctx, elements[0], 80, httpVersion, request);
+                } else {
+                    buildHttpProxy(ctx, elements[0], Integer.parseInt(elements[1]), httpVersion, request);
+                }
             }
         } else {
             cachedHttpObjectList.add(httpObject);
