@@ -37,23 +37,42 @@ public class HttpProxyServerMessageHandler extends SimpleChannelInboundHandler<H
         if(httpObject instanceof HttpRequest) {
             HttpRequest request = (HttpRequest)httpObject;
             HttpMethod httpMethod = request.method();
-            HttpVersion httpVersion = request.protocolVersion();
+            String host;
             if(httpMethod == HttpMethod.CONNECT) {
-                String uri = request.uri();
-                String[] elements = uri.split(":");
+                host = request.uri();
+            } else {
+                host = request.headers().get(HttpHeaderNames.HOST);
+                if(host == null) {
+                    if(request.uri().contains("://")) {
+                        host = request.uri().substring(request.uri().indexOf("://") + 3);
+                        int slashIndex = host.indexOf("/");
+                        if(slashIndex > -1) {
+                            host = host.substring(0, slashIndex);
+                        }
+                    } else {
+                        throw new RuntimeException("无法解析host,uri: " + request.uri());
+                    }
+                }
+            }
+            String[] elements = host.split(":");
+            String targetHost = elements[0];
+            int targetPort;
+            if(elements.length == 1) {
+                targetPort = (httpMethod == HttpMethod.CONNECT) ? 443 : 80;
+            } else {
+                targetPort= Integer.parseInt(elements[1]);
+            }
+            if(httpMethod == HttpMethod.CONNECT) {
                 if(elements.length == 1) {
-                    buildHttpsProxy(ctx, elements[0], 80, httpVersion);
+                    buildHttpsProxy(ctx, targetHost, targetPort, request.protocolVersion());
                 } else {
-
-                    buildHttpsProxy(ctx, elements[0], Integer.parseInt(elements[1]), httpVersion);
+                    buildHttpsProxy(ctx, targetHost, targetPort, request.protocolVersion());
                 }
             } else {
-                String host = request.headers().get(HttpHeaderNames.HOST);
-                String[] elements = host.split(":");
                 if(elements.length == 1) {
-                    buildHttpProxy(ctx, elements[0], 80, httpVersion, request);
+                    buildHttpProxy(ctx, targetHost, targetPort, request.protocolVersion(), request);
                 } else {
-                    buildHttpProxy(ctx, elements[0], Integer.parseInt(elements[1]), httpVersion, request);
+                    buildHttpProxy(ctx, targetHost, targetPort, request.protocolVersion(), request);
                 }
             }
         } else {

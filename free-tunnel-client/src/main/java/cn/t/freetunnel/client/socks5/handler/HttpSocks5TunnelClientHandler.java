@@ -41,11 +41,12 @@ public class HttpSocks5TunnelClientHandler extends SimpleChannelInboundHandler<H
         if(httpObject instanceof HttpRequest) {
             HttpRequest request = (HttpRequest)httpObject;
             HttpMethod httpMethod = request.method();
-            String host = request.headers().get(HttpHeaderNames.HOST);
-            if(host == null) {
-                if(httpMethod == HttpMethod.CONNECT) {
-                    host = request.uri();
-                } else {
+            String host;
+            if(httpMethod == HttpMethod.CONNECT) {
+                host = request.uri();
+            } else {
+                host = request.headers().get(HttpHeaderNames.HOST);
+                if(host == null) {
                     if(request.uri().contains("://")) {
                         host = request.uri().substring(request.uri().indexOf("://") + 3);
                         int slashIndex = host.indexOf("/");
